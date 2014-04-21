@@ -1,0 +1,59 @@
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/694906/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao
+END
+PictureSetDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/690175/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/PictureSetDao.java
+END
+ArticleDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/670700/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/ArticleDao.java
+END
+DocDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/598057/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/DocDao.java
+END
+SpecialDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/661394/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/SpecialDao.java
+END
+HotDocDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/598057/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/HotDocDao.java
+END
+HotDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 101
+/!svn/ver/611714/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/HotDao.java
+END
+PictureDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 105
+/!svn/ver/671135/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/PictureDao.java
+END
+SpecialDocDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/694906/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/SpecialDocDao.java
+END
+BaseDao.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/694906/public/activity/common/gather/trunk/src/main/java/com/netease/gather/dao/BaseDao.java
+END

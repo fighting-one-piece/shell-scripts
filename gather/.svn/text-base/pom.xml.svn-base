@@ -1,0 +1,729 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.netease.gather</groupId>
+	<artifactId>gather</artifactId>
+	<version>1.0-SNAPSHOT</version>
+	<packaging>war</packaging>
+
+	<name>gather</name>
+	<description>热点聚合项目</description>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<release.project.name>gather</release.project.name>
+		<local.dir>${project.basedir}/src/main/local</local.dir>
+	</properties>
+
+	<build>
+		<finalName>com.netease.gather</finalName>
+		<filters>
+			<filter>src/main/filters/filter-${target-env}.properties</filter>
+		</filters>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>project.properties</include>
+					<include>config.properties</include>
+					<include>log4j.properties</include>
+					<include>velocity.properties</include>
+				</includes>
+			</resource>
+            <!--<resource>-->
+                <!--<directory>src/main/config</directory>-->
+                <!--<filtering>true</filtering>-->
+                <!--<includes>-->
+                    <!--<include>nginx.conf</include>-->
+                <!--</includes>-->
+            <!--</resource>-->
+		</resources>
+		<sourceDirectory>src/main/java</sourceDirectory>
+		<outputDirectory>target/webapp/WEB-INF/classes</outputDirectory>
+		<testOutputDirectory>target/test-classes</testOutputDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>${project.build.sourceEncoding}</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<delimiters>
+						<delimiter>#{*}</delimiter>
+					</delimiters>
+					<useDefaultDelimiters>false</useDefaultDelimiters>
+					<escapeString>\</escapeString>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<version>2.1.1</version>
+				<configuration>
+					<packagingExcludes>**/*.*</packagingExcludes>
+					<webappDirectory>${project.build.directory}/webapp</webappDirectory>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>2.10</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+				<executions>
+					<execution>
+						<id>run-test</id>
+						<phase>test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>**/unit/**/*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+					<execution>
+						<id>run-integration-test</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<skip>false</skip>
+							<includes>
+								<include>**/integration/**/*.java</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.8</version>
+			</plugin>
+
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings 
+					only. It has no influence on the Maven build itself. -->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-antrun-plugin
+										</artifactId>
+										<versionRange>
+											[1.7,)
+										</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+	<profiles><!-- <profile> <id>windows</id> <activation> <os> Windows </os> 
+			<file></file> </activation> <build> <resources></resources> <filters></filters> 
+			<directory>directory</directory> </build> </profile> -->
+		<profile>
+			<id>product</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>target-env</name>
+					<value>prod</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-antrun-plugin</artifactId>
+						<version>1.7</version>
+						<executions>
+							<execution>
+								<phase>compile</phase>
+								<configuration>
+									<tasks>
+										<copy todir="/home/workspace/${release.project.name}/models">
+											<fileset dir="${basedir}/src/main/models">
+												<exclude name="**/.svn/" />
+											</fileset>
+										</copy>
+										<copy todir="/home/workspace/${release.project.name}/html">
+											<fileset dir="${basedir}/src/main/html">
+												<exclude name="**/.svn/" />
+											</fileset>
+										</copy>
+										<copy todir="/home/workspace/${release.project.name}/shell">
+											<fileset dir="${basedir}/src/main/shell">
+												<exclude name="**/.svn/" />
+											</fileset>
+										</copy>
+										<copy todir="/home/workspace/${release.project.name}/conf">
+											<fileset dir="${basedir}/src/main/config">
+												<exclude name="**/.svn/" />
+											</fileset>
+										</copy>
+                                        <copy todir="/home/workspace/${release.project.name}/classify_new">
+                                            <fileset dir="${basedir}/src/main/classify_new">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+									</tasks>
+								</configuration>
+								<goals>
+									<goal>run</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+        <profile>
+            <id>test</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>target-env</name>
+                    <value>test</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.7</version>
+                        <executions>
+                            <execution>
+                                <phase>compile</phase>
+                                <configuration>
+                                    <tasks>
+                                        <copy todir="/home/workspace/${release.project.name}/models">
+                                            <fileset dir="${basedir}/src/main/models">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="/home/workspace/${release.project.name}/html">
+                                            <fileset dir="${basedir}/src/main/html">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="/home/workspace/${release.project.name}/shell">
+                                            <fileset dir="${basedir}/src/main/shell">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="/home/workspace/${release.project.name}/conf">
+                                            <fileset dir="${basedir}/src/main/config_test">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+                                        <copy todir="/home/workspace/${release.project.name}/classify_new">
+                                            <fileset dir="${basedir}/src/main/classify_new">
+                                                <exclude name="**/.svn/" />
+                                            </fileset>
+                                        </copy>
+                                    </tasks>
+                                </configuration>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+		<profile>
+			<id>jenkins</id>
+			<activation>
+				<property>
+					<name>target-env</name>
+					<value>jenkins</value>
+				</property>
+			</activation>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/profiles/develop</directory>
+					</resource>
+					<resource>
+						<directory>src/main/models/admin</directory>
+					</resource>
+					<resource>
+						<directory>src/main/models/front</directory>
+					</resource>
+				</resources>
+			</build>
+		</profile>
+		<profile>
+			<id>develop</id>
+			<activation>
+				<property>
+					<name>target-env</name>
+					<value>dev</value>
+				</property>
+			</activation>
+			<build>
+				<resources>
+					<resource>
+						<directory>src/profiles/develop</directory>
+					</resource>
+				</resources>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-war-plugin</artifactId>
+						<version>2.1.1</version>
+						<configuration>
+							<!--<webXml>${basedir}/src/profiles/develop/web.xml</webXml> -->
+							<webappDirectory>${project.build.directory}/webapp</webappDirectory>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+
+	<!--<repositories> -->
+	<!--<repository> -->
+	<!--<id>ansjsun-repo</id> -->
+	<!--<name>ansjsun-repo</name> -->
+	<!--<url>https://github.com/ansjsun/mvn-repo</url> -->
+	<!--<layout>default</layout> -->
+	<!--<releases> -->
+	<!--<enabled>true</enabled> -->
+	<!--<updatePolicy>always</updatePolicy> -->
+	<!--</releases> -->
+	<!--<snapshots> -->
+	<!--<enabled>true</enabled> -->
+	<!--</snapshots> -->
+	<!--</repository> -->
+	<!--</repositories> -->
+
+
+	<dependencies>
+		<!-- 单元测试begin -->
+		<dependency>
+			<groupId>com.googlecode.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<version>1.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.8.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.easymock</groupId>
+			<artifactId>easymock</artifactId>
+			<version>3.0</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.dbunit</groupId>
+			<artifactId>dbunit</artifactId>
+			<version>2.4.9</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hsqldb</groupId>
+			<artifactId>hsqldb</artifactId>
+			<version>2.2.9</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-core</artifactId>
+			<version>3.6.9.Final</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.javassist</groupId>
+			<artifactId>javassist</artifactId>
+			<version>3.16.1-GA</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi</artifactId>
+			<version>3.2-FINAL</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- 单元测试end -->
+
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>hessian</artifactId>
+			<version>3.1.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>c3p0</groupId>
+			<artifactId>c3p0</artifactId>
+			<version>0.8.5.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.ibatis</groupId>
+			<artifactId>ibatis-sqlmap</artifactId>
+			<version>2.3.4.726</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-asm</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aspects</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context-support</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jdbc</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-test</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-orm</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-webmvc</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-jms</artifactId>
+			<version>3.0.5.RELEASE</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.velocity</groupId>
+			<artifactId>velocity-tools</artifactId>
+			<version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-httpclient</groupId>
+			<artifactId>commons-httpclient</artifactId>
+			<version>3.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>4.2.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.jms</groupId>
+			<artifactId>jms</artifactId>
+			<version>1.1</version>
+		</dependency>
+
+		<!-- xmemcached start -->
+		<dependency>
+			<groupId>com.googlecode.xmemcached</groupId>
+			<artifactId>xmemcached</artifactId>
+			<version>1.3.2</version>
+		</dependency>
+		<!-- xmemcached end -->
+
+		<!-- Jackson JSON Mapper Start -->
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.7.1</version>
+		</dependency>
+		<!-- Jackson JSON Mapper End -->
+
+		<!-- mysql Start -->
+		<dependency>
+			<groupId>mysql</groupId>
+			<artifactId>mysql-connector-java</artifactId>
+			<version>5.1.4</version>
+		</dependency>
+		<!-- mysql End -->
+
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.17</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.5</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-configuration</groupId>
+			<artifactId>commons-configuration</artifactId>
+			<version>1.8</version>
+		</dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.8</version>
+        </dependency>
+		<!--<dependency> -->
+		<!--<groupId>com.google.collections</groupId> -->
+		<!--<artifactId>google-collections</artifactId> -->
+		<!--<version>1.0</version> -->
+		<!--</dependency> -->
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+		</dependency>
+		<dependency>
+			<groupId>jaxen</groupId>
+			<artifactId>jaxen</artifactId>
+			<version>1.1</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sourceforge.jexcelapi</groupId>
+			<artifactId>jxl</artifactId>
+			<version>2.6.12</version>
+		</dependency>
+
+		<dependency>
+			<groupId>net.sourceforge.pinyin4j</groupId>
+			<artifactId>pinyin4j</artifactId>
+			<version>2.5.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.persistence</groupId>
+			<artifactId>persistence-api</artifactId>
+			<version>1.0</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>edu.fudan</groupId>
+			<artifactId>nlp</artifactId>
+			<version>1.5.7</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.trove4j</groupId>
+			<artifactId>trove4j</artifactId>
+			<version>3.0.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-cli</groupId>
+			<artifactId>commons-cli</artifactId>
+			<version>1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jsoup</groupId>
+			<artifactId>jsoup</artifactId>
+			<version>1.7.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>14.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.netease.cms</groupId>
+			<artifactId>netease-cms-service</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.wltea.IKAnalyzer</groupId>
+			<artifactId>IKAnalyzer</artifactId>
+			<version>3.2.3</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.ansj.ansj_seg</groupId>
+			<artifactId>org-ansj-ansj_seg</artifactId>
+			<version>0.9</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ansj.tree_split</groupId>
+			<artifactId>org-ansj-tree_split</artifactId>
+			<version>1.0.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.netease.photo</groupId>
+			<artifactId>netease-photo-service</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+		
+		<dependency>
+            <groupId>com.netease.photo-upload</groupId>
+            <artifactId>netease-photo-upload</artifactId>
+            <version>2.0</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.netease.photoUploadService</groupId>
+            <artifactId>netease-photo-upload-service</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+		<dependency>
+			<groupId>net.sf.json-lib</groupId>
+			<artifactId>json-lib</artifactId>
+			<version>2.4</version>
+			<classifier>jdk15</classifier>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.netease.tag</groupId>
+			<artifactId>netease-tagservice</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+        <dependency>
+            <groupId>org.wltea.IKAnalyzer</groupId>
+            <artifactId>IKAnalyzer</artifactId>
+            <version>3.2.3</version>
+        </dependency>
+	</dependencies>
+
+</project>

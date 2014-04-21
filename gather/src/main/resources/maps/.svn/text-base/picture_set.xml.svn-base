@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="gbk" ?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="picture_set">
+
+	<typeAlias alias="pictureSet" type="com.netease.gather.domain.PictureSet" />
+	
+	<sql id="_columns">
+		url,title,setid,source,groupid,jobid,summary,author,ptime,uploadnum
+	</sql>
+
+    <insert id="insertOne" parameterClass="pictureSet">
+        insert into picture_set
+        (url,title,setid,source,groupid,jobid,ptime,uploadnum
+         <isNotEmpty prepend="," property="summary">
+                summary
+         </isNotEmpty>
+         <isNotEmpty prepend="," property="author">
+                author
+         </isNotEmpty>
+        )
+        values(#url#, #title#, #setid#, #source#,#groupid#, #jobid#, #ptime#, #uploadnum#
+         <isNotEmpty prepend="," property="summary">
+                #summary#
+         </isNotEmpty>
+         <isNotEmpty prepend="," property="author">
+                #author#
+         </isNotEmpty>
+        )
+        <selectKey resultClass="long" type="post" keyProperty="autoid">
+            select last_insert_id() as value
+        </selectKey>
+    </insert>
+
+    <sql id="_where">
+        <dynamic prepend="where">
+            <isNotEmpty prepend="and" property="condition">
+                <![CDATA[ $condition$ ]]>
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="setid">
+                setid=#setid#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="source">
+                source=#source#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="groupid">
+                groupid=#groupid#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="jobid">
+                jobid=#jobid#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="author">
+                author=#author#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="title">
+                title = #title#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="url">
+                url = #url#
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="likeTitle">
+                title like concat(#likeTitle#,'%')
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="getListByParameters" parameterClass="Map" resultClass="pictureSet">
+        select autoid,
+        <include refid="_columns"/>
+        from picture_set
+        <include refid="_where"/>
+        <isNotEmpty property="order">
+            <![CDATA[ order by $order$ ]]>
+        </isNotEmpty>
+        <dynamic prepend="limit">
+            <isNotEmpty property="start">#start#</isNotEmpty>
+            <isNotEmpty property="size">, #size#</isNotEmpty>
+        </dynamic>
+    </select>
+    
+    <select id="getCountByParameters" parameterClass="Map" resultClass="java.lang.Integer">
+        select count(autoid)
+        from picture_set
+        <include refid="_where"/>
+    </select>
+
+    <select id="getOneByParameters" parameterClass="Map" resultClass="pictureSet">
+        select autoid,
+        <include refid="_columns"/>
+        from picture_set
+        <include refid="_where"/>
+    </select>
+
+    <delete id="deleteSomeByParameters" parameterClass="Map">
+        delete
+        from picture_set
+        <include refid="_where"/>
+    </delete>
+    
+    <select id="statUploadInfo" parameterClass="Map" resultClass="HashMap">
+    	SELECT
+		  jobid,
+		  COUNT(1) psnum,
+		  SUM(uploadnum) picnum
+		FROM picture_set
+		WHERE groupid = #groupid#
+		    AND createtime >= #starttime#
+		GROUP BY jobid
+    </select>
+
+</sqlMap>

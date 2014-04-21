@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/!svn/ver/684969/public/activity/common/gather/trunk/src/main/filters
+END
+filter-dev.properties
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/640850/public/activity/common/gather/trunk/src/main/filters/filter-dev.properties
+END
+filter-prod.properties
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/684969/public/activity/common/gather/trunk/src/main/filters/filter-prod.properties
+END
+filter-test.properties
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/!svn/ver/656274/public/activity/common/gather/trunk/src/main/filters/filter-test.properties
+END

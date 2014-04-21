@@ -1,0 +1,65 @@
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/!svn/ver/694906/public/activity/common/gather/trunk/src/main/resources
+END
+velocity.properties
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/650977/public/activity/common/gather/trunk/src/main/resources/velocity.properties
+END
+clawerpic.xml
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/!svn/ver/688488/public/activity/common/gather/trunk/src/main/resources/clawerpic.xml
+END
+log4j.properties
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/590705/public/activity/common/gather/trunk/src/main/resources/log4j.properties
+END
+applicationContext.xml
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/!svn/ver/649406/public/activity/common/gather/trunk/src/main/resources/applicationContext.xml
+END
+project.properties
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/640850/public/activity/common/gather/trunk/src/main/resources/project.properties
+END
+sqlMapConfig.xml
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/!svn/ver/586974/public/activity/common/gather/trunk/src/main/resources/sqlMapConfig.xml
+END
+log4j.properties.schedule
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/!svn/ver/661536/public/activity/common/gather/trunk/src/main/resources/log4j.properties.schedule
+END
+springmvc-servlet.xml
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/!svn/ver/650788/public/activity/common/gather/trunk/src/main/resources/springmvc-servlet.xml
+END
+velocitytoolbox.xml
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/!svn/ver/598851/public/activity/common/gather/trunk/src/main/resources/velocitytoolbox.xml
+END
+config.properties
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/!svn/ver/638640/public/activity/common/gather/trunk/src/main/resources/config.properties
+END

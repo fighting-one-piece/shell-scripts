@@ -1,0 +1,139 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gbk" />
+    <title>修改专题头条</title>
+    <style type="text/css">
+        html, body {
+            padding: 0;
+            margin: 0;
+        }
+        body {
+            width: 600px;
+        }
+        .top {
+            font-size: 12px;
+            border: 1px solid #90b5d7;
+            border-bottom: none;
+            height: 31px;
+            line-height: 31px;
+            background: url(https://cms.ws.netease.com/post/blankdoc/images_/top_bg.gif);
+            color: #0b509a;
+            font-weight: bold;
+            padding: 0 10px 0 20px;
+        }
+        #btnClose {
+            width: 50px;
+            height: 26px;
+            background: url(https://cms.ws.netease.com/post/blankdoc/images_/btn_form.gif) -58px -90px;
+            float: right;
+            position: relative;
+            margin-top: -1px;
+        }
+        #btnClose:hover {
+            background-position: -58px -116px;
+        }
+        #btnClose:active {
+            background-position: -58px -142px;
+        }
+        .middle {
+            height: 485px;
+            position: relative;
+            overflow: hidden;
+            font-size: 14px;
+            border: 1px solid #90b5d7;
+            border-top: none;
+            padding: 12px 13px 12px 20px;
+            background: #f6fcff;
+        }
+
+        #button2, #button1 {
+            font-weight: bold;
+            font-size: 14px;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            width: 114px;
+            cursor: pointer;
+            height: 30px;
+            line-height: 30px;
+            border: 0 none;
+            background: url(https://cms.ws.netease.com/post/blankdoc/images_/btn_form.gif);
+            outline: none;
+        }
+        #button2 {
+            position:relative;
+            top:1px;
+            color: #003c74;
+            background-position: 0 1px;
+        }
+        #button1 {
+            color: #003c74;
+            background-position: -114px 0;
+        }
+        #button2:hover {
+            background-position: 0 -30px;
+        }
+        #button1:hover {
+            background-position: -114px -30px;
+        }
+        #button2:active {
+            background-position: 0 -60px;
+        }
+        #button1:active {
+            background-position: -114px -60px;
+        }
+        input.link {
+            margin: 0;
+            border: 1px solid #7f9db9;
+            width: 300px;
+        }
+
+    </style>
+    <script type="text/javascript" >
+        //删除确认
+        function confirmdelete(){
+            var r = confirm("删除标签将不可恢复，确定要删除？");
+            return r;
+        }
+
+        function modHeaderline(){
+            document.sform.submit();
+//            document.getElementById('ifarmeClose').src='https://cms.ws.netease.com/post/closepopwin.jsp';
+            parent.closePopupWin();
+        }
+
+        function closepage(){
+//            document.getElementById('ifarmeClose').src='https://cms.ws.netease.com/post/closepopwin.jsp';
+            parent.closePopupWin();
+        }
+
+
+    </script>
+</head>
+<body>
+<iframe id="ifarmeClose" src="#" style="display:none;"></iframe>
+
+<div class="top" id="topBar">
+    <a href="javascript:closepage();" id="btnClose"></a>修改专题头条
+</div>
+<div class="middle">
+    <div id="sResult">
+        <form id="sform" name="sform" action="modHeaderline" method="POST" style="margin: 50px 10px 50px 10px;">
+            <div id="submit_div">
+                <div id="input_div">
+                    <span>头条链接：</span><input name="docurl" type="text" id="docurl" value="" class="link" />
+                    <input type="hidden" name="channelid" id="channelid" value="$!channelid"/>
+                    <input type="hidden" name="specurl" id="specurl" value="$!specurl"/>
+                </div>
+                <div id="operatediv" style="margin-top: 20px;text-align: right;border-top: 1px solid #90b5d7;padding: 12px 20px 0 0;">
+                    <input onclick="modHeaderline();" type="button" name="button2" id="button2" value="确定" style="cursor:hand" />
+                    <input onclick="closepage();" type="button" name="button1" id="button1" value="取消" style="cursor:hand" />
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

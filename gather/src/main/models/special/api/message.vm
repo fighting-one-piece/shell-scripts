@@ -1,0 +1,11 @@
+<script type="text/javascript">
+		alert('$!{tip}');
+//		window.history.go(-1);
+        parent.closePopupWin();
+//        window.parent.close();
+</script>
+##<html>
+##<body>
+##<iframe id="ifarmeClose" src="#" style="display:none;"></iframe>
+##</body>
+##</html>

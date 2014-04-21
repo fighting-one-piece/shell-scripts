@@ -1,0 +1,443 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--  爬取配置 
+	jobid  全局唯一标识爬取名称ID。
+	parser   解析器类全名
+-->
+<root>
+	<entitycontext groupid="tour">
+		<entity jobid="fengniao">
+			<source>蜂鸟网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.FengNiao</parser>
+			<comment>
+				<url><![CDATA[http://travel.fengniao.com/list_1607.html]]></url>
+				<position>列表</position>
+			</comment>
+		</entity>
+		<entity jobid="huanqiu_shijie">
+			<source>环球网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.HuanqiuShijie</parser>
+			<comment>
+				<url><![CDATA[http://photo.huanqiu.com/gallery/]]></url>
+				<position>图说世界列表</position>
+			</comment>
+		</entity>
+		<entity jobid="huanqiu_yanjie">
+			<source>环球网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.HuanqiuYanjie</parser>
+			<comment>
+				<url><![CDATA[http://photo.huanqiu.com/vision/index.html]]></url>
+				<position>眼界列表</position>
+			</comment>
+		</entity>
+		<entity jobid="xingdao_renjian">
+			<source>星岛环球网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.XingdaoRenjian</parser>
+			<comment>
+				<url><![CDATA[http://tu.stnn.cc/kan_culture/]]></url>
+				<position>人间万象列表</position>
+			</comment>
+		</entity>
+		<entity jobid="xingdao_shijie">
+			<source>星岛环球网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.XingdaoShijie</parser>
+			<comment>
+				<url><![CDATA[http://tu.stnn.cc/kan_news/]]></url>
+				<position>世界今日列表</position>
+			</comment>
+		</entity>
+		<entity jobid="mingcheng">
+			<source>名城新闻网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Mingcheng</parser>
+			<comment>
+				<url><![CDATA[http://news.2500sz.com/tppd/tppd.shtml]]></url>
+				<position>图片频道列表</position>
+			</comment>
+		</entity>
+		<entity jobid="zhanlue_retu">
+			<source>战略网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.ZhanlueRetu</parser>
+			<comment>
+				<url><![CDATA[http://www.chinaiiss.com/list/237.html]]></url>
+				<position>论坛热图列表</position>
+			</comment>
+		</entity>
+		<entity jobid="zhanlue_quanqiu">
+			<source>战略网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.ZhanlueQuanqiu</parser>
+			<comment>
+				<url><![CDATA[http://www.chinaiiss.com/list/58.html]]></url>
+				<position>纵览全球列表</position>
+			</comment>
+		</entity>
+		<entity jobid="hongwang">
+			<source>红网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Hongwang</parser>
+			<comment>
+				<url><![CDATA[http://photo.rednet.cn/space.php?do=viewcate&id=2]]></url>
+				<position>图片栏目 - 纪实</position>
+			</comment>
+		</entity>
+		<entity jobid="msn_keji" >
+			<source>MSN图片频道</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.MsnKeji</parser>
+			<comment>
+				<url><![CDATA[http://msnphoto.eastday.com/TECHNOLOGY/index.html]]></url>
+				<position>创意·科技</position>
+			</comment>
+		</entity>
+		<entity jobid="msn_qutu">
+			<source>MSN图片频道</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.MsnQutu</parser>
+			<comment>
+				<url><![CDATA[http://msnphoto.eastday.com/INTERESTING/index.html]]></url>
+				<position>趣图</position>
+			</comment>
+		</entity>
+		<entity jobid="msn_fengguang">
+			<source>MSN图片频道</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.MsnFengguang</parser>
+			<comment>
+				<url><![CDATA[http://msnphoto.eastday.com/SCENERY/index.html]]></url>
+				<position>风光</position>
+			</comment>
+		</entity>
+		<entity jobid="msn_sheying">
+			<source>MSN图片频道</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.MsnSheying</parser>
+			<comment>
+				<url><![CDATA[http://msnphoto.eastday.com/match/index.html]]></url>
+				<position>摄影大赛</position>
+			</comment>
+		</entity>
+		<entity jobid="china">
+			<source>中华网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.China</parser>
+			<comment>
+				<url><![CDATA[http://club.china.com/data/threads/3316/]]></url>
+				<position>贴子列表</position>
+			</comment>
+		</entity>
+		<entity jobid="lvmama_xinwen">
+			<source>驴妈妈旅游网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.LvmamaXinwen</parser>
+			<comment>
+				<url><![CDATA[http://www.lvmama.com/info/photo/picnews/]]></url>
+				<position>新闻图片</position>
+			</comment>
+		</entity>
+		<entity jobid="lvmama_fengjing">
+			<source>驴妈妈旅游网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.LvmamaFengjing</parser>
+			<comment>
+				<url><![CDATA[http://www.lvmama.com/info/photo/lvtu/]]></url>
+				<position>旅途风景</position>
+			</comment>
+		</entity>
+		<entity jobid="lvmama_shijie">
+			<source>驴妈妈旅游网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.LvmamaShijie</parser>
+			<comment>
+				<url><![CDATA[http://www.lvmama.com/info/photo/qiguan/]]></url>
+				<position>世界奇观</position>
+			</comment>
+		</entity>
+		<entity jobid="lvmama_meishi">
+			<source>驴妈妈旅游网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.LvmamaMeishi</parser>
+			<comment>
+				<url><![CDATA[http://www.lvmama.com/info/photo/wanle/]]></url>
+				<position>美食玩乐</position>
+			</comment>
+		</entity>
+		<entity jobid="lvmama_sheying">
+			<source>驴妈妈旅游网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.LvmamaSheying</parser>
+			<comment>
+				<url><![CDATA[http://www.lvmama.com/info/photo/sheying/]]></url>
+				<position>旅途摄影</position>
+			</comment>
+		</entity>
+		<entity jobid="jingchu_guoji">
+			<source>荆楚网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Jingchu</parser>
+			<comment>
+				<url><![CDATA[http://photo.cnhubei.com/gj/]]></url>
+				<position>国际图片</position>
+			</comment>
+		</entity>
+		<entity jobid="jingchu_tianxia">
+			<source>荆楚网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Jingchu</parser>
+			<comment>
+				<url><![CDATA[http://photo.cnhubei.com/qt/]]></url>
+				<position>天下趣图</position>
+			</comment>
+		</entity>
+		<entity jobid="jingchu_fengguang">
+			<source>荆楚网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Jingchu</parser>
+			<comment>
+				<url><![CDATA[http://photo.cnhubei.com/fg/]]></url>
+				<position>风光地理</position>
+			</comment>
+		</entity>
+		<entity jobid="jiangsu_jiazuo">
+			<source>中国江苏网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Jiangsu</parser>
+			<comment>
+				<url><![CDATA[http://photo.jschina.com.cn/jzds/]]></url>
+				<position>佳作大赏列表</position>
+			</comment>
+		</entity>
+		<entity jobid="jiangsu_wangchong">
+			<source>中国江苏网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Jiangsu</parser>
+			<comment>
+				<url><![CDATA[http://photo.jschina.com.cn/wchs/]]></url>
+				<position>网虫会所列表</position>
+			</comment>
+		</entity>
+		<entity jobid="ningbo_meiwei">
+			<source>中国宁波网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Ningbo</parser>
+			<comment>
+				<url><![CDATA[http://pic.cnnb.com.cn/more.php?columnid=15]]></url>
+				<position>美味佳肴</position>
+			</comment>
+		</entity>
+		<entity jobid="ningbo_tianxia">
+			<source>中国宁波网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Ningbo</parser>
+			<comment>
+				<url><![CDATA[http://pic.cnnb.com.cn/more.php?columnid=photoclass13]]></url>
+				<position>天下奇观</position>
+			</comment>
+		</entity>
+		<entity jobid="ningbo_tuyou">
+			<source>中国宁波网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Ningbo</parser>
+			<comment>
+				<url><![CDATA[http://pic.cnnb.com.cn/more.php?columnid=12]]></url>
+				<position>图游天下</position>
+			</comment>
+		</entity>
+		<entity jobid="ningbo_retu">
+			<source>中国宁波网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Ningbo</parser>
+			<comment>
+				<url><![CDATA[http://pic.cnnb.com.cn/more.php?columnid=photoclass10]]></url>
+				<position>热图回放</position>
+			</comment>
+		</entity>
+		<entity jobid="ningbo_guoji">
+			<source>中国宁波网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Ningbo</parser>
+			<comment>
+				<url><![CDATA[http://pic.cnnb.com.cn/more.php?columnid=photoclass18]]></url>
+				<position>国际图片</position>
+			</comment>
+		</entity>
+		<entity jobid="daqi">
+			<source>大旗网</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.Daqi</parser>
+			<comment>
+				<url><![CDATA[http://pic.daqi.com/editor/pic3list/pic_picthree/10333/1.html]]></url>
+				<position>旅游热图</position>
+			</comment>
+		</entity>
+		
+		<entity jobid="163_sheyin">
+			<source>网易摄影</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.NeteaseSheyin</parser>
+			<comment>
+				<url><![CDATA[http://pp.163.com/pp/#p=41&c=-1&m=2&page=1]]></url>
+				<position>海外列表</position>
+			</comment>
+		</entity>
+		<entity jobid="163_blog">
+			<source>网易旅游博客</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.NeteaseBlog</parser>
+			<comment>
+				<url><![CDATA[http://blog.163.com/special/001264EF/sec-page-travel.html]]></url>
+				<position></position>
+			</comment>
+		</entity>
+		<entity jobid="163_bbs_tuyou">
+			<source>网易旅游论坛</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.NeteaseBbs</parser>
+			<comment>
+				<url><![CDATA[http://bbs.travel.163.com/list/tuyou.html]]></url>
+				<position>图游天下版块</position>
+			</comment>
+		</entity>
+		<entity jobid="163_bbs_yuanchuang">
+			<source>网易旅游论坛</source>
+			<parser>com.netease.gather.clawerpic.parser.tour.NeteaseBbs</parser>
+			<comment>
+				<url><![CDATA[http://bbs.travel.163.com/list/youji.html]]></url>
+				<position>原创游记版块</position>
+			</comment>
+		</entity>
+	</entitycontext>
+	
+	<entitycontext groupid="war">
+		<entity jobid="sina_roll_mil">
+			<source>新浪军事图集</source>
+			<parser>com.netease.gather.clawerpic.parser.war.SinaRollMil</parser>
+			<comment>
+				<url><![CDATA[http://roll.mil.news.sina.com.cn/photo_hz/photo_hdphoto/index.shtml]]></url>
+				<position>新浪军事新闻图集</position>
+			</comment>
+		</entity>
+		<entity jobid="ifeng_zhuangbei">
+			<source>凤凰网</source>
+			<parser>com.netease.gather.clawerpic.parser.war.IfengZhuangbei</parser>
+			<comment>
+				<url><![CDATA[http://news.ifeng.com/mil/toppic/list_0/0.shtml]]></url>
+				<position>装备报导精选</position>
+			</comment>
+		</entity>
+		<entity jobid="ifeng_zhongguo">
+			<source>凤凰网</source>
+			<parser>com.netease.gather.clawerpic.parser.war.IfengZhongguo</parser>
+			<comment>
+				<url><![CDATA[http://news.ifeng.com/mil/chinapic/list_0/0.shtml]]></url>
+				<position>中国防务写真</position>
+			</comment>
+		</entity>
+		<entity jobid="ifeng_guoji">
+			<source>凤凰网</source>
+			<parser>com.netease.gather.clawerpic.parser.war.IfengGuoji</parser>
+			<comment>
+				<url><![CDATA[http://news.ifeng.com/mil/weapon/list_0/0.shtml]]></url>
+				<position>中国防务写真</position>
+			</comment>
+		</entity>
+		<entity jobid="ifeng_toutiao">
+			<source>凤凰网</source>
+			<parser>com.netease.gather.clawerpic.parser.war.IfengToutiao</parser>
+			<comment>
+				<url><![CDATA[http://news.ifeng.com/mil/pictitle/list_0/0.shtml]]></url>
+				<position>中国防务写真</position>
+			</comment>
+		</entity>
+        <entity jobid="tencent_mil">
+            <source>腾讯军事图集</source>
+            <parser>com.netease.gather.clawerpic.parser.war.TencentMil</parser>
+            <comment>
+                <url><![CDATA[http://news.qq.com/l/milite/gaoqingtuku/listgaoqingtuku2012.htm]]></url>
+                <position>腾讯军事图集</position>
+            </comment>
+        </entity>
+        <entity jobid="junshi_chinanavy">
+			<source>中国海军-军事酷图</source>
+			<parser>com.netease.gather.clawerpic.parser.war.ChinaNavy</parser>
+			<comment>
+				<url><![CDATA[http://navy.81.cn/jskt.htm]]></url>
+				<position>军事版块</position>
+			</comment>
+		</entity>
+		 <entity jobid="huanqiu_mil">
+			<source>环球网军事图集-军事图片滚动</source>
+			<parser>com.netease.gather.clawerpic.parser.war.HuanqiuMil</parser>
+			<comment>
+				<url><![CDATA[http://mil.huanqiu.com/milpicroll/]]></url>
+				<position>军事图片滚动</position>
+			</comment>
+		</entity>
+        <entity jobid="cnr_zcwq">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/wqzb/zcwq/]]></url>
+                <position>战场武器</position>
+            </comment>
+        </entity>
+        <entity jobid="cnr_yczp">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/jstp/yczp/]]></url>
+                <position>新闻现场</position>
+            </comment>
+        </entity>
+        <entity jobid="cnr_tpcz">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/zgwj/tpcz/]]></url>
+                <position>图片传真</position>
+            </comment>
+        </entity>
+        <entity jobid="cnr_wytt">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil_Wytt</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/zglj/wytt/]]></url>
+                <position>网友贴图</position>
+            </comment>
+        </entity>
+        <entity jobid="cnr_tpxw">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/gmws/tpxw/]]></url>
+                <position>图说边防</position>
+            </comment>
+        </entity>
+        <entity jobid="cnr_syly">
+            <source>中广网</source>
+            <parser>com.netease.gather.clawerpic.parser.war.CrnMil</parser>
+            <comment>
+                <url><![CDATA[http://mil.cnr.cn/jszl/syly/]]></url>
+                <position>岁月留影</position>
+            </comment>
+        </entity>
+	</entitycontext>
+	
+	<entitycontext groupid="aviation">
+		<!-- 航空开始 -->
+		<entity jobid="carnoc_news">
+			<source>民航资源网</source>
+			<parser>com.netease.gather.clawerpic.parser.aviation.Carnoc</parser>
+			<comment>
+				<url><![CDATA[http://news.carnoc.com/cache/list/pic_list_3_1.html]]></url>
+				<position>图集新闻列表</position>
+			</comment>
+		</entity>
+		<entity jobid="can_news_hkzt">
+			<source>中国航空新闻网</source>
+			<parser>com.netease.gather.clawerpic.parser.aviation.CanNews</parser>
+			<comment>
+				<url><![CDATA[http://cannews.com.cn/piccenter/hkzt/]]></url>
+				<position>图集新闻列表</position>
+			</comment>
+		</entity>
+		<entity jobid="can_news_mhzt">
+			<source>中国航空新闻网</source>
+			<parser>com.netease.gather.clawerpic.parser.aviation.CanNews</parser>
+			<comment>
+				<url><![CDATA[http://cannews.com.cn/piccenter/mhzt/]]></url>
+				<position>图集新闻列表</position>
+			</comment>
+		</entity>
+		<entity jobid="can_news_fwzt">
+			<source>中国航空新闻网</source>
+			<parser>com.netease.gather.clawerpic.parser.aviation.CanNews</parser>
+			<comment>
+				<url><![CDATA[http://cannews.com.cn/piccenter/fwzt/]]></url>
+				<position>图集新闻列表</position>
+			</comment>
+		</entity>
+		<entity jobid="can_news_fxzt">
+			<source>中国航空新闻网</source>
+			<parser>com.netease.gather.clawerpic.parser.aviation.CanNews</parser>
+			<comment>
+				<url><![CDATA[http://cannews.com.cn/piccenter/fxzt/]]></url>
+				<position>图集新闻列表</position>
+			</comment>
+		</entity>
+				
+		<!-- 航空结束 -->
+	</entitycontext>
+</root>

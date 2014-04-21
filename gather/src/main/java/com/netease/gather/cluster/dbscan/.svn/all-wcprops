@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/649626/public/activity/common/gather/trunk/src/main/java/com/netease/gather/cluster/dbscan
+END
+Cluster.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/642972/public/activity/common/gather/trunk/src/main/java/com/netease/gather/cluster/dbscan/Cluster.java
+END
+ClusterAnalysis.java
+K 25
+svn:wc:ra_dav:version-url
+V 121
+/!svn/ver/649626/public/activity/common/gather/trunk/src/main/java/com/netease/gather/cluster/dbscan/ClusterAnalysis.java
+END
+DataPoint.java
+K 25
+svn:wc:ra_dav:version-url
+V 115
+/!svn/ver/642972/public/activity/common/gather/trunk/src/main/java/com/netease/gather/cluster/dbscan/DataPoint.java
+END

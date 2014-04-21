@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/!svn/ver/669091/public/activity/common/gather/trunk/src/main/config
+END
+nginx.conf
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/!svn/ver/669091/public/activity/common/gather/trunk/src/main/config/nginx.conf
+END
+resin.xml
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/!svn/ver/614411/public/activity/common/gather/trunk/src/main/config/resin.xml
+END

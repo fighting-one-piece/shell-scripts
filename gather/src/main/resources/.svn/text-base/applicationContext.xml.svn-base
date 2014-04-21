@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd">
+
+	<!-- 读取项目配置信息 -->
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer" p:location="classpath:project.properties"/>
+	
+	<!-- 配置自动扫描组件 -->
+	<context:component-scan base-package="com.netease.gather.dao"/>
+	<context:component-scan base-package="com.netease.gather.service"/>
+	
+	<bean id="facade" class="com.netease.gather.common.constants.Facade" autowire="byName" />
+
+	<!-- JDBC 数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+		<property name="driverClass" value="${jdbc.driverClassName}" />
+		<property name="jdbcUrl" value="${jdbc.url}" />
+		<property name="user" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+		<property name="maxPoolSize" value="${jdbc.maxPoolSize}" />
+		<property name="minPoolSize" value="${jdbc.minPoolSize}" />
+		<property name="initialPoolSize" value="${jdbc.initialPoolSize}" />
+		<property name="acquireIncrement" value="${jdbc.acquireIncrement}" />
+		<property name="maxIdleTime" value="${jdbc.maxIdleTime}" />
+		<property name="idleConnectionTestPeriod" value="${jdbc.idleConnectionTestPeriod}" />
+		<property name="autoCommitOnClose" value="true"/>
+        <property name="acquireRetryAttempts" value="30"/>
+        <property name="acquireRetryDelay" value="100"/>
+        <property name="breakAfterAcquireFailure" value="false"/>
+        <property name="testConnectionOnCheckout" value="true"/>
+	</bean>
+	
+	<!-- 事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+		<property name="nestedTransactionAllowed" value="true"/>
+		<property name="rollbackOnCommitFailure" value="true"></property>
+		<property name="validateExistingTransaction" value="true"/>
+	</bean>
+	
+	<!-- ibatis sqlmapclient -->
+	<bean id="sqlMapClient" class="org.springframework.orm.ibatis.SqlMapClientFactoryBean">
+		<property name="configLocation" value="classpath:sqlMapConfig.xml"/>
+		<property name="mappingLocations">
+			<value>classpath:/maps/*.xml</value>
+		</property>
+		<property name="dataSource" ref="dataSource" />
+		<property name="useTransactionAwareDataSource" value="true"/>
+	</bean>
+	
+	<!-- sqlmapclient 模板 -->
+	<bean id="sqlMapClientTemplate" class="org.springframework.orm.ibatis.SqlMapClientTemplate">
+		<property name="sqlMapClient" ref="sqlMapClient"/>
+	</bean>
+	
+	<!-- 配置支持注解方式声明事务 -->
+	<tx:annotation-driven transaction-manager="transactionManager"/>
+	
+	
+	<!-- 配置Memcached 缓存 这里使用了XMemcached -->
+	
+	<bean id="memcachedClientBuilderForNlp" class="net.rubyeye.xmemcached.XMemcachedClientBuilder">
+		<constructor-arg>
+			<list>
+				<bean class="java.net.InetSocketAddress">
+					<constructor-arg>
+						<value>${memcachedNlp1.host}</value>
+					</constructor-arg>
+					<constructor-arg>
+						<value>${memcached.port}</value>
+					</constructor-arg>
+				</bean>
+				<bean class="java.net.InetSocketAddress">
+					<constructor-arg>
+						<value>${memcachedNlp2.host}</value>
+					</constructor-arg>
+					<constructor-arg>
+						<value>${memcached.port}</value>
+					</constructor-arg>
+				</bean>
+			</list>
+		</constructor-arg>
+		<property name="connectionPoolSize" value="${memcached.connectionPoolSize}"/>
+		<property name="commandFactory">
+			<bean class="net.rubyeye.xmemcached.command.TextCommandFactory" />
+		</property>
+		
+		
+		<property name="sessionLocator">
+			<bean class="net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator" />
+		</property>
+
+		<property name="transcoder">
+			<bean class="net.rubyeye.xmemcached.transcoders.SerializingTranscoder" />
+		</property>
+	</bean>
+	
+	
+	<bean id="memcachedClientForNlp" factory-bean="memcachedClientBuilderForNlp" factory-method="build" destroy-method="shutdown">
+		<property name="opTimeout" value="2000"/>
+	</bean>
+	
+	
+	<bean id="sessionManager" class="com.netease.gather.common.web.sna.SessionManager">
+		<property name="cookieName" value="NetEaseMobile_001_gather_snid"/>
+		<property name="cookiePath" value="/"/>
+		<property name="storageHandler">
+			<bean class="com.netease.gather.common.web.sna.XMemcachedStorageHandler">
+				<property name="client" ref="memcachedClient"/>
+				<property name="keyPrefix" value="gather:"/>
+			</bean>
+		</property>
+	</bean>
+
+    <bean id="memcachedClientBuilder" class="net.rubyeye.xmemcached.XMemcachedClientBuilder">
+        <constructor-arg>
+            <list>
+                <bean class="java.net.InetSocketAddress">
+                    <constructor-arg>
+                        <value>${memcached1.host}</value>
+                    </constructor-arg>
+                    <constructor-arg>
+                        <value>${memcached.port}</value>
+                    </constructor-arg>
+                </bean>
+                <bean class="java.net.InetSocketAddress">
+                    <constructor-arg>
+                        <value>${memcached2.host}</value>
+                    </constructor-arg>
+                    <constructor-arg>
+                        <value>${memcached.port}</value>
+                    </constructor-arg>
+                </bean>
+            </list>
+        </constructor-arg>
+        <property name="connectionPoolSize" value="${memcached.connectionPoolSize}"/>
+        <property name="commandFactory">
+            <bean class="net.rubyeye.xmemcached.command.TextCommandFactory" />
+        </property>
+
+
+        <property name="sessionLocator">
+            <bean class="net.rubyeye.xmemcached.impl.KetamaMemcachedSessionLocator" />
+        </property>
+
+        <property name="transcoder">
+            <bean class="net.rubyeye.xmemcached.transcoders.SerializingTranscoder" />
+        </property>
+    </bean>
+
+
+    <bean id="memcachedClient" factory-bean="memcachedClientBuilder" factory-method="build" destroy-method="shutdown">
+        <property name="opTimeout" value="2000"/>
+    </bean>
+
+
+	<!-- 引入velocity -->
+	
+	<bean id="velocityViewRender" class="com.netease.gather.common.util.VelocityViewRender">
+		<property name="velocityEngine" ref="velocityEngine" />
+	</bean>
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="configLocation" value="classpath:velocity.properties" />
+	</bean>
+
+</beans>

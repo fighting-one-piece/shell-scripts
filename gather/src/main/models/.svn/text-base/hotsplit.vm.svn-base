@@ -1,0 +1,126 @@
+#set($guonei = [])
+#set($guoji = [])
+#set($shehui = [])
+#set($junshi = [])
+
+#set($zuqiu = [])
+#set($lanqiu = [])
+#set($zonghetiyu = [])
+
+#set($mingxing = [])
+#set($dianying = [])
+#set($dianshi = [])
+#set($yinyue = [])
+
+#set($hongguan = [])
+#set($chanjing = [])
+#set($zhengquan = [])
+#set($jinrong = [])
+
+#set($hulianwang = [])
+#set($tongxin = [])
+#set($ityejie = [])
+
+#set($showhots = [])
+#set($result = $showhots.addAll($hotlist))
+
+#if($hotlist.size()>0)
+    #foreach($hot in $hotlist)
+        #if($hot.col=='guonei')
+            #set($result = $guonei.add($hot))
+        #end
+        #if($hot.col=='guoji')
+            #set($result = $guoji.add($hot))
+        #end
+        #if($hot.col=='shehui')
+            #set($result = $shehui.add($hot))
+        #end
+        #if($hot.col=='junshi')
+            #set($result = $junshi.add($hot))
+            #set($result = $showhots.remove($hot))
+        #end
+        #if($hot.col=='guoneizuqiu'||$hot.col=='guojizuqiu')
+            #set($result = $zuqiu.add($hot))
+        #end
+        #if($hot.col=='cba'||$hot.col=='nba')
+            #set($result = $lanqiu.add($hot))
+        #end
+        #if($hot.col=='zonghetiyu'||$hot.col=='tianjing'||$hot.col=='taiqiu'||$hot.col=='saiche'||$hot.col=='paiqiu'||$hot.col=='wangyuping')
+            #set($result = $zonghetiyu.add($hot))
+        #end
+        #if($hot.col=='mingxing')
+            #set($result = $mingxing.add($hot))
+        #end
+        #if($hot.col=='dianying')
+            #set($result = $dianying.add($hot))
+        #end
+        #if($hot.col=='dianshi')
+            #set($result =  $dianshi.add($hot))
+        #end
+        #if($hot.col=='yinyue')
+            #set($result =  $yinyue.add($hot))
+        #end
+        #if($hot.col=='hongguan')
+            #set($result =  $hongguan.add($hot))
+        #end
+        #if($hot.col=='chanjing')
+            #set($result = $chanjing.add($hot))
+        #end
+        #if($hot.col=='zhengquan')
+            #set($result = $zhengquan.add($hot))
+        #end
+        #if($hot.col=='jinrong')
+            #set($result = $jinrong.add($hot))
+        #end
+        #if($hot.col=='hulianwang')
+            #set($result = $hulianwang.add($hot))
+        #end
+        #if($hot.col=='tongxin')
+            #set($result = $tongxin.add($hot))
+        #end
+        #if($hot.col=='ityejie')
+            #set($result = $ityejie.add($hot))
+        #end
+    #end
+#end
+
+#set($news = [$showhots,$guonei,$guoji,$shehui,$junshi])
+#set($sports = [$showhots,$zuqiu,$lanqiu,$zonghetiyu])
+#set($ent = [$showhots,$mingxing,$dianying,$dianshi,$yinyue])
+#set($finance = [$showhots,$hongguan,$chanjing,$zhengquan,$jinrong])
+#set($tech = [$showhots,$hulianwang,$tongxin,$ityejie])
+
+#set($newstit = ["新闻",'国内','国际','社会','军事'])
+#set($sportstit = ["体育",'足球','篮球','综合体育'])
+#set($enttit = ["娱乐",'明星','电影','电视','音乐'])
+#set($financetit = ["财经",'宏观','产经','证券','金融'])
+#set($techtit = ["科技",'互联网','通信','IT业界'])
+
+
+#if($!{channel}=="news")
+    #set($chname = "新闻")
+    #set($sub = $news)
+    #set($tit = $newstit)
+    #set($rurl = "http://news.163.com/special/realtime_hot_tag_news/")
+##        <iframe src="http://news.163.com/special/realtime_hot_tag_news/" style="Z-INDEX: 2; VISIBILITY: inherit; WIDTH: 100%; HEIGHT: 100%" frameborder="0" scrolling="no"></iframe>
+#elseif($!{channel}=="ent")
+    #set($chname = "娱乐")
+    #set($sub = $ent)
+    #set($tit = $enttit)
+    #set($rurl = "http://news.163.com/special/realtime_hot_tag_ent/")
+#elseif($!{channel}=="sports")
+    #set($chname = "体育")
+    #set($sub = $sports)
+    #set($tit = $sportstit)
+    #set($rurl = "http://news.163.com/special/realtime_hot_tag_sports/")
+#elseif($!{channel}=="finance")
+    #set($chname = "财经")
+    #set($sub = $finance)
+    #set($tit = $financetit)
+    #set($rurl = "http://news.163.com/special/realtime_hot_tag_money/")
+#elseif($!{channel}=="tech")
+    #set($chname = "科技")
+    #set($sub = $tech)
+    #set($tit = $techtit)
+    #set($rurl = "http://news.163.com/special/realtime_hot_tag_tech/")
+#end

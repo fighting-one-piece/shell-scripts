@@ -1,0 +1,23 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>新闻热点聚合</title>
+    <script charset="gb2312" src="http://img3.cache.netease.com/cnews/js/ntes_jslib_1.0.1.js" type="text/javascript"></script>
+</head>
+<body>
+<ul id="js-test-header">
+</ul>
+</body>
+<script type="text/javascript">
+    NTES.ajax.importJs("http://test.gather.163.com/news/special/header.json",function(){}, 'gbk');
+    window.smartheader = function (data) {
+        var html = [], len_max = 8, headerData = data.hotlist;
+        for (var i = 0, j = 0; i < (headerData.length>len_max?len_max:headerData.length); i++, j++) {
+            html.push('<li><a href="' + headerData[j].url + '">' + headerData[j].title + '</a></li>');
+        }
+        $("#js-test-header").innerHTML = html.join('');
+    }
+
+
+</script>
+</html>

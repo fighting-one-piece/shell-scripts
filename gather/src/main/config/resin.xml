@@ -1,0 +1,14 @@
+<server xmlns="http://caucho.com/ns/resin"
+        xmlns:resin="http://caucho.com/ns/resin/core">
+
+    <host id='go.gather.163.com'  root-directory=".">
+        <host-alias>gather.163.com'</host-alias>
+        <web-app id="/" document-directory="/home/workspace/gather/current-release/target/webapp">
+            <multipart-form upload-max='20M'/>
+        </web-app>
+        <access-log path='log/gather_access.log'>
+            <rollover-period>2W</rollover-period>
+        </access-log>
+    </host>
+
+</server>

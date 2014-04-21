@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="gbk" ?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+<sqlMap namespace="picture">
+
+	<typeAlias alias="picture" type="com.netease.gather.domain.Picture" />
+	
+	<sql id="_columns">
+		setid,photoid,url,description
+	</sql>
+
+    <insert id="insertOne" parameterClass="picture">
+        insert into picture
+        (setid,photoid,url,description)
+        values(#setid#, #photoid#, #url#, #description#)
+        <selectKey resultClass="long" type="post" keyProperty="autoid">
+            select last_insert_id() as value
+        </selectKey>
+    </insert>
+
+    <sql id="_where">
+        <dynamic prepend="where">
+            <isNotEmpty prepend="and" property="condition">
+                <![CDATA[ $condition$ ]]>
+            </isNotEmpty>
+            <isNotEmpty prepend="and" property="setid">
+                setid=#setid#
+            </isNotEmpty>
+        </dynamic>
+    </sql>
+
+    <select id="getListByParameters" parameterClass="Map" resultClass="picture">
+        select autoid,
+        <include refid="_columns"/>
+        from picture
+        <include refid="_where"/>
+        <isNotEmpty property="order">
+            <![CDATA[ order by $order$ ]]>
+        </isNotEmpty>
+        <dynamic prepend="limit">
+            <isNotEmpty property="start">#start#</isNotEmpty>
+            <isNotEmpty property="size">, #size#</isNotEmpty>
+        </dynamic>
+    </select>
+
+    <select id="getCountByParameters" parameterClass="Map" resultClass="java.lang.Integer">
+        select count(autoid)
+        from picture
+        <include refid="_where"/>
+    </select>
+
+    <select id="getOneByParameters" parameterClass="Map" resultClass="picture">
+        select autoid,
+        <include refid="_columns"/>
+        from picture
+        <include refid="_where"/>
+    </select>
+
+    <delete id="deleteSomeByParameters" parameterClass="Map">
+        delete
+        from picture
+        <include refid="_where"/>
+    </delete>
+
+</sqlMap>

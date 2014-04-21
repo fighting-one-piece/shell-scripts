@@ -1,0 +1,32 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>相关文章</title>
+    <link rel="stylesheet" type="text/css" href="/css/global.css">
+</head>
+<body>
+<div>
+
+    <div id = "title">文章标题：$title </div>
+    <div id = "title">文章关键字：$keywords </div>
+    <div class="wrapper clearfix">
+        <div class="center">
+            <div STYLE="text-align: left">
+                <ul>
+                    #if($docs.size()>0)
+                        #set($index = $docs.size() - 1)
+                        #foreach($i in [0..$!index])
+                            #set($doc = $!docs.get($i))
+                            <li style="margin-bottom:5px">
+                                #set($no = $i + 1)
+                                <span>[$no]</span><a href="$!{doc.url}" target="_blank"><span> #if($!{doc.isEarly}==1) <font color='red'>$!{doc.title}</font> #else $!{doc.title} #end</span></a><br>
+                            </li>
+                        #end
+                    #end
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

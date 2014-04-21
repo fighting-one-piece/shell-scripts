@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 90
+/!svn/ver/701182/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task
+END
+DeliverByClassify.java
+K 25
+svn:wc:ra_dav:version-url
+V 113
+/!svn/ver/701182/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/DeliverByClassify.java
+END
+pushCMS.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/676985/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/pushCMS.java
+END
+Claw.java
+K 25
+svn:wc:ra_dav:version-url
+V 100
+/!svn/ver/616646/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/Claw.java
+END
+GenNewsByChannelTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 116
+/!svn/ver/684846/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/GenNewsByChannelTask.java
+END
+genHot.java
+K 25
+svn:wc:ra_dav:version-url
+V 102
+/!svn/ver/668789/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/genHot.java
+END
+genSpecial.java
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/!svn/ver/694283/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/genSpecial.java
+END
+ClassifierTrain.java
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/!svn/ver/607219/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/ClassifierTrain.java
+END
+GenHMTNewsTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 110
+/!svn/ver/645411/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/GenHMTNewsTask.java
+END
+ClassifyTest.java
+K 25
+svn:wc:ra_dav:version-url
+V 108
+/!svn/ver/694387/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/ClassifyTest.java
+END
+Classify.java
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/!svn/ver/671914/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/Classify.java
+END
+GenNewsForHao123.java
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/!svn/ver/648096/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/GenNewsForHao123.java
+END
+SimClac.java
+K 25
+svn:wc:ra_dav:version-url
+V 103
+/!svn/ver/640891/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/SimClac.java
+END
+GenFinanceNewsTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 114
+/!svn/ver/684268/public/activity/common/gather/trunk/src/main/java/com/netease/gather/task/GenFinanceNewsTask.java
+END

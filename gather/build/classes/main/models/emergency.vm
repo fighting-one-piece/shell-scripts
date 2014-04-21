@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="gbk" />
+    <title>$!{cdocmap.title}_专题</title>
+    <meta name="keywords" content="" />
+    <meta name="description" content="$!{cdocmap.summary}" />
+    <link href="http://img1.cache.netease.com/cnews/css07/style.css" rel="stylesheet" />
+    <!--\#include virtual="/special/f2e/cnav2013_css.html"-->
+##    <link rel="stylesheet" type="text/css" href="http://img1.cache.netease.com/product/automatic/v1_0/css/automatic_subject.css" />
+    <link rel="stylesheet" type="text/css" href="http://img1.cache.netease.com/product/automatic/v1_2/css/automatic_subject.css" />
+    <!--\#include virtual="/special/ntes_common_model/ntes_js.html" -->
+##    <script charset="gb2312" src="http://img1.cache.netease.com/cnews/js/ntes_jslib_1.x.js" language="javascript" type="text/javascript"></script>
+    <base target="_blank" />
+</head>
+<body>
+<!--\#include virtual="/special/f2e/ntes_cnav_2013.html"-->
+<div class="wrapper">
+    <div class="area header header-vtext clearfix">
+        <div class="ui-title-column clearfix"><span class="title-column-icon"> </span><h3>头条</h3></div>
+        <h1 class="header-title"><a href="$!{cdocmap.url}#f=shead">$!{cdocmap.title}</a></h1>
+        <div class="header-comment"><a href="$!{cdocmap.tieurl}#f=stie"><span class="icon-comment"> </span><div class="header-comment-word">有<span class="ui-cOrange js-comment" data-boardid="$!{cdocmap.boardid}" data-docid="$!{cdocmap.docid}">$!{cdocmap.tienum}</span>人参与</div></a></div>
+        <div class="header-info"><span class="header-time">$!{cdocmap.ptime.toLocaleString()}</span></div>
+        <div class="header-digest">$!{cdocmap.summary}</div>
+    </div>
+    <div class="area clearfix">
+        <div class="area-main">
+            #if($photoset)
+                <!-- 图集开始 0001/$!{photoset.setid} -->
+                <div class="ui-title-column clearfix"><span class="title-column-icon"> </span><h3>图集</h3><h2><a href="$!{photoset.seturl}?f=spic#jlist_0000">$!{photoset.setname}</a></h2></div>
+                <div class="nph_wrap">
+                    <link href="http://img1.cache.netease.com/product/automatic/v1_0/css/automatic_subject_gallery.css" rel="stylesheet" type="text/css">
+                    <style type="text/css">#gallery$!{photoset.setid} .nph_photo_view{ height:450px;}</style>
+                    <div class="nph_gallery" id="gallery$!{photoset.setid}">
+                        <div class="nph_bg">
+                            <div id="modePhoto$!{photoset.setid}" class="nph_photo">
+                                <div class="nph_photo_view">
+                                    <div class="nph_cnt" id="photoView$!{photoset.setid}"><i></i><img src="http://img1.cache.netease.com/cnews/img/gallery11/bg06.png" id="photo$!{photoset.setid}" onerror="this.src=this.src.replace(/900x600_|900x600_/, '');" /></div>
+                                    <div class="nph_photo_prev"><a href="#" hidefocus="true" class="nph_btn_pphoto" id="photoPrev$!{photoset.setid}" target="_self"></a></div>
+                                    <div class="nph_photo_next"><a href="#" hidefocus="true" class="nph_btn_nphoto" id="photoNext$!{photoset.setid}" target="_self"></a></div>
+                                    <div class="nph_photo_loading" id="photoLoading$!{photoset.setid}"></div>
+                                    <div class="nph_photo_desc_wrap">
+                                        <div id="setInfo$!{photoset.setid}"><span id="photoType$!{photoset.setid}" class="nph_set_cur"><span class="nph_c_lh" id="photoIndex$!{photoset.setid}"></span>/$!{photoset.photos.size()}</span></div>
+                                        <div class="nph_photo_desc" id="photoDesc$!{photoset.setid}"></div>
+                                    </div>
+                                </div>
+                                <div class="nph_photo_thumb clearfix" id="scrl$!{photoset.setid}">
+                                    <div class="nph_scrl">
+                                        <div class="nph_scrl_thumb">
+                                            <div class="nph_scrl_main"><ul class="nph_list_thumb" id="thumb$!{photoset.setid}"></ul></div>
+                                            <div class="nph_scrl_bar clearfix">
+                                                <div class="nph_scrl_bd">
+                                                    <div class="nph_scrl_ct">
+                                                        <a href="" hidefocus="true" class="nph_btn_scrl" id="bar$!{photoset.setid}">
+                                                            <b class="nph_btn_lt"></b><b class="nph_btn_rt"></b><span class="nph_btn_bd"><span></span></span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="nph_scrl_prev"></div>
+                                        <div class="nph_scrl_next"></div>
+                                    </div>
+                                    <span class="nph_scrl_prev"><a href="" hidefocus="true" class="nph_btn_pscrl" id="scrlPrev$!{photoset.setid}"></a></span>
+                                    <span class="nph_scrl_next"><a href="" hidefocus="true" class="nph_btn_nscrl" id="scrlNext$!{photoset.setid}"></a></span>
+                                </div>
+                            </div>
+                            <!-- 图片数据 start-->
+                            <textarea class="hidden" id="photoList$!{photoset.setid}">
+                                #set($photoids = '')
+                                #foreach($photo in $!{photoset.photos})
+                                    #set($index = $velocityCount - 1)
+                                    #set($photoids = $photoids +$!{photo.photoid} + ',')
+                                    <li data-index="$index">
+                                        <a href="#p=$!{photo.photoid}" hidefocus="true"><img data-id="$!{photoset.setid}" src="$!{photo.simg}" alt="" /></a>
+                                        <h2></h2>
+                                        <p>$!{photo.note}</p>
+                                        <i title="img">$!{photo.img}</i>
+                                        <i title="timg">$!{photo.timg}</i>
+                                    </li>
+                                #end
+
+                            </textarea>
+                            <!-- 图片数据 end-->
+                            <input type="hidden" value="$photoids" name="imgIds" />
+                        </div>
+                    </div>
+                    <script type="text/javascript" language="javascript" src="http://img1.cache.netease.com/cnews/js/ntes_jslib_1.x.js" charset="gb2312"></script>
+                    <script type="text/javascript" language="javascript" src="http://img1.cache.netease.com/cnews/js/ntes_jslib_ui_0.x.js" charset="gb2312"></script>
+                    <script type="text/javascript" language="javascript" src="http://img1.cache.netease.com/cnews/img/gallery11/ntes_ui_scroll.js" charset="gb2312"></script>
+                    <script type="text/javascript" language="javascript" src="http://img1.cache.netease.com/product/automatic/v1_0/js/automatic_subject_gallery.min.js" charset="gb2312"></script>
+                    <script type="text/javascript">//<![CDATA[
+                    NTES.ready(function ($) { new nph.Gallery({ sn: "$!{photoset.setid}", photoViewMode: 0  }); });
+                    //]]></script>
+                </div>
+                <!-- 图集结束 0001/$!{photoset.setid} -->
+            #end
+
+            <div class="js-main-nav main-nav clearfix">
+                <div class="nav-item current"><div class="nav-title">最新</div><div class="nav-en">LATEST</div></div>
+                <span class="nav-parting"> </span>
+                <div class="nav-item"><div class="nav-title">最热</div><div class="nav-en">HOTEST</div></div>
+            </div>
+
+            <div class="js-main-content main-content dom-display">
+                <div class="js-list content-item normal current">
+                    #if($docs_new.size()>0)
+                        #foreach($doc in $docs_new)
+                            <div class="js-list-item list-item clearfix #if($velocityCount==1)list-item-first#end #if($velocityCount==10)list-item-last#end" style="display:none;">
+                                #if(${doc.picurl})
+                                    <div class="item-img">
+                                        <a href="$!{doc.url}#f=snew" title="$!{doc.title}"><img class="item-img-source js_imgSource" src="http://img1.cache.netease.com/product/tag/image/blank.png" data-src="http://timge6.126.net/image?gif=0&quality=80&h=154&url=$!{doc.picurl}" alt="$!{doc.title}" /></a>
+                                    </div>
+                                #end
+                                <div class="item-content">
+                                    <div class="item-hd">
+                                        <div class="item-hd-more"><a href="$!{doc.url}#f=snew" data-pub-time="$!{doc.ptime.getTime()}" class="item-delta js-delta">刚刚发布</a></div>
+                                        <h2 class="item-title"><a href="$!{doc.url}#f=snew">$!{doc.title}</a></h2>
+                                    </div>
+                                    <div class="item-info"><span class="item-time">$!{doc.ptime.toLocaleString()}</span></div>
+                                    <div class="item-digest">$!{doc.summary}</div>
+                                </div>
+                            </div>
+                        #end
+                    #end
+                </div>
+                <div class="js-list content-item normal">
+                    #if($docs_hot.size()>0)
+                        #foreach($doc in $docs_hot)
+                            <div class="js-list-item list-item clearfix #if($velocityCount==1)list-item-first#end #if($velocityCount==10)list-item-last#end" style="display:none;">
+                                #if(${doc.picurl})
+                                    <div class="item-img">
+                                        <a href="$!{doc.url}#f=shot" title="$!{doc.title}"><img class="item-img-source js_imgSource" src="http://img1.cache.netease.com/product/tag/image/blank.png" data-src="http://timge6.126.net/image?gif=0&quality=80&h=154&url=$!{doc.picurl}" alt="$!{doc.title}" /></a>
+                                    </div>
+                                #end
+                                <div class="item-content">
+                                    <div class="item-hd">
+                                        <div class="item-hd-more"><a class="item-comment #if($!{doc.tienum}>=100000)item-comment-big #elseif($!{doc.tienum}>=10000)item-comment-mid #end" href="${doc.tieurl}#f=shot">${doc.tienum}</a></div>
+                                        <h2 class="item-title"><a href="$!{doc.url}#f=shot">$!{doc.title}</a></h2>
+                                    </div>
+                                    <div class="item-info"><span class="item-time">$!{doc.ptime.toLocaleString()}</span></div>
+                                    <div class="item-digest">$!{doc.summary}</div>
+                                </div>
+                            </div>
+                        #end
+                    #end
+                </div>
+            </div>
+            <div class="main-pages js-main-pages">
+                #if($!beforePage)
+                    <a href="$!beforePage" class="pages-ctrl"  target="_self">&lt;</a>
+                #else
+                    <span class="pages-ctrl pages-disabled">&lt;</span>
+                #end
+                #foreach($page in $!{pageList})
+                    #if($!page.pageUrl == $!currentPage)
+                        <span href="#" class="current">$!page.pageNum</span>
+                    #else
+                        <a href="$!page.pageUrl" target="_self">$!page.pageNum</a>
+                    #end
+                #end
+                #if($!afterPage)
+                    <a href="$!afterPage" class="pages-ctrl" target="_self">&gt;</a>
+                #else
+                    <span class="pages-ctrl pages-disabled">&gt;</span>
+                #end
+            </div>
+        </div>
+        <div class="area-side">
+            #if($!relread)
+                <div class="side-title side-title-pb"><h3>相关热点</h3></div>
+                <div class="side-content">
+                    <ul class="side-list list-cube">
+                        #foreach($refTag in $!relread)
+                            <li><a title="$!{refTag.name}" href="$!{refTag.url}#f=srele">$!{refTag.name}</a></li>
+                        #end
+                    </ul>
+                </div>
+            #end
+            <div class="side-title side-title-pb"><h3>热点排行</h3></div>
+##            <div class="side-content">
+##                <ol class="side-list list-rank">
+##                    #foreach($hot in $!{hotlist})
+##                        #if($velocityCount<=3)
+##                            <li><span class="num num-hot">$velocityCount</span><a href="$hot.url">$hot.title</a></li>
+##                        #else
+##                            <li><span class="num">$velocityCount</span><a href="$hot.url">$hot.title</a></li>
+##                        #end
+##                    #end
+##                ##                <li><span class="num num-hot">1</span><a href="#">习近平会见俄罗斯总统普京</a></li>
+##                ##                <li><span class="num num-hot">2</span><a href="#">第4次出访：东南亚两国 行程约1.5万公里</a></li>
+##                ##                <li><span class="num num-hot">3</span><a href="#">习近平会见泰国总理英拉</a></li>
+##                ##                <li><span class="num">4</span><a href="#">习近平会见印尼副总统布迪奥诺</a></li>
+##                ##                <li><span class="num"> 5</span><a href="#">习近平会见印尼国会议长马祖基</a></li>
+##                ##                <li><span class="num">6</span><a href="#">习近平会见马来西亚最高元首哈利姆</a></li>
+##                ##                <li><span class="num">7</span><a href="#">习近平会见马来西亚最高元首哈利姆</a></li>
+##                ##                <li><span class="num">8</span><a href="#">习近平会见马来西亚最高元首哈利姆</a></li>
+##                ##                <li><span class="num">9</span><a href="#">习近平会见马来西亚最高元首哈利姆</a></li>
+##                ##                <li><span class="num">10</span><a href="#">习近平会见马来西亚最高元首哈利姆</a></li>
+##                </ol>
+##            </div>
+            <!--\#include virtual="/smart/$!{channel}hotrank.html"-->
+        </div>
+    </div>
+    <span class="endblank"></span>
+    <!-- 页脚 -->
+    <!--\#include virtual="/special/f2e/ntes_foot_2013.html"-->
+</div><!--end wrapper-->
+<script src="http://img1.cache.netease.com/product/automatic/v1_0/js/automatic_subject.min.js" charset="gb2312"></script>
+<!-- 统计代码 -->
+<!--\#include virtual="/special/0001jt/Nielsen.html"-->
+</body>
+</html>
