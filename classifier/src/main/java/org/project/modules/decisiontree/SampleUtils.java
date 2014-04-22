@@ -20,6 +20,20 @@ public class SampleUtils {
 		
 	}
 	
+	/** 转换为样本对象*/
+	public static Sample convert(String line) {
+		if(null == line || "".equals(line)) return null;
+		Sample sample = new Sample();
+		StringTokenizer tokenizer = new StringTokenizer(line);
+		sample.setCategory(tokenizer.nextToken());
+		while (tokenizer.hasMoreTokens()) {
+			String v = tokenizer.nextToken();
+			String[] entry = v.split(":");
+			sample.setAttribute(entry[0], entry[1]);
+		}
+		return sample;
+	}
+	
 	/**
 	 *	转换为分类的样本集，返回Map：分类 -> 属于该分类的样本的列表
 	 **/
