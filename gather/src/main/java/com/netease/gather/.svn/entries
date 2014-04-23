@@ -1,70 +1,0 @@
-10
-
-dir
-701852
-https://svn.ws.netease.com/public/activity/common/gather/trunk/src/main/java/com/netease/gather
-https://svn.ws.netease.com
-
-
-
-2014-04-03T06:25:34.687340Z
-701820
-ykxu
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-f0e22b3a-c9a0-4bf3-8542-66ea2b9420c2
-
-classifier
-dir
-
-clawer
-dir
-
-clawerpic
-dir
-
-cluster
-dir
-
-common
-dir
-
-dao
-dir
-
-domain
-dir
-
-extapi
-dir
-
-nlp
-dir
-
-service
-dir
-
-summary
-dir
-
-task
-dir
-
-theard
-dir
-
-web
-dir
-

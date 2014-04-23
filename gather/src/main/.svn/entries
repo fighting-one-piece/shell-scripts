@@ -1,58 +1,0 @@
-10
-
-dir
-701852
-https://svn.ws.netease.com/public/activity/common/gather/trunk/src/main
-https://svn.ws.netease.com
-
-
-
-2014-04-03T06:25:34.687340Z
-701820
-ykxu
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-f0e22b3a-c9a0-4bf3-8542-66ea2b9420c2
-
-classify_new
-dir
-
-config
-dir
-
-config_test
-dir
-
-filters
-dir
-
-html
-dir
-
-java
-dir
-
-models
-dir
-
-resources
-dir
-
-shell
-dir
-
-webapp
-dir
-

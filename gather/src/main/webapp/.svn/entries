@@ -1,37 +1,0 @@
-10
-
-dir
-701852
-https://svn.ws.netease.com/public/activity/common/gather/trunk/src/main/webapp
-https://svn.ws.netease.com
-
-
-
-2013-12-12T05:18:03.071674Z
-650958
-ykxu
-
-
-svn:special svn:externals svn:needs-lock
-
-
-
-
-
-
-
-
-
-
-
-f0e22b3a-c9a0-4bf3-8542-66ea2b9420c2
-
-META-INF
-dir
-
-WEB-INF
-dir
-
-error
-dir
-
