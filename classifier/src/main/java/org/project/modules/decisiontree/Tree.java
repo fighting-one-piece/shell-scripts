@@ -1,5 +1,8 @@
 package org.project.modules.decisiontree;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,5 +34,38 @@ public class Tree {
 
 	public Set<Object> getAttributeValues() {
 		return children.keySet();
+	}
+	
+	public void read(DataInput dataInput) {
+		
+	}
+	
+	public void readFields(DataInput dataInput) throws IOException {
+		int attribute_len = dataInput.readInt();
+		byte[] buff = new byte[4098];
+		dataInput.readFully(buff, 0, attribute_len);
+		
+	}
+	
+	public void write(DataOutput dataOutput) {
+		
+	}
+	
+	public void writeFields(DataOutput dataOutput) throws IOException {
+		dataOutput.writeInt(attribute.length());
+		dataOutput.writeBytes(attribute);
+		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+			String key = String.valueOf(entry.getKey());
+			dataOutput.writeInt(key.length());
+			dataOutput.writeBytes(key);
+			Object value = entry.getValue();
+			if (!(value instanceof Tree)) {
+				String v = String.valueOf(value);
+				dataOutput.writeInt(v.length());
+				dataOutput.writeBytes(v);
+			} else {
+				((Tree) value).writeFields(dataOutput);
+			}
+		}
 	}
 }

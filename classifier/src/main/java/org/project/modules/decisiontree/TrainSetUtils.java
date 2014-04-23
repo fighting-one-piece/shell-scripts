@@ -24,9 +24,11 @@ public class TrainSetUtils {
 	}
 	
 	public static void main(String[] args) {
-		int row = 10;
-		String tranSetPath = "d:\\trainset_extract.txt";
-		extractTrainSet(tranSetPath, row);
+		int number = 100;
+		String trainSetPath = "d:\\trainset_extract_format.txt";
+//		extractTrainSet(trainSetPath, number);
+		extractRandomTrainSet(trainSetPath, number);
+//		formatTrainSet(trainSetPath);
 	}
 	
 	/**
@@ -72,7 +74,46 @@ public class TrainSetUtils {
 		return new Object[]{randomAttributes, SampleUtils.convert(randomDatas, randomAttributes)};
 	}
 	
-	public static void extractTrainSet(String trainSetPath, int number) {
+	public static void extractRandomTrainSet(String trainSetPath, int number) {
+		List<String> lines = new ArrayList<String>();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(
+					new FileInputStream(new File(trainSetPath))));
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				lines.add(line);
+				line = reader.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (null != reader) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		int length = lines.size();
+		System.out.println("lines length: " + length);
+		if (number > length) {
+			write(trainSetPath, lines);
+		} else {
+			int i = 0; 
+			Random random = new Random();
+			List<String> result = new ArrayList<String>();
+			while (i < number) {
+				int index = random.nextInt(length);
+				result.add(lines.get(index));
+				i++;
+			}
+			write(trainSetPath, result);
+		}
+	}
+	
+	public static void extractTrainSet(String trainSetPath, int numPerCategory) {
 		List<String> lines = new ArrayList<String>();
 		BufferedReader reader = null;
 		try {
@@ -86,7 +127,7 @@ public class TrainSetUtils {
 				Integer value = map.get(category);
 				value = null == value ? 1 : value + 1;
 				map.put(category, value);
-				if (value <= number) {
+				if (value <= numPerCategory) {
 					System.out.println(line);
 					lines.add(line);
 				}
@@ -103,6 +144,14 @@ public class TrainSetUtils {
 				}
 			}
 		}
+		write(trainSetPath, numPerCategory, lines);
+	}
+	
+	public static void write(String trainSetPath, List<String> lines) {
+		write(trainSetPath, lines.size(), lines);
+	}
+	
+	public static void write(String trainSetPath, int number, List<String> lines) {
 		int lastIndex = trainSetPath.lastIndexOf(".");
 		trainSetPath.substring(0, lastIndex);
 		trainSetPath.substring(lastIndex);
@@ -163,4 +212,86 @@ public class TrainSetUtils {
 		}
 	}
 	
+	@SuppressWarnings("unchecked")
+	public static void formatTrainSet(String trainSetPath) {
+		Object[] trainSet = readTrainSet(trainSetPath);
+		String[] attributes = (String[]) trainSet[0];
+		System.out.println("attribute length: " + attributes.length);
+		List<Sample> samples = (List<Sample>) trainSet[1];
+		List<String> lines = new ArrayList<String>();
+		for (Sample sample : samples) {
+			Map<String, Object> sampleAttrs = sample.getAttributes();
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0, attrLen = attributes.length; i < attrLen; i++) {
+				sb.append(sampleAttrs.containsKey(attributes[i]) ?
+						sampleAttrs.get(attributes[i]) : 0).append(",");
+			}
+			sb.append(sample.getCategory());
+			lines.add(sb.toString());
+		}
+		int lastIndex = trainSetPath.lastIndexOf(".");
+		trainSetPath.substring(0, lastIndex);
+		trainSetPath.substring(lastIndex);
+		StringBuilder file = new StringBuilder();
+		file.append(trainSetPath.substring(0, lastIndex)).append("_")
+			.append("format").append(trainSetPath.substring(lastIndex));
+		BufferedWriter writer = null;
+		try {
+			writer = new BufferedWriter(new OutputStreamWriter(
+					new FileOutputStream(new File(file.toString()))));
+			for (String line : lines) {
+				writer.write(line);
+				writer.newLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (null != writer) {
+				try {
+					writer.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
+	public static Object[] readTrainSet(String trainSetPath) {
+		Set<String> attributes = new HashSet<String>();
+		List<Sample> sampleList = new ArrayList<Sample>();
+		BufferedReader reader = null;
+		try {
+			reader = new BufferedReader(new InputStreamReader(
+				new FileInputStream(new File(trainSetPath))));
+			Sample sample = null;
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				StringTokenizer tokenizer = new StringTokenizer(line);
+				sample = new Sample();
+				sample.setCategory(tokenizer.nextToken());
+				while (tokenizer.hasMoreTokens()) {
+					String value = tokenizer.nextToken();
+					String[] entry = value.split(":");
+					sample.setAttribute(entry[0], entry[1]);
+					if (!attributes.contains(entry[0])) {
+						attributes.add(entry[0]);
+					}
+				}
+				sampleList.add(sample);
+				line = reader.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (null != reader) {
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return new Object[]{attributes.toArray(new String[0]), sampleList};
+	}
 }
