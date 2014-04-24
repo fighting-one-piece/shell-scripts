@@ -10,7 +10,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class DecisionTreeMR {
+public class TreeMR {
 
 	public static void main(String[] args) {
 		Configuration configuration = new Configuration();
@@ -23,18 +23,18 @@ public class DecisionTreeMR {
 				System.exit(2);
 			}
 			
-			Job job = new Job(configuration, "Decision Tree");
-			job.setJarByClass(DecisionTreeMR.class);
+			Job job = new Job(configuration, "Tree");
+			job.setJarByClass(TreeMR.class);
 			
 			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
 			FileOutputFormat.setOutputPath(job, new Path(inputArgs[1]));
 			
 			job.setOutputKeyClass(LongWritable.class);
-			job.setOutputValueClass(MapperOutput.class);
+			job.setOutputValueClass(StringOutput.class);
 			
-			job.setMapperClass(DecisionTreeMapper.class);
-			job.setNumReduceTasks(0); // No Reducers
-//			job.setReducerClass(DecisionTreeReducer.class);
+			job.setMapperClass(TreeMapper.class);
+			job.setNumReduceTasks(2); 
+			job.setReducerClass(TreeReducer.class);
 			
 			job.setInputFormatClass(TextInputFormat.class);
 			job.setOutputFormatClass(SequenceFileOutputFormat.class);

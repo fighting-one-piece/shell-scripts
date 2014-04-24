@@ -11,6 +11,10 @@ public class MapperOutput implements Writable, Cloneable {
 	
 	private Tree tree = null;
 	
+	public MapperOutput() {
+		
+	}
+	
 	public MapperOutput(Tree tree) {
 		this.tree = tree;
 	}
@@ -23,7 +27,7 @@ public class MapperOutput implements Writable, Cloneable {
 	public void readFields(DataInput dataInput) throws IOException {
 		boolean isReadTree = dataInput.readBoolean();
 		if (isReadTree) {
-			
+			tree = Tree.read(dataInput);
 		}
 	}
 
@@ -31,7 +35,7 @@ public class MapperOutput implements Writable, Cloneable {
 	public void write(DataOutput dataOutput) throws IOException {
 		dataOutput.writeBoolean(null != tree);
 		if (null != tree) {
-			
+			tree.write(dataOutput);
 		}
 	}
 
