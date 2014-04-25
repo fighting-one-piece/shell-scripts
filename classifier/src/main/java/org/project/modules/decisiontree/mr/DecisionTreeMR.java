@@ -11,6 +11,23 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 public class DecisionTreeMR {
+	
+	private static void configureJob(Job job) {
+		job.setJarByClass(DecisionTreeMR.class);
+		
+		job.setMapOutputKeyClass(LongWritable.class);
+		job.setMapOutputValueClass(MapperOutput.class);
+		
+		job.setOutputKeyClass(LongWritable.class);
+		job.setOutputValueClass(MapperOutput.class);
+		
+		job.setMapperClass(DecisionTreeMapper.class);
+		job.setNumReduceTasks(0); // No Reducers
+//		job.setReducerClass(DecisionTreeReducer.class);
+		
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+	}
 
 	public static void main(String[] args) {
 		Configuration configuration = new Configuration();
@@ -24,20 +41,12 @@ public class DecisionTreeMR {
 			}
 			
 			Job job = new Job(configuration, "Decision Tree");
-			job.setJarByClass(DecisionTreeMR.class);
 			
-			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
+			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
+//			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
 			FileOutputFormat.setOutputPath(job, new Path(inputArgs[1]));
 			
-			job.setOutputKeyClass(LongWritable.class);
-			job.setOutputValueClass(MapperOutput.class);
-			
-			job.setMapperClass(DecisionTreeMapper.class);
-			job.setNumReduceTasks(0); // No Reducers
-//			job.setReducerClass(DecisionTreeReducer.class);
-			
-			job.setInputFormatClass(TextInputFormat.class);
-			job.setOutputFormatClass(SequenceFileOutputFormat.class);
+			configureJob(job);
 			
 			System.out.println(job.waitForCompletion(true) ? 0 : 1);
 		} catch (Exception e) {
