@@ -1,4 +1,4 @@
-package org.project.modules.decisiontree;
+package org.project.modules.decisiontree.original;
 
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
+import org.project.modules.decisiontree.original.DecisionTree;
+import org.project.modules.decisiontree.original.Sample;
+import org.project.modules.decisiontree.original.SampleUtils;
 import org.project.modules.utils.ShowUtils;
 
 public class DecisionTreeTest {

@@ -5,7 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
-import org.project.modules.decisiontree.Tree;
+import org.project.modules.decisiontree.original.Tree;
 
 public class MapperOutput implements Writable, Cloneable {
 	

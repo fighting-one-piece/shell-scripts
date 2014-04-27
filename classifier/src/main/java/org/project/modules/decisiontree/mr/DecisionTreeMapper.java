@@ -13,9 +13,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.project.modules.decisiontree.DecisionTree;
-import org.project.modules.decisiontree.Sample;
-import org.project.modules.decisiontree.Tree;
+import org.project.modules.decisiontree.original.DecisionTree;
+import org.project.modules.decisiontree.original.Sample;
+import org.project.modules.decisiontree.original.Tree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.project.modules.randomforest;
+package org.project.modules.decisiontree.data;
 
 public class DataSet {
 

@@ -1,8 +1,11 @@
-package org.project.modules.decisiontree;
+package org.project.modules.decisiontree.original;
 
 import java.util.List;
 
 import org.junit.Test;
+import org.project.modules.decisiontree.original.RandomForest;
+import org.project.modules.decisiontree.original.Sample;
+import org.project.modules.decisiontree.original.SampleUtils;
 import org.project.modules.utils.ShowUtils;
 
 public class RandomForestTest {

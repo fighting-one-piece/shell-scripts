@@ -1,12 +1,12 @@
-package org.project.modules.decisiontree;
+package org.project.modules.decisiontree.data;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /** 
- ** 样本，包含多个属性和一个指明样本所属分类的分类值 
+ ** 样本实例，包含多个属性和一个指明样本所属分类的分类值 
  **/
-public class Sample {
+public class Instance {
 
 	private Object category = null;
 	private Map<String, Object> attributes = null;

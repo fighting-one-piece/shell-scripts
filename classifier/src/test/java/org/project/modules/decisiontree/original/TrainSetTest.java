@@ -1,4 +1,4 @@
-package org.project.modules.decisiontree;
+package org.project.modules.decisiontree.original;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.project.modules.decisiontree.original.SampleUtils;
 
 public class TrainSetTest {
 
