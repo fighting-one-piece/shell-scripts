@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -27,22 +26,20 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.decisiontree.data.Data;
 import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.Instance;
+import org.project.modules.decisiontree.node.ForestNode;
 import org.project.modules.decisiontree.node.TreeNode;
 import org.project.modules.utils.DFSUtils;
-import org.project.modules.utils.ShowUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class DecisionTreeClassifyMR {
+public class RandomForestClassifyMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(DecisionTreeClassifyMR.class);
+		job.setJarByClass(RandomForestClassifyMR.class);
 		
 		job.setOutputKeyClass(IntWritable.class);
 		job.setOutputValueClass(Text.class);
 		
-		job.setMapperClass(DecisionTreeClassifyMapper.class);
-		job.setNumReduceTasks(0); 
+		job.setMapperClass(RandomForestClassifyMapper.class);
+		job.setNumReduceTasks(0);
 		
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
@@ -61,10 +58,9 @@ public class DecisionTreeClassifyMR {
 			DistributedCache.addCacheFile(
 					new Path(inputArgs[2]).toUri(), configuration);
 			
-			Job job = new Job(configuration, "Decision Tree");
+			Job job = new Job(configuration, "Random Forest");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
-//			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
 			FileOutputFormat.setOutputPath(job, new Path(inputArgs[1]));
 			
 			configureJob(job);
@@ -76,11 +72,8 @@ public class DecisionTreeClassifyMR {
 	}
 }
 
-class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text, 
-	IntWritable, Text> {
-	
-	private static final Logger log = LoggerFactory.getLogger(DecisionTreeClassifyMapper.class);
-	
+class RandomForestClassifyMapper extends Mapper<LongWritable, Text, IntWritable, Text> {
+
 	private List<Instance> instances = new ArrayList<Instance>();
 	
 	private Set<String> attributes = new HashSet<String>();
@@ -90,7 +83,7 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 			InterruptedException {
 		super.setup(context);
 	}
-
+	
 	@Override
 	protected void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException {
@@ -112,27 +105,23 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 		SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePaths[0], conf);
 		LongWritable key = (LongWritable) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
 		BuilderMapperOutput value = new BuilderMapperOutput();
+		List<BuilderMapperOutput> outputs = new ArrayList<BuilderMapperOutput>();
 		while (reader.next(key, value)) {
+			outputs.add(value);
+			value = new BuilderMapperOutput();
+		}
+		List<TreeNode> treeNodes = new ArrayList<TreeNode>();
+		for (BuilderMapperOutput output : outputs) {
+			TreeNode treeNode = output.getTreeNode();
+			if (null  == treeNode) System.out.println("treeNode is null");
+			treeNodes.add(treeNode);
 		}
 		Data data = new Data(attributes.toArray(new String[0]), instances);
-		TreeNode treeNode = value.getTreeNode();
-		if (null  == treeNode) System.out.println("treeNode is null");
-		treeNode.print(this, 0, null);
-		System.out.println("treeNode att: " + treeNode.getAttribute());
-		ShowUtils.print(data.getAttributes());
-		for(Instance ins : data.getInstances()) {
-			System.out.print(ins.getCategory() + "-->");
-			for (Map.Entry<String, Object> entry : ins.getAttributes().entrySet()) {
-				System.out.print(entry.getKey() + ":" + entry.getValue());
-				System.out.print(",");
-			}
-			System.out.println();
-		}
-		Object[] results = (Object[]) treeNode.classify(data);
-		System.out.println("results 0: " + results[0]);
+		ForestNode forest = new ForestNode(treeNodes);
+		Object[] results = (Object[]) forest.classify(data);
 		for (int i = 0, len = results.length; i < len; i++) {
 			context.write(new IntWritable(i), new Text(String.valueOf(results[i])));
 		}
-		log.info("DecisionTreeClassifyMapper cleanup finish");
 	}
+	
 }

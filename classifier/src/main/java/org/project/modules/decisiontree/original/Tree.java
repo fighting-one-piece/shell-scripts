@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.Writable;
+import org.project.modules.utils.JSONUtils;
 
 /**
  ** 决策树（非叶结点），决策树中的每个非叶结点都引导了一棵决策树 *
@@ -79,7 +80,7 @@ public class Tree implements Writable, Serializable {
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		String jsonData = new String(buff);
-		return (Tree) JSONUtils.parseJsonData(jsonData, Tree.class);
+		return (Tree) JSONUtils.json2Object(jsonData, Tree.class);
 	}
 	
 	@Override
@@ -88,7 +89,7 @@ public class Tree implements Writable, Serializable {
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		String jsonData = new String(buff);
-		Tree temp = (Tree) JSONUtils.parseJsonData(jsonData, Tree.class);
+		Tree temp = (Tree) JSONUtils.json2Object(jsonData, Tree.class);
 		this.attribute = temp.getAttribute();
 		this.children = temp.getChildren();
 	}
