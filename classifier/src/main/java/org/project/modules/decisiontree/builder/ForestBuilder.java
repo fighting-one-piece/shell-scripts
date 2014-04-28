@@ -41,6 +41,7 @@ public class ForestBuilder implements Builder {
 			handleFuture(futures, results);
 			resultsLen = results.size();
 		}
+		pools.shutdown();
 		return results;
 	}
 	

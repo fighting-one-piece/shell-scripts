@@ -136,4 +136,32 @@ public class JSONUtils {
 		return object;
 	}
 	
+	public static Object parseJsonTreeData(String jsonData, Class<?> clazz) {
+		JSONObject jsonObject = JSONObject.fromObject(jsonData);
+		Object object = null;
+		try {
+			object = clazz.newInstance();
+			for (Field field : clazz.getDeclaredFields()) {
+				String name = field.getName();
+				if (!jsonObject.containsKey(name)) {
+					continue;
+				}
+				field.setAccessible(true);
+				Object value = jsonObject.get(name);
+				System.out.println(String.class.isAssignableFrom(field.getType()));
+				if (!String.class.isAssignableFrom(field.getType())) {
+					System.out.println("value: " + value);
+					value = parseJsonData(String.valueOf(value), clazz);
+				} 
+				field.set(object, value);
+				field.setAccessible(false);
+			}
+		} catch (InstantiationException e) {
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return object;
+	}
+	
 }

@@ -2,17 +2,18 @@ package org.project.modules.decisiontree.data;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /** 数据处理类*/
 public class DataHandler {
-
+	
 	/**
-	 * 文本转化为样本实例
+	 * 抽取文本信息
 	 * @param line 文本
 	 * @return
 	 */
-	public static Instance convert(String line) {
+	public static Instance extract(String line) {
 		StringTokenizer tokenizer = new StringTokenizer(line);
 		Instance instance = new Instance();
 		instance.setCategory(tokenizer.nextToken());
@@ -20,6 +21,27 @@ public class DataHandler {
 			String value = tokenizer.nextToken();
 			String[] entry = value.split(":");
 			instance.setAttribute(entry[0], entry[1]);
+		}
+		return instance;
+	}
+	
+	/**
+	 * 抽取文本信息
+	 * @param line 文本
+	 * @param attributes 特征属性集
+	 * @return
+	 */
+	public static Instance extract(String line, Set<String> attributes) {
+		StringTokenizer tokenizer = new StringTokenizer(line);
+		Instance instance = new Instance();
+		instance.setCategory(tokenizer.nextToken());
+		while (tokenizer.hasMoreTokens()) {
+			String value = tokenizer.nextToken();
+			String[] entry = value.split(":");
+			instance.setAttribute(entry[0], entry[1]);
+			if (!attributes.contains(entry[0])) {
+				attributes.add(entry[0]);
+			}
 		}
 		return instance;
 	}

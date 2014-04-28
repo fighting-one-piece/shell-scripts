@@ -1,20 +1,13 @@
 package org.project.modules.decisiontree;
 
-import java.util.List;
-
 import org.project.modules.decisiontree.builder.Builder;
 import org.project.modules.decisiontree.builder.DecisionTreeC45Builder;
-import org.project.modules.decisiontree.builder.ForestBuilder;
 import org.project.modules.decisiontree.data.Data;
-import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.DataLoader;
-import org.project.modules.decisiontree.node.ForestNode;
 import org.project.modules.decisiontree.node.TreeNode;
 import org.project.modules.utils.ShowUtils;
 
-public class RandomForest {
-	
-	private int randomNum = 1;
+public class DecisionTree {
 	
 	private String trainFilePath = null;
 	
@@ -22,26 +15,16 @@ public class RandomForest {
 	
 	private Builder treeBuilder = null;
 	
-	public RandomForest() {
+	public DecisionTree() {
 		
 	}
 	
-	public RandomForest(int randomNum, String trainFilePath, 
-			String testFilePath, Builder treeBuilder) {
-		this.randomNum = randomNum;
+	public DecisionTree(String trainFilePath, String testFilePath, Builder treeBuilder) {
 		this.trainFilePath = trainFilePath;
 		this.testFilePath = testFilePath;
 		this.treeBuilder = treeBuilder;
 	}
 	
-	public int getRandomNum() {
-		return randomNum;
-	}
-
-	public void setRandomNum(int randomNum) {
-		this.randomNum = randomNum;
-	}
-
 	public String getTrainFilePath() {
 		return trainFilePath;
 	}
@@ -66,27 +49,20 @@ public class RandomForest {
 		this.treeBuilder = treeBuilder;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void run() {
-		Builder forestBuilder = new ForestBuilder(randomNum, treeBuilder);
 		Data data = DataLoader.load(trainFilePath);
-		System.out.println("data attributes len: " + data.getAttributes().length);
-		List<TreeNode> treeNodes = (List<TreeNode>) forestBuilder.build(data);
+		TreeNode tree = (TreeNode) treeBuilder.build(data);
 		Data testData = DataLoader.load(testFilePath);
-		System.out.println("testData attributes len: " + testData.getAttributes().length);
-		DataHandler.fill(testData.getInstances(), data.getAttributes() , 0);
-		ForestNode forestNode = new ForestNode(treeNodes);
-		Object[] results = (Object[]) forestNode.classify(testData);
+		Object[] results = (Object[]) tree.classify(testData);
 		ShowUtils.print(results);
 	}
 
 	public static void main(String[] args) {
-		int randomNum = 10;
 		Builder treeBuilder = new DecisionTreeC45Builder();
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		String testFilePath = "d:\\trainset_extract_1.txt";
-		RandomForest randomForest = new RandomForest(randomNum, 
-				trainFilePath, testFilePath, treeBuilder);
-		randomForest.run();
+		DecisionTree decisionTree = new DecisionTree(trainFilePath, 
+				testFilePath, treeBuilder);
+		decisionTree.run();
 	}
 }

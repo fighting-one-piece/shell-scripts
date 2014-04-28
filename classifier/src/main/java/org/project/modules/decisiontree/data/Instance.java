@@ -51,5 +51,4 @@ public class Instance {
 		this.weight = weight;
 	}
 	
-	
 }

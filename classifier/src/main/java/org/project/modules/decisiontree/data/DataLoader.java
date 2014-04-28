@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 
@@ -22,21 +21,9 @@ public class DataLoader {
 		try {
 			reader = new BufferedReader(new InputStreamReader(
 				new FileInputStream(new File(path))));
-			Instance instance = null;
 			String line = reader.readLine();
 			while (!("").equals(line) && null != line) {
-				StringTokenizer tokenizer = new StringTokenizer(line);
-				instance = new Instance();
-				instance.setCategory(tokenizer.nextToken());
-				while (tokenizer.hasMoreTokens()) {
-					String value = tokenizer.nextToken();
-					String[] entry = value.split(":");
-					instance.setAttribute(entry[0], entry[1]);
-					if (!attributes.contains(entry[0])) {
-						attributes.add(entry[0]);
-					}
-				}
-				instances.add(instance);
+				instances.add(DataHandler.extract(line, attributes));
 				line = reader.readLine();
 			}
 		} catch (Exception e) {
@@ -73,7 +60,7 @@ public class DataLoader {
 		Set<Instance> instanceSet = new HashSet<Instance>();
 		int instanceSet_len = instanceSet.size();
 		while (instanceSet_len < randomDataCount) {
-			instanceSet.add(instances.get(random.nextInt(instanceSet_len)));
+			instanceSet.add(instances.get(random.nextInt(instances.size())));
 			instanceSet_len = instanceSet.size();
 		}
 		return new Data(randomAttributeSet.toArray(new String[0]), 
