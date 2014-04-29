@@ -15,21 +15,18 @@ public class AdaboostAlgorithm {
 		} else {
 			return null;
 		}
-
 		// 为每条数据的权重赋初值
 		ArrayList<Double> dataWeightSet = new ArrayList<Double>();
 		for (int i = 0; i < dataSet.size(); i++) {
 			dataWeightSet.add(1.0 / (double) dataSet.size());
 		}
-
 		// 存储每个弱分类器的权重
 		ArrayList<Double> classifierWeightSet = new ArrayList<Double>();
-
-		// 存储每个弱分类器
+		// 存储每个弱分类器(特征属性的权重)
 		ArrayList<ArrayList<Double>> weakClassifierSet = new ArrayList<ArrayList<Double>>();
 
 		for (int i = 0; i < T; i++) {
-			// 计算弱分类器
+			// 计算弱分类器 获取特征属性的相应权重
 			ArrayList<Double> sensorWeightVector = pa.getWeightVector(dataSet,
 					dataWeightSet);
 			weakClassifierSet.add(sensorWeightVector);
@@ -42,7 +39,6 @@ public class AdaboostAlgorithm {
 				double result = 0;
 				for (int k = 0; k < dataDimension - 1; k++) {
 					result += dataSet.get(j).get(k) * sensorWeightVector.get(k);
-
 				}
 				result += sensorWeightVector.get(dataDimension - 1);
 				if (result < 0) { // 说明预测错误
@@ -62,18 +58,15 @@ public class AdaboostAlgorithm {
 				weakClassifierSet.add(sensorWeightVector);
 				break;
 			}
-
 			// 更新数据集中每条数据的权重并归一化
 			double dataWeightSum = 0;
 			for (int j = 0; j < dataSet.size(); j++) {
-				dataWeightSet.set(
-						j,
+				dataWeightSet.set(j,
 						dataWeightSet.get(j)
-								* Math.pow(
-										Math.E,
-										(-1) * 0.5
-												* Math.log((1 - error) / error)
-												* cllassifyResult.get(j))); // 按照http://wenku.baidu.com/view/49478920aaea998fcc220e98.html，更新的权重少除一个常数
+								* Math.pow(Math.E,(-1) * 0.5 * 
+										Math.log((1 - error) / error) * 
+											cllassifyResult.get(j))); 
+				// 按照http://wenku.baidu.com/view/49478920aaea998fcc220e98.html，更新的权重少除一个常数
 				dataWeightSum += dataWeightSet.get(j);
 			}
 			for (int j = 0; j < dataSet.size(); j++) {
@@ -85,7 +78,6 @@ public class AdaboostAlgorithm {
 			classifierWeightSet.add(currentWeight);
 			System.out.println("classifier weight: " + currentWeight);
 		}
-
 		res.setClassifierWeightSet(classifierWeightSet);
 		res.setWeakClassifierSet(weakClassifierSet);
 		return res;

@@ -103,7 +103,7 @@ class RandomForestClassifyMapper extends Mapper<LongWritable, Text, IntWritable,
 		Path[] seqFilePaths = DFSUtils.getPathFiles(fs, path);
 		
 		SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePaths[0], conf);
-		LongWritable key = (LongWritable) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
+		IntWritable key = (IntWritable) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
 		BuilderMapperOutput value = new BuilderMapperOutput();
 		List<BuilderMapperOutput> outputs = new ArrayList<BuilderMapperOutput>();
 		while (reader.next(key, value)) {
@@ -113,7 +113,6 @@ class RandomForestClassifyMapper extends Mapper<LongWritable, Text, IntWritable,
 		List<TreeNode> treeNodes = new ArrayList<TreeNode>();
 		for (BuilderMapperOutput output : outputs) {
 			TreeNode treeNode = output.getTreeNode();
-			if (null  == treeNode) System.out.println("treeNode is null");
 			treeNodes.add(treeNode);
 		}
 		Data data = new Data(attributes.toArray(new String[0]), instances);

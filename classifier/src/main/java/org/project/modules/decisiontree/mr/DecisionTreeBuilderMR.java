@@ -23,8 +23,6 @@ import org.project.modules.decisiontree.data.Data;
 import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.Instance;
 import org.project.modules.decisiontree.node.TreeNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DecisionTreeBuilderMR {
 	
@@ -68,8 +66,6 @@ public class DecisionTreeBuilderMR {
 class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text, 
 	LongWritable, BuilderMapperOutput> {
 	
-	private static final Logger log = LoggerFactory.getLogger(DecisionTreeBuilderMapper.class);
-	
 	private List<Instance> instances = new ArrayList<Instance>();
 	
 	private Set<String> attributes = new HashSet<String>();
@@ -91,11 +87,14 @@ class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text,
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
 		Data data = new Data(attributes.toArray(new String[0]), instances);
+		System.out.println("builder map data attribute len: " + data.getAttributes().length);
+		System.out.println("builder map data instances len: " + data.getInstances().size());
 		Builder builder = new DecisionTreeC45Builder();
-		TreeNode treeNode = (TreeNode) builder.build(data);
-		
-		BuilderMapperOutput output = new BuilderMapperOutput(treeNode);
-		context.write(new LongWritable(1), output);
-		log.info("DecisionTreeMapper cleanup finish");
+		Object object = builder.build(data);
+		System.out.println("builder object: " + object);
+		if (object instanceof TreeNode) {
+			BuilderMapperOutput output = new BuilderMapperOutput((TreeNode) object);
+			context.write(new LongWritable(1), output);
+		}
 	}
 }

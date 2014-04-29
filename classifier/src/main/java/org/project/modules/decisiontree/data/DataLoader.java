@@ -34,35 +34,36 @@ public class DataLoader {
 		return new Data(attributes.toArray(new String[0]), instances);
 	}
 	
-	public static Data LoadRandom(String path) {
-		return loadRandom(load(path));
+	public static Data LoadRandom(String path, int attributeNum) {
+		return loadRandom(load(path), attributeNum);
 	}
 	
-	public static Data loadRandom(Data data) {
+	public static Data loadRandom(Data data, int attributeNum) {
 		String[] attributes = data.getAttributes();
 		List<Instance> instances = data.getInstances();
 		Random random = new Random();
-		int minRandomAttributeCount = attributes.length / 30;
-		int randomAttributeCount = minRandomAttributeCount + 
-				random.nextInt(attributes.length - minRandomAttributeCount);
-		while (randomAttributeCount <= 1) {
-			randomAttributeCount = random.nextInt(attributes.length);
-		}
+//		int minRandomAttributeCount = attributes.length / 30;
+//		int randomAttributeCount = minRandomAttributeCount + 
+//				random.nextInt(attributes.length + 1 - minRandomAttributeCount);
+//		while (randomAttributeCount < 3) {
+//			System.out.println("randomAttributeCount: " + randomAttributeCount);
+//			randomAttributeCount = random.nextInt(attributes.length);
+//		}
 		Set<String> randomAttributeSet = new HashSet<String>();
-		while (randomAttributeSet.size() != randomAttributeCount) {
+		while (randomAttributeSet.size() < attributeNum) {
 			randomAttributeSet.add(attributes[random.nextInt(attributes.length)]);
 		}
 		int instance_len = instances.size();
-		int minRandomDataCount = instance_len / 20;
+		int minRandomDataCount = (instance_len / 3) * 2;
 		int randomDataCount = minRandomDataCount + 
 				random.nextInt(instance_len - minRandomDataCount);
 		//不存在相同的数据，即便存在重复数据整体应该也没有什么影响
 		Set<Instance> instanceSet = new HashSet<Instance>();
-		int instanceSet_len = instanceSet.size();
-		while (instanceSet_len < randomDataCount) {
+		while (instanceSet.size() < randomDataCount) {
 			instanceSet.add(instances.get(random.nextInt(instances.size())));
-			instanceSet_len = instanceSet.size();
 		}
+		System.out.println("random attribute len: " + randomAttributeSet.size());
+		System.out.println("random instances len: " + instanceSet.size());
 		return new Data(randomAttributeSet.toArray(new String[0]), 
 				new ArrayList<Instance>(instanceSet));
 	}

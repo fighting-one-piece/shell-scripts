@@ -26,7 +26,6 @@ public class BuilderMapperOutput implements Writable, Cloneable {
 	@Override
 	public void readFields(DataInput dataInput) throws IOException {
 		boolean isReadTree = dataInput.readBoolean();
-		System.out.println("isReadTree: " + isReadTree);
 		if (isReadTree) {
 			treeNode = TreeNode.read(dataInput);
 		}

@@ -3,6 +3,7 @@ package org.project.modules.decisiontree;
 import org.project.modules.decisiontree.builder.Builder;
 import org.project.modules.decisiontree.builder.DecisionTreeC45Builder;
 import org.project.modules.decisiontree.data.Data;
+import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.DataLoader;
 import org.project.modules.decisiontree.node.TreeNode;
 import org.project.modules.utils.ShowUtils;
@@ -53,6 +54,7 @@ public class DecisionTree {
 		Data data = DataLoader.load(trainFilePath);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
 		Data testData = DataLoader.load(testFilePath);
+		DataHandler.fill(testData.getInstances(), data.getAttributes() , 0);
 		Object[] results = (Object[]) tree.classify(testData);
 		ShowUtils.print(results);
 	}

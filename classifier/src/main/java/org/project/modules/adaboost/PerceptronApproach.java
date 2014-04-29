@@ -12,11 +12,8 @@ public class PerceptronApproach {
 	private static final int T = 100; // 最大迭代次数
 
 	/**
-	 * 
-	 * @param dataSet
-	 *            ：数据集
-	 * @param weight
-	 *            ：每条数据的权重
+	 * @param dataSet：数据集
+	 * @param weight：每条数据的权重
 	 * @return
 	 */
 	public ArrayList<Double> getWeightVector(
@@ -41,6 +38,7 @@ public class PerceptronApproach {
 				for (int j = 0; j < dataLength; j++) {
 					result += dataSet.get(z).get(j) * sensorWeightVector.get(j);
 				}
+				//如果当前记录是错误的则进行相应属性的调整
 				if (result > 0) {
 					sign++;
 					if (sign >= dataSet.size())

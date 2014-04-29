@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -78,19 +77,16 @@ public class TreeNode extends Node implements Writable, Serializable {
 		Object[] result = new Object[length];
 		for (int i = 0; i < length; i++) {
 			result[i] = classify(instances[i]);
-			System.out.println(i + "--->"+ result[i]);
 		}
 		return result;
 	}
 	
 	public Object classify(Instance instance) {
 		Object attributeValue = instance.getAttribute(attribute);
-		System.out.println("attributeValue: " + attributeValue);
 		if (null == attributeValue) return null;
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			if (attributeValue.equals(entry.getKey())) {
 				Object value = entry.getValue();
-				System.out.println("value: " + value);
 				if (value instanceof TreeNode) {
 					return ((TreeNode) value).classify(instance);
 				} else {
@@ -106,7 +102,6 @@ public class TreeNode extends Node implements Writable, Serializable {
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		String jsonData = new String(buff);
-		System.out.println(jsonData);
 		return (TreeNode) json2TreeNode(jsonData);
 	}
 	
@@ -175,39 +170,6 @@ public class TreeNode extends Node implements Writable, Serializable {
 				}
 				treeNode.setChildren(children);
 				return treeNode;
-			} 
-		} catch (Exception e) {
-			e.printStackTrace();
-		} 
-		return null;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static Object a(JSONObject jsonObject, Class<?> clazz) {
-		try {
-			if (jsonObject.containsKey("children")) {
-				Object object = clazz.newInstance();
-				Field field = clazz.getDeclaredField("attribute");
-				field.setAccessible(true);
-				Object value = jsonObject.get("attribute");
-				field.set(object, value);
-				field.setAccessible(false);
-				field = clazz.getDeclaredField("children");
-				field.setAccessible(true);
-				JSONObject v = (JSONObject) jsonObject.get("children");
-				Map<Object, Object> map = new HashMap<Object, Object>();
-				Set<Map.Entry<Object, Object>> entries = v.entrySet();
-				for (Map.Entry<Object, Object> entry : entries) {
-					Object entry_v = entry.getValue();
-					if (JSONObject.class.isAssignableFrom(entry_v.getClass())) {
-						map.put(entry.getKey(), a((JSONObject) entry_v, clazz));
-					} else {
-						map.put(entry.getKey(), entry.getValue());
-					}
-				}
-				field.set(object, map);
-				field.setAccessible(false);
-				return object;
 			} 
 		} catch (Exception e) {
 			e.printStackTrace();

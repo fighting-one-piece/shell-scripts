@@ -46,11 +46,12 @@ public class RandomForestBuilderMR {
 		try {
 			String[] inputArgs = new GenericOptionsParser(
 						configuration, args).getRemainingArgs();
-			if (inputArgs.length != 3) {
+			if (inputArgs.length != 4) {
 				System.out.println("error");
 				System.exit(2);
 			}
 			configuration.set("forest.tree.number", inputArgs[2]);
+			configuration.set("random.attribute.number", inputArgs[3]);
 			
 			Job job = new Job(configuration, "Random Forest");
 			
@@ -69,6 +70,8 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, IntWritable, 
 
 	private int treeNum = 0;
 	
+	private int attributeNum = 0;
+	
 	private List<Instance> instances = new ArrayList<Instance>();
 	
 	private Set<String> attributes = new HashSet<String>();
@@ -78,6 +81,9 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, IntWritable, 
 		super.setup(context);
 		Configuration conf = context.getConfiguration();
 		treeNum = Integer.parseInt(conf.get("forest.tree.number", "10"));
+		attributeNum = Integer.parseInt(conf.get("random.attribute.number", "1"));
+		System.out.println("treeNum: " + treeNum);
+		System.out.println("attributeNum: " + attributeNum);
 	}
 	
 	@Override
@@ -91,12 +97,15 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, IntWritable, 
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
 		Data data = new Data(attributes.toArray(new String[0]), instances);
+		System.out.println("data attribute len: " + data.getAttributes().length);
+		System.out.println("data instances len: " + data.getInstances().size());
 		for (int i = 0; i < treeNum; i++) {
-			Data randomData = DataLoader.loadRandom(data);
+			Data randomData = DataLoader.loadRandom(data, attributeNum);
 			Builder builder = new DecisionTreeC45Builder();
 			TreeNode treeNode = (TreeNode) builder.build(randomData);
 			BuilderMapperOutput output = new BuilderMapperOutput(treeNode);
 			context.write(new IntWritable(i), output);
+			System.out.println(i + " tree build success");
 		}
 	}
 }

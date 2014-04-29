@@ -14,13 +14,16 @@ import org.project.modules.decisiontree.node.TreeNode;
 
 public class ForestBuilder implements Builder {
 	
-	private int random = 0;
+	private int treeNum = 0;
+	
+	private int attributeNum = 0;
 	
 	private Builder builder = null;
 	
-	public ForestBuilder(int random, Builder builder) {
-		this.random = random;
+	public ForestBuilder(int treeNum, Builder builder, int attributeNum) {
+		this.treeNum = treeNum;
 		this.builder = builder;
+		this.attributeNum = attributeNum;
 	}
 
 	@Override
@@ -28,8 +31,8 @@ public class ForestBuilder implements Builder {
 		ExecutorService pools = Executors.newFixedThreadPool(
 				Runtime.getRuntime().availableProcessors());
 		List<Future<TreeNode>> futures = new ArrayList<Future<TreeNode>>();
-		for (int i = 0; i < random; i++) {
-			DecisionCallable callable = new DecisionCallable(data, builder);
+		for (int i = 0; i < treeNum; i++) {
+			DecisionCallable callable = new DecisionCallable(data, builder, attributeNum);
 			futures.add(pools.submit(callable));
 		}
 		System.out.println("futures size: " + futures.size());
@@ -66,16 +69,19 @@ class DecisionCallable implements Callable<TreeNode> {
 	
 	private Data data = null;
 	
+	private int attributeNum = 0;
+	
 	private Builder builder = null;
 	
-	public DecisionCallable(Data data, Builder builder) {
+	public DecisionCallable(Data data, Builder builder, int attributeNum) {
 		this.data = data;
 		this.builder = builder;
+		this.attributeNum = attributeNum;
 	}
 
 	@Override
 	public TreeNode call() throws Exception {
-		Data randomData = DataLoader.loadRandom(data);
+		Data randomData = DataLoader.loadRandom(data, attributeNum);
 		Object object = builder.build(randomData);
 		return null != object ? (TreeNode) object : null;
 	}
