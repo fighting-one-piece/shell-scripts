@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.project.modules.decisiontree.original.RandomForest;
 import org.project.modules.decisiontree.original.Sample;
 import org.project.modules.decisiontree.original.SampleUtils;
-import org.project.modules.utils.ShowUtils;
+import org.project.utils.ShowUtils;
 
 public class RandomForestTest {
 	

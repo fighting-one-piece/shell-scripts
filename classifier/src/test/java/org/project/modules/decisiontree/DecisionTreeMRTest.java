@@ -11,8 +11,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.project.modules.decisiontree.mr.BuilderMapperOutput;
-import org.project.modules.utils.DFSUtils;
-import org.project.modules.utils.ShowUtils;
+import org.project.utils.DFSUtils;
+import org.project.utils.ShowUtils;
 
 public class DecisionTreeMRTest {
 	

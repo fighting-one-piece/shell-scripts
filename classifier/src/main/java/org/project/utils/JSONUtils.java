@@ -1,4 +1,4 @@
-package org.project.modules.utils;
+package org.project.utils;
 
 import java.lang.reflect.Field;
 import java.util.Collection;

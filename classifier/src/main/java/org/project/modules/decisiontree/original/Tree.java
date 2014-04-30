@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.Writable;
-import org.project.modules.utils.JSONUtils;
+import org.project.utils.JSONUtils;
 
 /**
  ** 决策树（非叶结点），决策树中的每个非叶结点都引导了一棵决策树 *

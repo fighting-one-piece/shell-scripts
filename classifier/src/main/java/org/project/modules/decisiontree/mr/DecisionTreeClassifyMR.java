@@ -28,8 +28,8 @@ import org.project.modules.decisiontree.data.Data;
 import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.Instance;
 import org.project.modules.decisiontree.node.TreeNode;
-import org.project.modules.utils.DFSUtils;
-import org.project.modules.utils.ShowUtils;
+import org.project.utils.DFSUtils;
+import org.project.utils.ShowUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,4 +1,4 @@
-package org.project.modules.utils;
+package org.project.utils;
 
 import java.math.BigDecimal;
 import java.math.MathContext;

@@ -10,7 +10,7 @@ import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.DataLoader;
 import org.project.modules.decisiontree.node.ForestNode;
 import org.project.modules.decisiontree.node.TreeNode;
-import org.project.modules.utils.ShowUtils;
+import org.project.utils.ShowUtils;
 
 public class RandomForest {
 	

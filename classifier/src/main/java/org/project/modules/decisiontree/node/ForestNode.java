@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.project.modules.decisiontree.data.Data;
 import org.project.modules.decisiontree.data.Instance;
-import org.project.modules.utils.ShowUtils;
+import org.project.utils.ShowUtils;
 
 public class ForestNode extends Node {
 

@@ -28,7 +28,7 @@ import org.project.modules.decisiontree.data.DataHandler;
 import org.project.modules.decisiontree.data.Instance;
 import org.project.modules.decisiontree.node.ForestNode;
 import org.project.modules.decisiontree.node.TreeNode;
-import org.project.modules.utils.DFSUtils;
+import org.project.utils.DFSUtils;
 
 public class RandomForestClassifyMR {
 	
