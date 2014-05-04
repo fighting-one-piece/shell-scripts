@@ -14,5 +14,13 @@ public class AbstractMatrix implements Matrix {
 		this.columns = columns;
 	}
 	
+	@Override
+	public int getRows() {
+		return this.rows;
+	}
 	
+	@Override
+	public int getColumns() {
+		return this.columns;
+	}
 }

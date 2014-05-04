@@ -37,12 +37,12 @@ public abstract class AbstractVector<T> implements Vector<T> {
 		return new Iterable<Element<T>>() {
 			@Override
 			public Iterator<Element<T>> iterator() {
-				return iterator();
+				return iteratorImpl();
 			}
 		};
 	}
 	
-	protected abstract Iterator<Element<T>> iterator();
+	protected abstract Iterator<Element<T>> iteratorImpl();
 	
 	@Override
 	public void set(int index, T value) {
