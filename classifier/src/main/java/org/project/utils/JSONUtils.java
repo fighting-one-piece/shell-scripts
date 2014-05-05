@@ -6,6 +6,7 @@ import java.util.Collection;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
 import net.sf.json.util.PropertyFilter;
 
 public class JSONUtils {
@@ -26,7 +27,10 @@ public class JSONUtils {
 							JSONObject.fromObject(object).toString();
 		}
 		JsonConfig jsonConfig = new JsonConfig();
-		jsonConfig.setIgnoreDefaultExcludes(false);
+		jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);  
+		jsonConfig.setIgnoreDefaultExcludes(true);  
+		jsonConfig.setAllowNonStringKeys(true);  
+
 		jsonConfig.setJsonPropertyFilter(new PropertyFilter() {
 			@Override
 			public boolean apply(Object arg0, String arg1, Object arg2) {
