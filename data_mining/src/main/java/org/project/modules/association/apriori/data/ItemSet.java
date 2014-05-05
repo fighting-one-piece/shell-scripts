@@ -1,5 +1,6 @@
 package org.project.modules.association.apriori.data;
 
+import java.util.Iterator;
 import java.util.TreeSet;
 
 public class ItemSet {
@@ -42,6 +43,25 @@ public class ItemSet {
 
 	public void setSupport(int support) {
 		this.support = support;
+	}
+	
+	public boolean isMerge(ItemSet other) {
+		if (null == other || other.getItem().size() != getItem().size()) {
+			return false;
+		}
+		Iterator<Object> iIter = getItem().iterator();
+		Iterator<Object> oIter = other.getItem().iterator();
+		int size = getItem().size();
+		while (iIter.hasNext() && oIter.hasNext() && --size > 0) {
+			if (!iIter.next().equals(oIter.next())) {
+				return false;
+			}
+		}
+		return !(getItem().last().equals(other.getItem().last()));
+	}
+	
+	public void merge(Object value) {
+		getItem().add(value);
 	}
 	
 	
