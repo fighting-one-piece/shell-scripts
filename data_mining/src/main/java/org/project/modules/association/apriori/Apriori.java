@@ -23,18 +23,15 @@ public class Apriori {
 	private int frequencyIndex;
 
 	public Apriori() {
-		maxFrequency = new TreeSet();
-		itemCounts = counts();// 初始化1候选集的大小
-		// 初始化其他两个
-		for (int i = 0; i < itemCounts; i++) {
-			frequencySet[i] = new TreeSet();
-			candidateSet[i] = new TreeSet();
-		}
-		candidateSet[0] = candidate;
+		init();
 	}
 
 	public Apriori(String[] transSet) {
 		this.trainSet = transSet;
+		init();
+	}
+	
+	private void init() {
 		maxFrequency = new TreeSet();
 		itemCounts = counts();// 初始化1候选集的大小
 		// 初始化其他两个
