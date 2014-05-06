@@ -21,6 +21,8 @@ public class AprioriBuilder {
 	
 	private List<Set<Object>> records = new ArrayList<Set<Object>>();
 	
+	private List<List<ItemSet>> candidateItemSet = new ArrayList<List<ItemSet>>();
+	
 	private List<List<ItemSet>> frequencyItemSet = new ArrayList<List<ItemSet>>();
 	
 	static {
@@ -38,7 +40,8 @@ public class AprioriBuilder {
 	}
 	
 	private List<ItemSet> frequency_1_itemset() {
-		List<ItemSet> results = new ArrayList<ItemSet>();
+		List<ItemSet> frequencyItem = new ArrayList<ItemSet>();
+		List<ItemSet> candidateItem = new ArrayList<ItemSet>();
 		Map<Object, Integer> candidates = new HashMap<Object, Integer>();
 		for (Instance instance : data.getInstances()) {
 			Set<Object> valueSet = new TreeSet<Object>();
@@ -52,11 +55,32 @@ public class AprioriBuilder {
 		System.out.println("frequency_1_itemset: ");
 		ShowUtils.print(candidates);
 		for (Map.Entry<Object, Integer> entry : candidates.entrySet()) {
+			candidateItem.add(new ItemSet(entry.getKey(), entry.getValue()));
 			if (entry.getValue() > minSupport) {
-				results.add(new ItemSet(entry.getKey(), entry.getValue()));
+				frequencyItem.add(new ItemSet(entry.getKey(), entry.getValue()));
 			}
 		}
-		return results;
+		candidateItemSet.add(candidateItem);
+		frequencyItemSet.add(frequencyItem);
+		return frequencyItem;
+	}
+	
+	private void frequency_k_itemset(int k) {
+		Iterator<ItemSet> f1 = frequencyItemSet.get(k - 2).iterator();
+		Iterator<ItemSet> f2 = frequencyItemSet.get(0).iterator();
+		List<ItemSet> candidateItem = new ArrayList<ItemSet>();
+		while (f1.hasNext()) {
+			ItemSet item1 = f1.next();
+			while (f2.hasNext()) {
+				ItemSet item2 = f2.next();
+				ItemSet temp = new ItemSet(item1.getItem());
+				if (!temp.getItem().contains(item2.getItem())) {
+					temp.getItem().add(item2.getItem());
+					candidateItem.add(temp);
+				}
+			}
+		}
+		candidateItemSet.add(candidateItem);
 	}
 	
 	private void frequency_itemset(List<ItemSet> items) {
@@ -155,33 +179,29 @@ public class AprioriBuilder {
 		return frequencyItemSet;
 	}
 	
+	private List<List<ItemSet>> getCandidateItemSet() {
+		return candidateItemSet;
+	}
+	
 	public static void main(String[] args) {
 		AprioriBuilder ab = new AprioriBuilder();
 //		ab.build();
 //		System.out.println(ab.calculate_support("莴苣", "豆奶", "尿布"));
-		ab.frequency_itemset(ab.frequency_1_itemset());
-		List<List<ItemSet>> fiss = ab.getFrequencyItemSet();
-		System.out.println(fiss.size());
-		for (List<ItemSet> fis : fiss) {
-			System.out.println("------");
-			for (ItemSet is : fis) {
-				System.out.println(is.getItem());
-			}
-			System.out.println("------");
-		}
-//		TreeSet<Object> item = new TreeSet<Object>();
-//		item.add("A");
-//		item.add("B");
-//		item.add("C");		
-//		item.add("D");		
-//		ItemSet itemSet = new ItemSet(item);
-//		List<List<Object>> subItem = ab.subItemSet(itemSet);
-//		for (List<Object> sis : subItem) {
-//			System.out.println("----");
-//			for (Object si : sis) {
-//				System.out.println(si);
+//		ab.frequency_itemset(ab.frequency_1_itemset());
+//		List<List<ItemSet>> fiss = ab.getFrequencyItemSet();
+//		System.out.println(fiss.size());
+//		for (List<ItemSet> fis : fiss) {
+//			System.out.println("------");
+//			for (ItemSet is : fis) {
+//				System.out.println(is.getItem());
 //			}
-//			System.out.println("----");
+//			System.out.println("------");
 //		}
+		ab.frequency_1_itemset();
+		ShowUtils.print(ab.getCandidateItemSet());
+		ShowUtils.print(ab.getFrequencyItemSet());
+		ab.frequency_k_itemset(2);
+		ShowUtils.print(ab.getCandidateItemSet());
+		ShowUtils.print(ab.getFrequencyItemSet());
 	}
 }

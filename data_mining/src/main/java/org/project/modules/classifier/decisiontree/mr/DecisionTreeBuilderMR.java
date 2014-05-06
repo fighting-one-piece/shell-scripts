@@ -87,6 +87,7 @@ class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text,
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
 		Data data = new Data(attributes.toArray(new String[0]), instances);
+		DataHandler.fill(data, 0);
 		System.out.println("builder map data attribute len: " + data.getAttributes().length);
 		System.out.println("builder map data instances len: " + data.getInstances().size());
 		Builder builder = new DecisionTreeC45Builder();
