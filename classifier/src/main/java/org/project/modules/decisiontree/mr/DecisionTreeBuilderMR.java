@@ -91,10 +91,11 @@ class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text,
 		System.out.println("builder map data instances len: " + data.getInstances().size());
 		Builder builder = new DecisionTreeC45Builder();
 		Object object = builder.build(data);
-		System.out.println("builder object: " + object);
 		if (object instanceof TreeNode) {
 			BuilderMapperOutput output = new BuilderMapperOutput((TreeNode) object);
+			System.out.println("write start");
 			context.write(new LongWritable(1), output);
+			System.out.println("write end");
 		}
 	}
 }

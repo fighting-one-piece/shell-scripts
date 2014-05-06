@@ -1,11 +1,11 @@
-package org.project.modules.decisiontree;
+package org.project.modules.classifier.decisiontree;
 
-import org.project.modules.decisiontree.builder.Builder;
-import org.project.modules.decisiontree.builder.DecisionTreeC45Builder;
-import org.project.modules.decisiontree.data.Data;
-import org.project.modules.decisiontree.data.DataHandler;
-import org.project.modules.decisiontree.data.DataLoader;
-import org.project.modules.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.builder.Builder;
+import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
+import org.project.modules.classifier.decisiontree.data.Data;
+import org.project.modules.classifier.decisiontree.data.DataHandler;
+import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.utils.ShowUtils;
 
 public class DecisionTree {
@@ -52,10 +52,10 @@ public class DecisionTree {
 
 	public void run() {
 		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
-		tree.print(tree, 0, null);
 		Data testData = DataLoader.load(testFilePath);
-		DataHandler.fill(testData.getInstances(), data.getAttributes() , 0);
+		DataHandler.fill(testData.getInstances(), data.getPurningAttributes() , 0);
 		Object[] results = (Object[]) tree.classify(testData);
 		ShowUtils.print(results);
 	}

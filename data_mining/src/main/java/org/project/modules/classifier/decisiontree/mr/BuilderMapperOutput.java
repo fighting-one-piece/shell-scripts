@@ -6,6 +6,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
 public class BuilderMapperOutput implements Writable, Cloneable {
 	
@@ -27,7 +28,7 @@ public class BuilderMapperOutput implements Writable, Cloneable {
 	public void readFields(DataInput dataInput) throws IOException {
 		boolean isReadTree = dataInput.readBoolean();
 		if (isReadTree) {
-			treeNode = TreeNode.read(dataInput);
+			treeNode = TreeNodeHelper.readTreeNode(dataInput);
 		}
 	}
 

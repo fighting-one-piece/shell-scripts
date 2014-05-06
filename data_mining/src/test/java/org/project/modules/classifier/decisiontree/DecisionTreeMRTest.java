@@ -1,6 +1,7 @@
-package org.project.modules.decisiontree;
+package org.project.modules.classifier.decisiontree;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -13,15 +14,20 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonProcessingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.map.ser.impl.SimpleBeanPropertyFilter;
+import org.codehaus.jackson.map.ser.impl.SimpleFilterProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.project.modules.decisiontree.builder.Builder;
-import org.project.modules.decisiontree.builder.DecisionTreeC45Builder;
-import org.project.modules.decisiontree.data.Data;
-import org.project.modules.decisiontree.data.DataLoader;
-import org.project.modules.decisiontree.mr.BuilderMapperOutput;
-import org.project.modules.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.builder.Builder;
+import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
+import org.project.modules.classifier.decisiontree.data.Data;
+import org.project.modules.classifier.decisiontree.data.DataHandler;
+import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.mr.BuilderMapperOutput;
+import org.project.modules.classifier.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.DFSUtils;
 import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
@@ -44,6 +50,17 @@ public class DecisionTreeMRTest {
 				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
 		objectMapper = new ObjectMapper();
 		try {
+//			FilterProvider filterProvider = new SimpleFilterProvider()
+//					.addFilter("a", SimpleBeanPropertyFilter
+//							.serializeAllExcept(new String[]{"attributeValues"}));
+//			objectMapper.setFilters(filterProvider);
+			SerializationConfig cfg = objectMapper.getSerializationConfig();
+			SimpleFilterProvider filterProvider = new SimpleFilterProvider();
+			filterProvider.setDefaultFilter(SimpleBeanPropertyFilter.serializeAllExcept(
+					new String[]{"attributeValues"}));
+			cfg.withFilters(filterProvider);
+			objectMapper.setSerializationConfig(cfg);
+
 			jsonGenerator = objectMapper.getJsonFactory().createJsonGenerator(
 					System.out, JsonEncoding.UTF8);
 		} catch (IOException e) {
@@ -67,16 +84,70 @@ public class DecisionTreeMRTest {
 			e.printStackTrace();
 		}
 	}
-
+	
 	@Test
-	public void json() {
+	public void tree2json() {
 		Builder treeBuilder = new DecisionTreeC45Builder();
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data, 0);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		StringBuilder sb = new StringBuilder();
+		TreeNodeHelper.treeNode2json(tree, sb);
+		System.out.println(sb.toString());
+	}
+	
+	@Test
+	public void json() throws JsonProcessingException, IOException {
+		Builder treeBuilder = new DecisionTreeC45Builder();
+		String trainFilePath = "d:\\trains14.txt";
+		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data, 0);
+		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		TreeNodeHelper.print(tree, 0, null);
+		System.out.println("jsonGenerator");
 		String jsonData = JSONUtils.object2json(tree,
-				new String[] {"attributeValues", "children", "class"});
+				new String[] { "attributeValues" });
 		System.out.println(jsonData);
+		System.out.println("jacksonGenerator");
+		jsonGenerator.writeObject(tree);
+		System.out.println();
+		StringBuilder sb = new StringBuilder();
+		handle(tree, sb);
+		System.out.println(sb.toString());
+		
+		TreeNode temp = (TreeNode) TreeNodeHelper.json2TreeNode(sb.toString());
+		System.out.println(temp.getAttribute());
+		ShowUtils.print(temp.getChildren());
+	}
+	
+	private void handle(TreeNode treeNode, StringBuilder sb) {
+		sb.append("{");
+		sb.append("\"attribute\":");
+		sb.append("\"" + treeNode.getAttribute()).append("\",");
+		Map<Object, Object> children = treeNode.getChildren();
+		if (children.size() != 0) {
+			sb.append("\"children\":");
+			sb.append("{");
+			int i = 0;
+			for (Map.Entry<Object, Object> entry : children.entrySet()) {
+				i++;
+				Object value = entry.getValue();
+				sb.append("\"" + entry.getKey() + "\":");
+				if (value instanceof TreeNode) {
+//					sb.append("\"" + entry.getKey() + "\":");
+					handle((TreeNode) value, sb);
+//					if (i != children.size()) sb.append(",");
+				} else {
+//					sb.append("\"" + entry.getKey() + "\":");
+					sb.append("\"" + value + "\"");
+//					if (i != children.size()) sb.append(",");
+				}
+				if (i != children.size()) sb.append(",");
+			}
+			sb.append("}");
+		}
+		sb.append("}");
 	}
 
 	@Test
@@ -84,16 +155,17 @@ public class DecisionTreeMRTest {
 		Builder treeBuilder = new DecisionTreeC45Builder();
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
-		System.out.println("jsonGenerator");        
-		//writeObject可以转换java对象，eg:JavaBean/Map/List/Array等        
-		jsonGenerator.writeObject(tree);            
-		System.out.println();                
+		System.out.println("jsonGenerator");
+		// writeObject可以转换java对象，eg:JavaBean/Map/List/Array等
+		jsonGenerator.writeObject(tree);
+		System.out.println();
 	}
-	
+
 	@Test
 	public void testRead() {
-		
+
 	}
 
 	@Test

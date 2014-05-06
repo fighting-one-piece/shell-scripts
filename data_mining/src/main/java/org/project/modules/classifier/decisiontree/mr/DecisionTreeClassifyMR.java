@@ -117,7 +117,6 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 		Data data = new Data(attributes.toArray(new String[0]), instances);
 		TreeNode treeNode = value.getTreeNode();
 		if (null  == treeNode) System.out.println("treeNode is null");
-		treeNode.print(this, 0, null);
 		System.out.println("treeNode att: " + treeNode.getAttribute());
 		ShowUtils.print(data.getAttributes());
 		for(Instance ins : data.getInstances()) {

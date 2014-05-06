@@ -119,8 +119,10 @@ public class TreeNode extends Node implements Writable, Serializable {
 	@Override
 	public void write(DataOutput dataOutput) throws IOException {
 		String jsonData = JSONUtils.object2json(this, new String[]{"attributeValues"});
+		System.out.println("jsonData length: " + jsonData.length());
 		dataOutput.writeInt(jsonData.length());
 		dataOutput.write(jsonData.getBytes());
+		System.out.println("write success");
 	}
 	
 	/** 

@@ -10,6 +10,8 @@ public class Data {
 
 	/** 特征属性集合*/
 	private String[] attributes = null;
+	/** 特征属性集合*/
+	private String[] purningAttributes = null;
 	/** 样本实例集合*/
 	private List<Instance> instances = null;
 	/** 样本实例集合的分裂信息*/
@@ -67,6 +69,14 @@ public class Data {
 
 	public void setSplits(Map<Object, List<Instance>> splits) {
 		this.splits = splits;
+	}
+
+	public String[] getPurningAttributes() {
+		return purningAttributes;
+	}
+
+	public void setPurningAttributes(String[] purningAttributes) {
+		this.purningAttributes = purningAttributes;
 	}
 
 	

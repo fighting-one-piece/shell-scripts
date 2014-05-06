@@ -8,5 +8,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/hadoop-1.0.4"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/json-lib"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jackson"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

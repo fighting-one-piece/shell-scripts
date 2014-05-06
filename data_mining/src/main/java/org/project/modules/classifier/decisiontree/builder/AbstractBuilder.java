@@ -6,7 +6,6 @@ import java.util.Map.Entry;
 
 import org.project.modules.classifier.decisiontree.data.BestAttribute;
 import org.project.modules.classifier.decisiontree.data.Data;
-import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
@@ -14,8 +13,6 @@ public abstract class AbstractBuilder implements Builder {
 
 	@Override
 	public Object build(Data data) {
-		//数据预处理
-		preHandle(data);
 		//如果只有一个样本，将该样本所属分类作为新样本的分类
 		Map<Object, List<Instance>> splits = data.getSplits();
 		String[] attributes = data.getAttributes();
@@ -50,12 +47,6 @@ public abstract class AbstractBuilder implements Builder {
 			tree.setChild(attrValue, child);
 		}
 		return tree;
-	}
-	
-	/** 数据预处理*/
-	protected void preHandle(Data data) {
-		//这里只是赋予默认值处理
-		DataHandler.fill(data, 0);
 	}
 	
 	/**

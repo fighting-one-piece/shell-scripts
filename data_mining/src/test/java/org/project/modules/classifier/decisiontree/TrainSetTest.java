@@ -1,4 +1,4 @@
-package org.project.modules.decisiontree.original;
+package org.project.modules.classifier.decisiontree;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -15,13 +15,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.project.modules.decisiontree.original.SampleUtils;
+import org.project.modules.classifier.decisiontree.original.SampleUtils;
 
 public class TrainSetTest {
 
 	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		String filePath = "d:\\trainset_extract_100.txt";
+		String filePath = "d:\\trainset_extract_10.txt";
 		Object[] datas = SampleUtils.readDatasFromFile(filePath);
 		Map<String, Integer> attributeMap = (Map<String, Integer>) datas[3];
 		double attribute_all_count = attributeMap.values().size();
@@ -34,8 +34,7 @@ public class TrainSetTest {
 				i++;
 			} else if (count == 2) {
 				j++;
-			} else if (count == 10) {
-				System.out.println(entry.getKey());
+			} else if (count <= 10) {
 				k++;
 			}
 		}
