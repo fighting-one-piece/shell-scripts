@@ -104,6 +104,7 @@ public class TreeNode extends Node implements Writable, Serializable {
 	public void write(DataOutput dataOutput) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		TreeNodeHelper.treeNode2json(this, sb);
+		System.out.println(sb.toString());
 		dataOutput.writeInt(sb.length());
 		dataOutput.write(sb.toString().getBytes());
 	}

@@ -8,15 +8,15 @@ import org.apache.hadoop.io.Writable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
-public class BuilderMapperOutput implements Writable, Cloneable {
+public class TreeNodeWritable implements Writable, Cloneable {
 	
 	private TreeNode treeNode = null;
 	
-	public BuilderMapperOutput() {
+	public TreeNodeWritable() {
 		
 	}
 	
-	public BuilderMapperOutput(TreeNode treeNode) {
+	public TreeNodeWritable(TreeNode treeNode) {
 		this.treeNode = treeNode;
 	}
 	

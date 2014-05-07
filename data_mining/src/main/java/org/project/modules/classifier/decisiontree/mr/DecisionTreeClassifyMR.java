@@ -5,7 +5,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -28,8 +27,8 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.DFSUtils;
-import org.project.utils.ShowUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -102,6 +101,8 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
+		Data data = new Data(attributes.toArray(new String[0]), instances);
+
 		Configuration conf = context.getConfiguration();
 		FileSystem fs = FileSystem.get(conf);
 		URI[] uris = DistributedCache.getCacheFiles(conf);
@@ -109,28 +110,30 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 		Path path = new Path(uris[0]);
 		Path[] seqFilePaths = DFSUtils.getPathFiles(fs, path);
 		
+		List<Object[]> results = new ArrayList<Object[]>();
+		Set<String> attrs = new HashSet<String>();
+		
+		Set<TreeNode> treeNodes = new HashSet<TreeNode>();
 		SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePaths[0], conf);
 		LongWritable key = (LongWritable) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
-		BuilderMapperOutput value = new BuilderMapperOutput();
+		TreeNodeWritable value = new TreeNodeWritable();
 		while (reader.next(key, value)) {
+			TreeNode treeNode = value.getTreeNode();
+			if (null  == treeNode) continue;
+			TreeNodeHelper.obtainAttributes(treeNode, attrs);
+			treeNodes.add(treeNode);
+			value = new TreeNodeWritable();
 		}
-		Data data = new Data(attributes.toArray(new String[0]), instances);
-		TreeNode treeNode = value.getTreeNode();
-		if (null  == treeNode) System.out.println("treeNode is null");
-		System.out.println("treeNode att: " + treeNode.getAttribute());
-		ShowUtils.print(data.getAttributes());
-		for(Instance ins : data.getInstances()) {
-			System.out.print(ins.getCategory() + "-->");
-			for (Map.Entry<String, Object> entry : ins.getAttributes().entrySet()) {
-				System.out.print(entry.getKey() + ":" + entry.getValue());
-				System.out.print(",");
-			}
-			System.out.println();
+		System.out.println("data len: " + data.getAttributes().length);
+		System.out.println("tree len: " + attrs.size());
+		DataHandler.fill(data.getInstances(), attrs.toArray(new String[0]), 0);
+		for (TreeNode treeNode : treeNodes) {
+			Object[] result = (Object[]) treeNode.classify(data);
+			results.add(result);
 		}
-		Object[] results = (Object[]) treeNode.classify(data);
-		System.out.println("results 0: " + results[0]);
-		for (int i = 0, len = results.length; i < len; i++) {
-			context.write(new IntWritable(i), new Text(String.valueOf(results[i])));
+		Object[] finalResult = DataHandler.vote(results);
+		for (int i = 0, len = finalResult.length; i < len; i++) {
+			context.write(new IntWritable(i), new Text(String.valueOf(finalResult[i])));
 		}
 		log.info("DecisionTreeClassifyMapper cleanup finish");
 	}

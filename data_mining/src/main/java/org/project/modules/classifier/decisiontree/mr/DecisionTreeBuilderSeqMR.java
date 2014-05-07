@@ -23,17 +23,16 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
-import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
-public class DecisionTreeBuilderMR {
+public class DecisionTreeBuilderSeqMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(DecisionTreeBuilderMR.class);
+		job.setJarByClass(DecisionTreeBuilderSeqMR.class);
 		
 		job.setOutputKeyClass(LongWritable.class);
 		job.setOutputValueClass(TreeNodeWritable.class);
 		
-		job.setMapperClass(DecisionTreeBuilderMapper.class);
+		job.setMapperClass(DecisionTreeBuilderSeqMapper.class);
 		job.setNumReduceTasks(0); 
 		
 		job.setInputFormatClass(TextInputFormat.class);
@@ -64,7 +63,7 @@ public class DecisionTreeBuilderMR {
 	}
 }
 
-class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text, 
+class DecisionTreeBuilderSeqMapper extends Mapper<LongWritable, Text, 
 	LongWritable, TreeNodeWritable> {
 	
 	private List<Instance> instances = new ArrayList<Instance>();
@@ -92,16 +91,11 @@ class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text,
 		System.out.println("builder map data attribute len: " + data.getAttributes().length);
 		System.out.println("builder map data instances len: " + data.getInstances().size());
 		Builder builder = new DecisionTreeC45Builder();
-		Object result = builder.build(data);
-		System.out.println("builder object: " + result);
-		if (result instanceof TreeNode) {
-			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-			TreeNodeHelper.purningTreeNode((TreeNode) result, 25, 0, treeNodes);
-			int i = 0;
-			for (TreeNode treeNode : treeNodes) {
-				TreeNodeWritable output = new TreeNodeWritable(treeNode);
-				context.write(new LongWritable(++i), output);
-			}
+		Object object = builder.build(data);
+		System.out.println("builder object: " + object);
+		if (object instanceof TreeNode) {
+			TreeNodeWritable output = new TreeNodeWritable((TreeNode) object);
+			context.write(new LongWritable(1), output);
 		}
 	}
 }

@@ -48,12 +48,12 @@ public class DataHandler {
 		return instance;
 	}
 	
-	/** 数据填充默认值*/
+	/** 缺失数据填充默认值*/
 	public static void fill(Data data, Object fillValue) {
 		fill(data.getInstances(), data.getAttributes(), fillValue);
 	}
 	
-	/** 数据填充默认值*/
+	/** 缺失数据填充默认值*/
 	public static void fill(Map<Object, List<Instance>> splits, 
 			String[] attributes, Object fillValue) {
 		for (List<Instance> instances : splits.values()) {
@@ -61,7 +61,7 @@ public class DataHandler {
 		}
 	}
 	
-	/** 数据填充默认值*/
+	/** 缺失数据填充默认值*/
 	public static void fill(List<Instance> instances, String[] attributes, Object fillValue) {
 		fillValue = null == fillValue ? 0 : fillValue;
 		for (Instance instance : instances) {
@@ -75,7 +75,8 @@ public class DataHandler {
 		}
 	}
 	
-	public static void fill(Data data) {
+	/** 移除部分属性并填充缺失属性默认值*/
+	public static void removeAndFill(Data data, int n, Object fillValue) {
 		List<Instance> instances = data.getInstances();
 		String[] attributes = data.getAttributes();
 		Map<String, Integer> map = new HashMap<String, Integer>();
@@ -94,12 +95,12 @@ public class DataHandler {
 			Object attrValue = null;
 			for (int i = 0, attrLen = attributes.length; i < attrLen; i++) {
 				attrValue = attrs.get(attributes[i]);
-				if (map.get(attributes[i]) < 1) {
+				if (map.get(attributes[i]) < n) {
 					a.add(attributes[i]);
 					attrs.remove(attributes[i]);
 				} else {
 					attrs.put(attributes[i], 
-							null == attrValue ? 0 : attrValue);
+							null == attrValue ? fillValue : attrValue);
 					b.add(attributes[i]);
 				}
 			}
@@ -108,6 +109,34 @@ public class DataHandler {
 		System.out.println("all attribute size: " + attributes.length);
 		System.out.println("remove attribute size: " + a.size());
 		System.out.println("remain attribute size: " + b.size());
+	}
+	
+	/** *
+	 * 投票
+	 * @param results
+	 * @return
+	 */
+	public static Object[] vote(List<Object[]> results) {
+		int columnNum = results.get(0).length;
+		Object[] finalResult = new Object[columnNum];
+		for (int i = 0; i < columnNum; i++) {
+			Map<Object, Integer> resultCount = new HashMap<Object, Integer>();
+			for (Object[] result : results) {
+				if (null == result[i]) continue;
+				Integer count = resultCount.get(result[i]);
+				resultCount.put(result[i], null == count ? 1 : count + 1);
+			}
+			int max = 0;
+			Object maxResult = null;
+			for (Map.Entry<Object, Integer> entry : resultCount.entrySet()) {
+				if (max < entry.getValue()) {
+					max = entry.getValue();
+					maxResult = entry.getKey();
+				}
+			}
+			finalResult[i] = maxResult;
+		}
+		return finalResult;
 	}
 	
 }

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -25,14 +24,15 @@ import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
 public class RandomForestBuilderMR {
 	
 	private static void configureJob(Job job) {
 		job.setJarByClass(RandomForestBuilderMR.class);
 		
-		job.setOutputKeyClass(IntWritable.class);
-		job.setOutputValueClass(BuilderMapperOutput.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(TreeNodeWritable.class);
 		
 		job.setMapperClass(RandomForestBuilderMapper.class);
 		job.setNumReduceTasks(0);
@@ -66,7 +66,7 @@ public class RandomForestBuilderMR {
 	}
 }
 
-class RandomForestBuilderMapper extends Mapper<LongWritable, Text, IntWritable, BuilderMapperOutput> {
+class RandomForestBuilderMapper extends Mapper<LongWritable, Text, Text, TreeNodeWritable> {
 
 	private int treeNum = 0;
 	
@@ -97,15 +97,27 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, IntWritable, 
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
 		Data data = new Data(attributes.toArray(new String[0]), instances);
+		DataHandler.fill(data, 0);
+		int attrLen = data.getAttributes().length;
+		if (attributeNum > attrLen) attributeNum = attrLen;
+		int length = attrLen / 2;
+		if (attributeNum < length) attributeNum = length;
 		System.out.println("data attribute len: " + data.getAttributes().length);
 		System.out.println("data instances len: " + data.getInstances().size());
-		for (int i = 0; i < treeNum; i++) {
+		for (int i = 1; i <= treeNum; i++) {
 			Data randomData = DataLoader.loadRandom(data, attributeNum);
 			Builder builder = new DecisionTreeC45Builder();
 			TreeNode treeNode = (TreeNode) builder.build(randomData);
-			BuilderMapperOutput output = new BuilderMapperOutput(treeNode);
-			context.write(new IntWritable(i), output);
-			System.out.println(i + " tree build success");
+			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
+			TreeNodeHelper.purningTreeNode(treeNode, 20, 0, treeNodes);
+			int j = 0;
+			for (TreeNode node : treeNodes) {
+				TreeNodeWritable output = new TreeNodeWritable(node);
+				context.write(new Text(i + "_" + (++j)), output);
+				System.out.println(i + "_" + j + " tree build success");
+			}
+//			TreeNodeWritable output = new TreeNodeWritable(treeNode);
+//			context.write(new IntWritable(i), output);
 		}
 	}
 }

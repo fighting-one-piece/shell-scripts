@@ -7,15 +7,36 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.json.JSONObject;
+import net.sf.json.JsonConfig;
+import net.sf.json.util.CycleDetectionStrategy;
 
 public class TreeNodeHelper {
 	
+	/** 读取*/
 	public static TreeNode readTreeNode(DataInput dataInput) throws IOException {
 		int length = dataInput.readInt();
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		String jsonData = new String(buff);
 		return (TreeNode) json2TreeNode(jsonData);
+	}
+	
+	/** 截开树**/
+	public static void purningTreeNode(TreeNode treeNode, int n, 
+			int level, Set<TreeNode> treeNodes) {
+		level++;
+		if (level == 1) treeNodes.add(treeNode); 
+		Map<Object, Object> children = treeNode.getChildren();
+		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+			Object value = entry.getValue();
+			if (value instanceof TreeNode) {
+				if (level > n) {
+					children.put(entry.getKey(), null);
+				} 
+				purningTreeNode((TreeNode) value, n, 
+						level > n ? 0 : level, treeNodes);
+			}
+		}
 	}
 
 	/** 
@@ -41,7 +62,11 @@ public class TreeNodeHelper {
 	}
 	
 	public static Object json2TreeNode(String jsonData) {
-		JSONObject jsonObject = JSONObject.fromObject(jsonData);
+		JsonConfig jsonConfig = new JsonConfig();
+		jsonConfig.setCycleDetectionStrategy(CycleDetectionStrategy.LENIENT);  
+		jsonConfig.setIgnoreDefaultExcludes(false);  
+		jsonConfig.setAllowNonStringKeys(true); 
+		JSONObject jsonObject = JSONObject.fromObject(jsonData, jsonConfig);
 		return object2TreeNode(jsonObject);
 	}
 	
@@ -95,5 +120,17 @@ public class TreeNodeHelper {
 			sb.append("}");
 		}
 		sb.append("}");
+	}
+	
+	public static void obtainAttributes(TreeNode treeNode, Set<String> attributes) {
+		attributes.add(treeNode.getAttribute());
+		Map<Object, Object> children = treeNode.getChildren();
+		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+			Object value = entry.getValue();
+			attributes.add(entry.getKey().toString());
+			if (value instanceof TreeNode) {
+				obtainAttributes((TreeNode) value, attributes);
+			} 
+		}
 	}
 }

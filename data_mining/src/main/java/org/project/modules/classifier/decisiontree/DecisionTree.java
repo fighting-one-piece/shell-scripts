@@ -52,7 +52,7 @@ public class DecisionTree {
 
 	public void run() {
 		Data data = DataLoader.load(trainFilePath);
-		DataHandler.fill(data);
+		DataHandler.fill(data, 0);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
 		Data testData = DataLoader.load(testFilePath);
 		DataHandler.fill(testData.getInstances(), data.getPurningAttributes() , 0);

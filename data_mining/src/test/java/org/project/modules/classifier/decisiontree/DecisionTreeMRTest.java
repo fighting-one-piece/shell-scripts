@@ -1,7 +1,13 @@
 package org.project.modules.classifier.decisiontree;
 
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -25,12 +31,15 @@ import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builde
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
-import org.project.modules.classifier.decisiontree.mr.BuilderMapperOutput;
+import org.project.modules.classifier.decisiontree.mr.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.DFSUtils;
 import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
+
+import com.alibaba.fastjson.JSONReader;
+import com.alibaba.fastjson.JSONWriter;
 
 public class DecisionTreeMRTest {
 
@@ -91,10 +100,14 @@ public class DecisionTreeMRTest {
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		Data data = DataLoader.load(trainFilePath);
 		DataHandler.fill(data, 0);
-		TreeNode tree = (TreeNode) treeBuilder.build(data);
-		StringBuilder sb = new StringBuilder();
-		TreeNodeHelper.treeNode2json(tree, sb);
-		System.out.println(sb.toString());
+		TreeNode treeNode = (TreeNode) treeBuilder.build(data);
+		Set<TreeNode> treeNodes = new HashSet<TreeNode>();
+		TreeNodeHelper.purningTreeNode(treeNode, 25, 0, treeNodes);
+		for (TreeNode node : treeNodes) {
+			StringBuilder sb = new StringBuilder();
+			TreeNodeHelper.treeNode2json(node, sb);
+			System.out.println(sb.toString());
+		}
 	}
 	
 	@Test
@@ -149,13 +162,78 @@ public class DecisionTreeMRTest {
 		}
 		sb.append("}");
 	}
+	
+	@Test
+	public void fastJson() throws IOException {
+		Builder treeBuilder = new DecisionTreeC45Builder();
+		String trainFilePath = "d:\\trains14.txt";
+		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data, 0);
+		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		TreeNodeHelper.print(tree, 0, null);
+		JSONWriter writer = new JSONWriter(new FileWriter("d:\\tree.json"));
+		writer.startArray();
+		writer.writeValue(tree);
+		writer.endArray();
+		writer.close();
+		JSONReader reader = new JSONReader(new FileReader("d:\\tree.json"));
+		reader.startArray();
+		while (reader.hasNext()) {
+			TreeNode treeNode = reader.readObject(TreeNode.class);
+			System.out.println(treeNode.getAttribute());
+			System.out.println(treeNode.getChildren());
+		}
+		reader.endArray();
+		reader.close();
+	}
+	
+	@Test
+	public void fastJsonW() throws IOException {
+		Builder treeBuilder = new DecisionTreeC45Builder();
+		String trainFilePath = "d:\\trainset_extract_1.txt";
+		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data, 0);
+		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		JSONWriter writer = new JSONWriter(new PrintWriter(System.out));
+		writer.startObject();
+		writer.writeValue(tree);
+		writer.endObject();
+		writer.close();
+		
+	}
+	
+	@Test
+	public void fastJsonR() throws IOException {
+		Builder treeBuilder = new DecisionTreeC45Builder();
+		String trainFilePath = "d:\\trains14.txt";
+		Data data = DataLoader.load(trainFilePath);
+		DataHandler.fill(data, 0);
+		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		TreeNodeHelper.print(tree, 0, null);
+		StringBuilder sb = new StringBuilder();
+		handle(tree, sb);
+		String jsonData = sb.toString();
+		jsonData = "{" + jsonData + "}";
+		System.out.println(jsonData);
+		StringReader sreader = new StringReader(jsonData);
+		JSONReader reader = new JSONReader(sreader);
+		reader.startObject();
+		while (reader.hasNext()) {
+			TreeNode treeNode = reader.readObject(TreeNode.class);
+			System.out.println(treeNode.getAttribute());
+			System.out.println(treeNode.getChildren());
+			break;
+		}
+		reader.endObject();
+		reader.close();
+	}
 
 	@Test
 	public void jackson() throws JsonProcessingException, IOException {
 		Builder treeBuilder = new DecisionTreeC45Builder();
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		Data data = DataLoader.load(trainFilePath);
-		DataHandler.fill(data);
+		DataHandler.fill(data, 0);
 		TreeNode tree = (TreeNode) treeBuilder.build(data);
 		System.out.println("jsonGenerator");
 		// writeObject可以转换java对象，eg:JavaBean/Map/List/Array等
@@ -164,25 +242,28 @@ public class DecisionTreeMRTest {
 	}
 
 	@Test
-	public void testRead() {
-
-	}
-
-	@Test
 	public void writeSequenceFile() {
 		SequenceFile.Writer writer = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "005/output/part-m-00000");
+			Path path = new Path(DFS_URL + "005/output/part-m-00005");
 			writer = SequenceFile.createWriter(fs, conf, path,
-					LongWritable.class, BuilderMapperOutput.class);
+					LongWritable.class, TreeNodeWritable.class);
 			LongWritable key = new LongWritable(1);
 			Builder treeBuilder = new DecisionTreeC45Builder();
-			String trainFilePath = "d:\\trainset_extract_10.txt";
+			String trainFilePath = "d:\\trainset_extract_1.txt";
 			Data data = DataLoader.load(trainFilePath);
-			TreeNode tree = (TreeNode) treeBuilder.build(data);
-			BuilderMapperOutput value = new BuilderMapperOutput(tree);
-			writer.append(key, value);
+			DataHandler.fill(data, 0);
+			TreeNode treeNode = (TreeNode) treeBuilder.build(data);
+			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
+			TreeNodeHelper.purningTreeNode(treeNode, 25, 0, treeNodes);
+			for (TreeNode node : treeNodes) {
+				StringBuilder sb = new StringBuilder();
+				TreeNodeHelper.treeNode2json(node, sb);
+				System.out.println("--" + sb.toString());
+				TreeNodeWritable value = new TreeNodeWritable(node);
+				writer.append(key, value);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
@@ -195,14 +276,16 @@ public class DecisionTreeMRTest {
 		SequenceFile.Reader reader = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "005/output/part-m-00000");
+			Path path = new Path(DFS_URL + "005/output/part-m-00005");
 			reader = new SequenceFile.Reader(fs, path, conf);
 			LongWritable key = (LongWritable) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);
-			BuilderMapperOutput value = new BuilderMapperOutput();
+			TreeNodeWritable value = new TreeNodeWritable();
 			while (reader.next(key, value)) {
-				System.out.println(value.getTreeNode().getAttribute());
-				value = new BuilderMapperOutput();
+				TreeNode treeNode = value.getTreeNode();
+				if (null  == treeNode) continue;
+				System.out.println(treeNode.getAttribute());
+				value = new TreeNodeWritable();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -221,4 +304,5 @@ public class DecisionTreeMRTest {
 			e.printStackTrace();
 		}
 	}
+	
 }

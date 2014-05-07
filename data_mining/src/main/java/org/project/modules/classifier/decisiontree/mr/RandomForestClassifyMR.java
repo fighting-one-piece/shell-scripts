@@ -3,8 +3,10 @@ package org.project.modules.classifier.decisiontree.mr;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
@@ -26,9 +28,9 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
-import org.project.modules.classifier.decisiontree.node.ForestNode;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.utils.DFSUtils;
+import org.project.utils.ShowUtils;
 
 public class RandomForestClassifyMR {
 	
@@ -102,24 +104,37 @@ class RandomForestClassifyMapper extends Mapper<LongWritable, Text, IntWritable,
 		Path path = new Path(uris[0]);
 		Path[] seqFilePaths = DFSUtils.getPathFiles(fs, path);
 		
+		Map<String, Set<TreeNode>> map = new HashMap<String, Set<TreeNode>>();
+		
 		SequenceFile.Reader reader = new SequenceFile.Reader(fs, seqFilePaths[0], conf);
-		IntWritable key = (IntWritable) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
-		BuilderMapperOutput value = new BuilderMapperOutput();
-		List<BuilderMapperOutput> outputs = new ArrayList<BuilderMapperOutput>();
+		Text key = (Text) ReflectionUtils.newInstance(reader.getKeyClass(), conf); 
+		TreeNodeWritable value = new TreeNodeWritable();
 		while (reader.next(key, value)) {
-			outputs.add(value);
-			value = new BuilderMapperOutput();
-		}
-		List<TreeNode> treeNodes = new ArrayList<TreeNode>();
-		for (BuilderMapperOutput output : outputs) {
-			TreeNode treeNode = output.getTreeNode();
-			treeNodes.add(treeNode);
+			String indentity = new String(key.getBytes()).substring(0, 1);
+			Set<TreeNode> treeNodes = map.get(indentity);
+			if (null == treeNodes) {
+				treeNodes = new HashSet<TreeNode>();
+				map.put(indentity, treeNodes);
+			}
+			treeNodes.add(value.getTreeNode());
+			value = new TreeNodeWritable();
 		}
 		Data data = new Data(attributes.toArray(new String[0]), instances);
-		ForestNode forest = new ForestNode(treeNodes);
-		Object[] results = (Object[]) forest.classify(data);
-		for (int i = 0, len = results.length; i < len; i++) {
-			context.write(new IntWritable(i), new Text(String.valueOf(results[i])));
+		DataHandler.fill(data, 0);
+		List<Object[]> finalResults = new ArrayList<Object[]>();
+		for (Set<TreeNode> treeNodes : map.values()) {
+			List<Object[]> results = new ArrayList<Object[]>();
+			for (TreeNode treeNode : treeNodes) {
+				Object[] result = (Object[]) treeNode.classify(data);
+				results.add(result);
+			}
+			Object[] finalResult = DataHandler.vote(results);
+			ShowUtils.print(finalResult);
+			finalResults.add(finalResult);
+		}
+		Object[] result = DataHandler.vote(finalResults);
+		for (int i = 0, len = result.length; i < len; i++) {
+			context.write(new IntWritable(i), new Text(String.valueOf(result[i])));
 		}
 	}
 	

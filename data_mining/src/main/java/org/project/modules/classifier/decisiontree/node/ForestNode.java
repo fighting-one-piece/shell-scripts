@@ -1,13 +1,11 @@
 package org.project.modules.classifier.decisiontree.node;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.project.modules.classifier.decisiontree.data.Data;
+import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
-import org.project.utils.ShowUtils;
 
 public class ForestNode extends Node {
 
@@ -28,7 +26,7 @@ public class ForestNode extends Node {
 				results.add((Object[]) treeNode.classify(data));
 			}
 		}
-		return vote(results);
+		return DataHandler.vote(results);
 	}
 	
 	@Override
@@ -40,37 +38,7 @@ public class ForestNode extends Node {
 				results.add((Object[]) treeNode.classify(instances));
 			}
 		}
-		return vote(results);
+		return DataHandler.vote(results);
 	}
 	
-	/** *
-	 * 投票
-	 * @param results
-	 * @return
-	 */
-	private Object[] vote(List<Object[]> results) {
-		System.out.println("-----------results-------------");
-		ShowUtils.print(results);
-		System.out.println("-----------results-------------");
-		int columnNum = results.get(0).length;
-		Object[] finalResult = new Object[columnNum];
-		for (int i = 0; i < columnNum; i++) {
-			Map<Object, Integer> resultCount = new HashMap<Object, Integer>();
-			for (Object[] result : results) {
-				if (null == result[i]) continue;
-				Integer count = resultCount.get(result[i]);
-				resultCount.put(result[i], null == count ? 1 : count + 1);
-			}
-			int max = 0;
-			Object maxResult = null;
-			for (Map.Entry<Object, Integer> entry : resultCount.entrySet()) {
-				if (max < entry.getValue()) {
-					max = entry.getValue();
-					maxResult = entry.getKey();
-				}
-			}
-			finalResult[i] = maxResult;
-		}
-		return finalResult;
-	}
 }
