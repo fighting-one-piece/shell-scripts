@@ -1,4 +1,4 @@
-package org.project.modules.classifier.decisiontree.mr;
+package org.project.modules.classifier.decisiontree.mr.writable;
 
 import java.io.DataInput;
 import java.io.DataOutput;

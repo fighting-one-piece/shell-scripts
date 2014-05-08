@@ -22,17 +22,18 @@ import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builde
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
+import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
-public class DecisionTreeBuilderSeqMR {
+public class DecisionTreeBuilderSMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(DecisionTreeBuilderSeqMR.class);
+		job.setJarByClass(DecisionTreeBuilderSMR.class);
 		
 		job.setOutputKeyClass(LongWritable.class);
 		job.setOutputValueClass(TreeNodeWritable.class);
 		
-		job.setMapperClass(DecisionTreeBuilderSeqMapper.class);
+		job.setMapperClass(DecisionTreeBuilderSMapper.class);
 		job.setNumReduceTasks(0); 
 		
 		job.setInputFormatClass(TextInputFormat.class);
@@ -63,7 +64,7 @@ public class DecisionTreeBuilderSeqMR {
 	}
 }
 
-class DecisionTreeBuilderSeqMapper extends Mapper<LongWritable, Text, 
+class DecisionTreeBuilderSMapper extends Mapper<LongWritable, Text, 
 	LongWritable, TreeNodeWritable> {
 	
 	private List<Instance> instances = new ArrayList<Instance>();

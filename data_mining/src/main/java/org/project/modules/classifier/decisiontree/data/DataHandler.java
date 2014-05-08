@@ -48,6 +48,28 @@ public class DataHandler {
 		return instance;
 	}
 	
+	/**
+	 * 抽取带行号的文本信息
+	 * @param line 文本
+	 * @param attributes 特征属性集
+	 * @return
+	 */
+	public static Instance extractWithId(String line, Set<String> attributes) {
+		StringTokenizer tokenizer = new StringTokenizer(line);
+		Instance instance = new Instance();
+		instance.setId(Long.parseLong(tokenizer.nextToken()));
+		instance.setCategory(tokenizer.nextToken());
+		while (tokenizer.hasMoreTokens()) {
+			String value = tokenizer.nextToken();
+			String[] entry = value.split(":");
+			instance.setAttribute(entry[0], entry[1]);
+			if (!attributes.contains(entry[0])) {
+				attributes.add(entry[0]);
+			}
+		}
+		return instance;
+	}
+	
 	/** 缺失数据填充默认值*/
 	public static void fill(Data data, Object fillValue) {
 		fill(data.getInstances(), data.getAttributes(), fillValue);

@@ -8,9 +8,18 @@ import java.util.Map;
  **/
 public class Instance {
 
+	private Long id = null;
 	private Object category = null;
 	private Map<String, Object> attributes = null;
 	private double weight = 0.0d;
+	
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public Object getCategory() {
 		return category;

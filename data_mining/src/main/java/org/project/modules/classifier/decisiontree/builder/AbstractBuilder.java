@@ -13,12 +13,12 @@ public abstract class AbstractBuilder implements Builder {
 
 	@Override
 	public Object build(Data data) {
-		//如果只有一个样本，将该样本所属分类作为新样本的分类
 		Map<Object, List<Instance>> splits = data.getSplits();
-		String[] attributes = data.getAttributes();
+		//如果只有一个样本，将该样本所属分类作为新样本的分类
 		if (splits.size() == 1) {
 			return splits.keySet().iterator().next();
 		}
+		String[] attributes = data.getAttributes();
 		// 如果没有供决策的属性，则将样本集中具有最多样本的分类作为新样本的分类，即投票选举出分类
 		if (attributes.length == 0) {
 			return obtainMaxCategory(splits);

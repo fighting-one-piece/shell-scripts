@@ -23,6 +23,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.Instance;
+import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
