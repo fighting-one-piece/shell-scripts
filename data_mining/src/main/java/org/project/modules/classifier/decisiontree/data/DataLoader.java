@@ -3,6 +3,8 @@ package org.project.modules.classifier.decisiontree.data;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -15,20 +17,41 @@ import org.apache.commons.io.IOUtils;
 public class DataLoader {
 	
 	public static Data load(String path) {
+		Data data = null;
+		try {
+			data = load(new FileInputStream(new File(path)), false);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
+	
+	public static Data loadWithId(String path) {
+		Data data = null;
+		try {
+			data = load(new FileInputStream(new File(path)), true);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		return data;
+	}
+	
+	public static Data load(InputStream inStream, boolean containId) {
 		Set<String> attributes = new HashSet<String>();
 		List<Instance> instances = new ArrayList<Instance>();
 		BufferedReader reader = null;
 		try {
-			reader = new BufferedReader(new InputStreamReader(
-				new FileInputStream(new File(path))));
+			reader = new BufferedReader(new InputStreamReader(inStream));
 			String line = reader.readLine();
 			while (!("").equals(line) && null != line) {
-				instances.add(DataHandler.extract(line, attributes));
+				instances.add(containId ? DataHandler.extractWithId(line, attributes)
+						: DataHandler.extract(line, attributes));
 				line = reader.readLine();
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
+			IOUtils.closeQuietly(inStream);
 			IOUtils.closeQuietly(reader);
 		}
 		return new Data(attributes.toArray(new String[0]), instances);

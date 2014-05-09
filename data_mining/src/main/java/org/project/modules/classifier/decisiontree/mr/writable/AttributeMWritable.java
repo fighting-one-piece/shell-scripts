@@ -6,7 +6,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
-public class AttributeWritable implements Writable, Cloneable {
+public class AttributeMWritable implements Writable, Cloneable {
 	
 	private Long id = null;
 	
@@ -14,11 +14,11 @@ public class AttributeWritable implements Writable, Cloneable {
 	
 	private String attributeValue = null;
 	
-	public AttributeWritable() {
+	public AttributeMWritable() {
 		
 	}
 	
-	public AttributeWritable(Long id, String category, String attributeValue) {
+	public AttributeMWritable(Long id, String category, String attributeValue) {
 		super();
 		this.id = id;
 		this.category = category;
@@ -32,6 +32,7 @@ public class AttributeWritable implements Writable, Cloneable {
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		this.category = new String(buff);
+		length = dataInput.readInt();
 		buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		this.attributeValue = new String(buff);

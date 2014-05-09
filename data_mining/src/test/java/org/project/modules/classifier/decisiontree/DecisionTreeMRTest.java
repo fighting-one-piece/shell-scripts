@@ -15,6 +15,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -31,10 +32,11 @@ import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builde
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeRWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
-import org.project.utils.DFSUtils;
+import org.project.utils.HDFSUtils;
 import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
 
@@ -43,7 +45,7 @@ import com.alibaba.fastjson.JSONWriter;
 
 public class DecisionTreeMRTest {
 
-	public static final String DFS_URL = "hdfs://centos.host1:9000/user/hadoop/data/example/";
+	public static final String DFS_URL = "hdfs://centos.host1:9000/user/hadoop/data/dt/";
 	// public static final String DFS_URL =
 	// "hdfs://hadoop-namenode-1896:9000/user/hadoop_hudong/project/rf/";
 
@@ -276,7 +278,7 @@ public class DecisionTreeMRTest {
 		SequenceFile.Reader reader = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "005/output/part-m-00005");
+			Path path = new Path(DFS_URL + "005/output/part-m-00000");
 			reader = new SequenceFile.Reader(fs, path, conf);
 			LongWritable key = (LongWritable) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);
@@ -293,13 +295,35 @@ public class DecisionTreeMRTest {
 			IOUtils.closeQuietly(reader);
 		}
 	}
+	
+	@Test
+	public void readReducerFile() {
+		SequenceFile.Reader reader = null;
+		try {
+			FileSystem fs = FileSystem.get(conf);
+			Path path = new Path(DFS_URL + "001/output1/part-r-00002");
+			reader = new SequenceFile.Reader(fs, path, conf);
+			Text key = (Text) ReflectionUtils.newInstance(
+					reader.getKeyClass(), conf);
+			AttributeRWritable value = new AttributeRWritable();
+			while (reader.next(key, value)) {
+				System.out.println(value.getAttribute());
+				System.out.println(value.getGainRatio());
+				value = new AttributeRWritable();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
+	}
 
 	@Test
 	public void listFile() {
 		try {
 			FileSystem fs = FileSystem.get(conf);
 			Path path = new Path(DFS_URL + "input");
-			ShowUtils.print(DFSUtils.getPathFiles(fs, path));
+			ShowUtils.print(HDFSUtils.getPathFiles(fs, path));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

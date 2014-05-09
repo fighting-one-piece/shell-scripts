@@ -30,7 +30,7 @@ import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
-import org.project.utils.DFSUtils;
+import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
 public class RandomForestClassifyMR {
@@ -103,7 +103,7 @@ class RandomForestClassifyMapper extends Mapper<LongWritable, Text, IntWritable,
 		URI[] uris = DistributedCache.getCacheFiles(conf);
 		
 		Path path = new Path(uris[0]);
-		Path[] seqFilePaths = DFSUtils.getPathFiles(fs, path);
+		Path[] seqFilePaths = HDFSUtils.getPathFiles(fs, path);
 		
 		Map<String, Set<TreeNode>> map = new HashMap<String, Set<TreeNode>>();
 		

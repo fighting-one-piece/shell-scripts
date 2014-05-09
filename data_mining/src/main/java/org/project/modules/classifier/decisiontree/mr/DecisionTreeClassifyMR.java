@@ -29,7 +29,7 @@ import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
-import org.project.utils.DFSUtils;
+import org.project.utils.HDFSUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +109,7 @@ class DecisionTreeClassifyMapper extends Mapper<LongWritable, Text,
 		URI[] uris = DistributedCache.getCacheFiles(conf);
 		
 		Path path = new Path(uris[0]);
-		Path[] seqFilePaths = DFSUtils.getPathFiles(fs, path);
+		Path[] seqFilePaths = HDFSUtils.getPathFiles(fs, path);
 		
 		List<Object[]> results = new ArrayList<Object[]>();
 		Set<String> attrs = new HashSet<String>();

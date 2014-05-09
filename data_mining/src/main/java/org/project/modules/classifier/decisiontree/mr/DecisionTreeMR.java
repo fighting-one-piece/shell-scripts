@@ -18,15 +18,18 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.project.modules.classifier.decisiontree.mr.writable.AttributeWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeMWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeRWritable;
 
 public class DecisionTreeMR {
 	
 	private static void configureJob(Job job) {
 		job.setJarByClass(DecisionTreeMR.class);
 		
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(AttributeMWritable.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(Text.class);
+		job.setOutputValueClass(AttributeRWritable.class);
 		
 		job.setMapperClass(DecisionTreeMapper.class);
 		job.setReducerClass(DecisionTreeReducer.class);
@@ -60,7 +63,7 @@ public class DecisionTreeMR {
 }
 
 class DecisionTreeMapper extends Mapper<LongWritable, Text, 
-	Text, AttributeWritable> {
+	Text, AttributeMWritable> {
 	
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -78,18 +81,17 @@ class DecisionTreeMapper extends Mapper<LongWritable, Text,
 		while (tokenizer.hasMoreTokens()) {
 			String attribute = tokenizer.nextToken();
 			String[] entry = attribute.split(":");
-			context.write(new Text(entry[0]), new AttributeWritable(id, category, entry[1]));
+			context.write(new Text(entry[0]), new AttributeMWritable(id, category, entry[1]));
 		}
 	}
 	
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
-		
 	}
 }
 
-class DecisionTreeReducer extends Reducer<Text, AttributeWritable, Text, Text> {
+class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, AttributeRWritable> {
 	
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
@@ -97,14 +99,14 @@ class DecisionTreeReducer extends Reducer<Text, AttributeWritable, Text, Text> {
 	}
 	
 	@Override
-	protected void reduce(Text key, Iterable<AttributeWritable> values,
+	protected void reduce(Text key, Iterable<AttributeMWritable> values,
 			Context context) throws IOException, InterruptedException {
 		double totalNum = 0.0;
 		Map<String, Map<String, Integer>> attrValueSplits = 
 				new HashMap<String, Map<String, Integer>>();
-		Iterator<AttributeWritable> iterator = values.iterator();
+		Iterator<AttributeMWritable> iterator = values.iterator();
 		while (iterator.hasNext()) {
-			AttributeWritable attribute = iterator.next();
+			AttributeMWritable attribute = iterator.next();
 			String attributeValue = attribute.getAttributeValue();
 			Map<String, Integer> attrValueSplit = attrValueSplits.get(attributeValue);
 			if (null == attrValueSplit) {
@@ -133,7 +135,16 @@ class DecisionTreeReducer extends Reducer<Text, AttributeWritable, Text, Text> {
 			splitInfo -= dj * (Math.log(dj) / Math.log(2));
 		}
 		double gainRatio = gainInfo / splitInfo;
-		context.write(key, new Text(String.valueOf(gainRatio)));
+		StringBuilder splitPoints = new StringBuilder();
+		for (String attrValue : attrValueSplits.keySet()) {
+			splitPoints.append(attrValue).append(",");
+		}
+		splitPoints.deleteCharAt(splitPoints.length() - 1);
+		System.out.println("attribute: " + key.toString());
+		System.out.println("gainRatio: " + gainRatio);
+		System.out.println("splitPoints: " + splitPoints.toString());
+		context.write(key, new AttributeRWritable(
+				key.toString(), gainRatio, splitPoints.toString()));
 	}
 	
 	@Override

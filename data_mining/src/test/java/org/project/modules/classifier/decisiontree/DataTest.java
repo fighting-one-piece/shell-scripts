@@ -1,8 +1,14 @@
 package org.project.modules.classifier.decisiontree;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
@@ -39,5 +45,28 @@ public class DataTest {
 		}
 		System.out.println(a.size());
 		System.out.println(data.getAttributes().length);
+	}
+	
+	@Test
+	public void b() throws Exception {
+		OutputStream out = new FileOutputStream(new File("D:\\a.txt"));
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+		StringBuilder sb = new StringBuilder();
+		sb.append("1").append("\t").append("1").append("\t").append("a:b");
+		writer.write(sb.toString());
+		writer.flush();
+		IOUtils.closeQuietly(out);
+		IOUtils.closeQuietly(writer);
+	}
+	
+	@Test
+	public void c() {
+		
+	}
+	
+	public static void main(String[] args) {
+		System.out.println(System.getProperty("java.io.tmpdir"));
+		System.out.println(System.getProperty("user.dir"));
+		System.out.println(System.getProperty("user.home"));
 	}
 }
