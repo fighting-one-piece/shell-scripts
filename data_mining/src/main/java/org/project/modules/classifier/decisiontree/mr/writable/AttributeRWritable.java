@@ -12,15 +12,19 @@ public class AttributeRWritable implements Writable, Cloneable {
 	
 	private double gainRatio = 0.0;
 	
+	private String category = null;
+	
 	private String splitPoints = null;
 	
 	public AttributeRWritable() {
 		
 	}
 	
-	public AttributeRWritable(String attribute, double gainRatio, String splitPoints) {
+	public AttributeRWritable(String attribute, double gainRatio, 
+			String category, String splitPoints) {
 		this.attribute = attribute;
 		this.gainRatio = gainRatio;
+		this.category = category;
 		this.splitPoints = splitPoints;
 	}
 
@@ -34,6 +38,10 @@ public class AttributeRWritable implements Writable, Cloneable {
 		length = dataInput.readInt();
 		buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
+		this.category = new String(buff);
+		length = dataInput.readInt();
+		buff = new byte[length];
+		dataInput.readFully(buff, 0, length);
 		this.splitPoints = new String(buff);
 	}
 
@@ -42,6 +50,8 @@ public class AttributeRWritable implements Writable, Cloneable {
 		dataOutput.writeInt(attribute.length());
 		dataOutput.writeBytes(attribute);
 		dataOutput.writeDouble(gainRatio);
+		dataOutput.writeInt(category.length());
+		dataOutput.writeBytes(category);
 		dataOutput.writeInt(splitPoints.length());
 		dataOutput.writeBytes(splitPoints);
 	}
@@ -70,6 +80,14 @@ public class AttributeRWritable implements Writable, Cloneable {
 		this.gainRatio = gainRatio;
 	}
 	
+	public String getCategory() {
+		return category;
+	}
+
+	public void setCategory(String category) {
+		this.category = category;
+	}
+
 	public String[] obtainSplitPoints() {
 		if (null == splitPoints || splitPoints.length() == 0) {
 			return null;

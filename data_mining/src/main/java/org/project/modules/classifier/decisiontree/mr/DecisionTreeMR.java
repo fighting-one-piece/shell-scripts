@@ -143,8 +143,8 @@ class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, Attrib
 		System.out.println("attribute: " + key.toString());
 		System.out.println("gainRatio: " + gainRatio);
 		System.out.println("splitPoints: " + splitPoints.toString());
-		context.write(key, new AttributeRWritable(
-				key.toString(), gainRatio, splitPoints.toString()));
+		context.write(key, new AttributeRWritable(key.toString(),
+				gainRatio, "category", splitPoints.toString()));
 	}
 	
 	@Override
