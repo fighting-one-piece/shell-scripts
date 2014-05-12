@@ -12,7 +12,7 @@ public class AttributeRWritable implements Writable, Cloneable {
 	
 	private double gainRatio = 0.0;
 	
-	private String category = null;
+	private boolean isCategory = false;
 	
 	private String splitPoints = null;
 	
@@ -21,10 +21,10 @@ public class AttributeRWritable implements Writable, Cloneable {
 	}
 	
 	public AttributeRWritable(String attribute, double gainRatio, 
-			String category, String splitPoints) {
+			boolean isCategory, String splitPoints) {
 		this.attribute = attribute;
 		this.gainRatio = gainRatio;
-		this.category = category;
+		this.isCategory = isCategory;
 		this.splitPoints = splitPoints;
 	}
 
@@ -35,14 +35,13 @@ public class AttributeRWritable implements Writable, Cloneable {
 		dataInput.readFully(buff, 0, length);
 		this.attribute = new String(buff);
 		this.gainRatio = dataInput.readDouble();
-		length = dataInput.readInt();
-		buff = new byte[length];
-		dataInput.readFully(buff, 0, length);
-		this.category = new String(buff);
-		length = dataInput.readInt();
-		buff = new byte[length];
-		dataInput.readFully(buff, 0, length);
-		this.splitPoints = new String(buff);
+		this.isCategory = dataInput.readBoolean();
+		if (dataInput.readBoolean()) {
+			length = dataInput.readInt();
+			buff = new byte[length];
+			dataInput.readFully(buff, 0, length);
+			this.splitPoints = new String(buff);
+		}
 	}
 
 	@Override
@@ -50,10 +49,12 @@ public class AttributeRWritable implements Writable, Cloneable {
 		dataOutput.writeInt(attribute.length());
 		dataOutput.writeBytes(attribute);
 		dataOutput.writeDouble(gainRatio);
-		dataOutput.writeInt(category.length());
-		dataOutput.writeBytes(category);
-		dataOutput.writeInt(splitPoints.length());
-		dataOutput.writeBytes(splitPoints);
+		dataOutput.writeBoolean(isCategory);
+		dataOutput.writeBoolean(null != splitPoints);
+		if (null != splitPoints) {
+			dataOutput.writeInt(splitPoints.length());
+			dataOutput.writeBytes(splitPoints);
+		}
 	}
 
 	public String getAttribute() {
@@ -80,12 +81,12 @@ public class AttributeRWritable implements Writable, Cloneable {
 		this.gainRatio = gainRatio;
 	}
 	
-	public String getCategory() {
-		return category;
+	public boolean isCategory() {
+		return isCategory;
 	}
 
-	public void setCategory(String category) {
-		this.category = category;
+	public void setCategory(boolean isCategory) {
+		this.isCategory = isCategory;
 	}
 
 	public String[] obtainSplitPoints() {

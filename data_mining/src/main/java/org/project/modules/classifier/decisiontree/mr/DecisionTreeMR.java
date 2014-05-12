@@ -78,10 +78,15 @@ class DecisionTreeMapper extends Mapper<LongWritable, Text,
 		StringTokenizer tokenizer = new StringTokenizer(line);
 		Long id = Long.parseLong(tokenizer.nextToken());
 		String category = tokenizer.nextToken();
+		boolean isCategory = true;
 		while (tokenizer.hasMoreTokens()) {
+			isCategory = false;
 			String attribute = tokenizer.nextToken();
 			String[] entry = attribute.split(":");
 			context.write(new Text(entry[0]), new AttributeMWritable(id, category, entry[1]));
+		}
+		if (isCategory) {
+			context.write(new Text(category), new AttributeMWritable(id, category, category));
 		}
 	}
 	
@@ -101,13 +106,19 @@ class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, Attrib
 	@Override
 	protected void reduce(Text key, Iterable<AttributeMWritable> values,
 			Context context) throws IOException, InterruptedException {
+		String attributeName = key.toString();
 		double totalNum = 0.0;
 		Map<String, Map<String, Integer>> attrValueSplits = 
 				new HashMap<String, Map<String, Integer>>();
 		Iterator<AttributeMWritable> iterator = values.iterator();
+		boolean isCategory = false;
 		while (iterator.hasNext()) {
 			AttributeMWritable attribute = iterator.next();
 			String attributeValue = attribute.getAttributeValue();
+			if (attributeName.equals(attributeValue)) {
+				isCategory = true;
+				break;
+			}
 			Map<String, Integer> attrValueSplit = attrValueSplits.get(attributeValue);
 			if (null == attrValueSplit) {
 				attrValueSplit = new HashMap<String, Integer>();
@@ -118,33 +129,46 @@ class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, Attrib
 			attrValueSplit.put(category, null == categoryNum ? 1 : categoryNum + 1);
 			totalNum++;
 		}
-		double gainInfo = 0.0;
-		double splitInfo = 0.0;
-		for (Map<String, Integer> attrValueSplit : attrValueSplits.values()) {
-			double totalCategoryNum = 0;
-			for (Integer categoryNum : attrValueSplit.values()) {
-				totalCategoryNum += categoryNum;
+		if (isCategory) {
+			System.out.println("is Category");
+			int sum = 0;
+			iterator = values.iterator();
+			while (iterator.hasNext()) {
+				iterator.next();
+				sum += 1;
 			}
-			double entropy = 0.0;
-			for (Integer categoryNum : attrValueSplit.values()) {
-				double p = categoryNum / totalCategoryNum;
-				entropy -= p * (Math.log(p) / Math.log(2));
+			System.out.println("sum: " + sum);
+			context.write(key, new AttributeRWritable(attributeName,
+					sum, true, null));
+		} else {
+			double gainInfo = 0.0;
+			double splitInfo = 0.0;
+			for (Map<String, Integer> attrValueSplit : attrValueSplits.values()) {
+				double totalCategoryNum = 0;
+				for (Integer categoryNum : attrValueSplit.values()) {
+					totalCategoryNum += categoryNum;
+				}
+				double entropy = 0.0;
+				for (Integer categoryNum : attrValueSplit.values()) {
+					double p = categoryNum / totalCategoryNum;
+					entropy -= p * (Math.log(p) / Math.log(2));
+				}
+				double dj = totalCategoryNum / totalNum;
+				gainInfo += dj * entropy;
+				splitInfo -= dj * (Math.log(dj) / Math.log(2));
 			}
-			double dj = totalCategoryNum / totalNum;
-			gainInfo += dj * entropy;
-			splitInfo -= dj * (Math.log(dj) / Math.log(2));
+			double gainRatio = splitInfo == 0.0 ? 0.0 : gainInfo / splitInfo;
+			StringBuilder splitPoints = new StringBuilder();
+			for (String attrValue : attrValueSplits.keySet()) {
+				splitPoints.append(attrValue).append(",");
+			}
+			splitPoints.deleteCharAt(splitPoints.length() - 1);
+			System.out.println("attribute: " + attributeName);
+			System.out.println("gainRatio: " + gainRatio);
+			System.out.println("splitPoints: " + splitPoints.toString());
+			context.write(key, new AttributeRWritable(attributeName,
+					gainRatio, false, splitPoints.toString()));
 		}
-		double gainRatio = gainInfo / splitInfo;
-		StringBuilder splitPoints = new StringBuilder();
-		for (String attrValue : attrValueSplits.keySet()) {
-			splitPoints.append(attrValue).append(",");
-		}
-		splitPoints.deleteCharAt(splitPoints.length() - 1);
-		System.out.println("attribute: " + key.toString());
-		System.out.println("gainRatio: " + gainRatio);
-		System.out.println("splitPoints: " + splitPoints.toString());
-		context.write(key, new AttributeRWritable(key.toString(),
-				gainRatio, "category", splitPoints.toString()));
 	}
 	
 	@Override

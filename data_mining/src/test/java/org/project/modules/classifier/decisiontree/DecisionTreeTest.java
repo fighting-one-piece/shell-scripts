@@ -68,4 +68,20 @@ public class DecisionTreeTest {
 		}
 	}
 	
+	@Test
+	public void builder() {
+		String path = "d:\\trains_5.txt";
+		Data data = DataLoader.loadWithId(path);
+		DataHandler.fill(data, 0);
+		Builder builder = new DecisionTreeC45Builder();
+		TreeNode treeNode = (TreeNode) builder.build(data);
+		TreeNodeHelper.print(treeNode, 0, null);
+	}
+	
+	public static void main(String[] args) {
+		double p = 1;
+		double a = p * (Math.log(p) / Math.log(2));
+		System.out.println(a);
+	}
+	
 }

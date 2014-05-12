@@ -1,11 +1,20 @@
 package org.project.modules.classifier.decisiontree.data;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+
+import org.apache.commons.io.IOUtils;
+import org.project.utils.FileUtils;
+import org.project.utils.IdentityUtils;
 
 /** 数据处理类*/
 public class DataHandler {
@@ -159,6 +168,70 @@ public class DataHandler {
 			finalResult[i] = maxResult;
 		}
 		return finalResult;
+	}
+	
+	/**
+	 * 分割数据集
+	 * @param attribute
+	 * @param splitPoints
+	 * @return
+	 */
+	public static String[] splitDataSet(Data data, String[] attributes, 
+			String[] splitPoints) {
+		Set<String> attributeSet = new HashSet<String>();
+		for (String attribute : attributes) {
+			attributeSet.add(attribute);
+		}
+		String tmpPath = FileUtils.obtainOSTmpPath();
+		String[] paths = new String[null == splitPoints || 
+				splitPoints.length == 0 ? 1 : splitPoints.length];
+		String path = null;
+		for (int i = 0, len = paths.length; i < len; i++) {
+			path = tmpPath + IdentityUtils.generateUUID() + ".txt";
+			paths[i] = path;
+			OutputStream out = null;
+			BufferedWriter writer = null;
+			try {
+				File file = new File(path);
+				if (!file.getParentFile().exists()) {
+					file.getParentFile().mkdir();
+				}
+				out = new FileOutputStream(file);
+				writer = new BufferedWriter(new OutputStreamWriter(out));
+				StringBuilder sb = null;
+				for (Instance instance : data.getInstances()) {
+					sb = new StringBuilder();
+					sb.append(instance.getId()).append("\t");
+					sb.append(instance.getCategory()).append("\t");
+					boolean isWrite = false;
+					for (Map.Entry<String, Object> entry : 
+						instance.getAttributes().entrySet()) {
+						String attr = entry.getKey();
+						Object attrValue = entry.getValue();
+						if (null != splitPoints && splitPoints.length != 0
+								&& splitPoints[i].equals(attrValue)) {
+							isWrite = true;
+						}
+						if (!attributeSet.contains(attr)) {
+							continue;
+						}
+						sb.append(attr).append(":");
+						sb.append(attrValue).append("\t");
+					}
+					if (isWrite || null == splitPoints) {
+						writer.write(sb.toString());
+						writer.newLine();
+					}
+				}
+				writer.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(writer);
+			}
+		}
+		return paths;
 	}
 	
 }
