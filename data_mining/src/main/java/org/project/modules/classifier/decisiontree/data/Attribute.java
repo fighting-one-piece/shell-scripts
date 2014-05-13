@@ -1,12 +1,34 @@
 package org.project.modules.classifier.decisiontree.data;
 
 public class Attribute {
-
+	
+	private Long id = null;
+	
 	private String name = null;
 	
 	private String value = null;
 
-	private double gainRatio = 0.0;
+	private String category = null;
+	
+	public Attribute() {
+		
+	}
+	
+	public Attribute(Long id, String name, String value, String category) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.value = value;
+		this.category = category;
+	}
+
+	public Long getId() {
+		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getName() {
 		return name;
@@ -24,17 +46,12 @@ public class Attribute {
 		this.value = value;
 	}
 
-	public double getGainRatio() {
-		return gainRatio;
+	public String getCategory() {
+		return category;
 	}
 
-	public void setGainRatio(double gainRatio) {
-		this.gainRatio = gainRatio;
+	public void setCategory(String category) {
+		this.category = category;
 	}
-	
-	public String[] getSplitPoints() {
-		return value.split(",");
-	}
-	
 	
 }

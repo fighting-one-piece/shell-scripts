@@ -9,6 +9,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.builder.Builder;
 import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
+import org.project.modules.classifier.decisiontree.builder.DecisionTreeSprintBuilder;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
@@ -69,7 +70,7 @@ public class DecisionTreeTest {
 	}
 	
 	@Test
-	public void builder() {
+	public void builderC45() {
 		String path = "d:\\trains_5.txt";
 		Data data = DataLoader.loadWithId(path);
 		DataHandler.fill(data, 0);
@@ -78,10 +79,16 @@ public class DecisionTreeTest {
 		TreeNodeHelper.print(treeNode, 0, null);
 	}
 	
-	public static void main(String[] args) {
-		double p = 1;
-		double a = p * (Math.log(p) / Math.log(2));
-		System.out.println(a);
+	@Test
+	public void builderSprint() {
+		String path = "d:\\trains14_id.txt";
+		Data data = DataLoader.loadWithId(path);
+		DataHandler.fill(data, 0);
+		Builder builder = new DecisionTreeSprintBuilder();
+		TreeNode treeNode = (TreeNode) builder.build(data);
+		TreeNodeHelper.print(treeNode, 0, null);
+		Object[] results = (Object[]) treeNode.classifySprint(data);
+		ShowUtils.print(results);
 	}
 	
 }

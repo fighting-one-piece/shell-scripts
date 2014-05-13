@@ -30,7 +30,7 @@ public abstract class AbstractBuilder implements Builder {
 		if (bestAttrIndex == -1) {
 			return obtainMaxCategory(splits);
 		}
-		TreeNode tree = new TreeNode(attributes[bestAttrIndex]);
+		TreeNode treeNode = new TreeNode(attributes[bestAttrIndex]);
 		// 已用过的测试属性不应再次被选为测试属性
 		String[] subAttributes = new String[attributes.length - 1];
 		for (int i = 0, j = 0; i < attributes.length; i++) {
@@ -44,9 +44,9 @@ public abstract class AbstractBuilder implements Builder {
 			Object attrValue = entry.getKey();
 			Data subData = new Data(subAttributes, entry.getValue());
 			Object child = build(subData);
-			tree.setChild(attrValue, child);
+			treeNode.setChild(attrValue, child);
 		}
-		return tree;
+		return treeNode;
 	}
 	
 	/**

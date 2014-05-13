@@ -6,26 +6,33 @@ import java.io.IOException;
 
 import org.apache.hadoop.io.Writable;
 
-public class AttributeRWritable implements Writable, Cloneable {
+public class AttributeGiniWritable implements Writable, Cloneable {
 	
 	private String attribute = null;
 	
-	private double gainRatio = 0.0;
+	private double gini = 0.0;
 	
 	private boolean isCategory = false;
 	
-	private String splitPoints = null;
+	private String splitPoint = null;
 	
-	public AttributeRWritable() {
+	public AttributeGiniWritable() {
 		
 	}
 	
-	public AttributeRWritable(String attribute, double gainRatio, 
-			boolean isCategory, String splitPoints) {
+	public AttributeGiniWritable(String attribute, 
+			double gini, String splitPoint) {
 		this.attribute = attribute;
-		this.gainRatio = gainRatio;
+		this.gini = gini;
+		this.splitPoint = splitPoint;
+	}
+	
+	public AttributeGiniWritable(String attribute, 
+			double gini, boolean isCategory, String splitPoint) {
+		this.attribute = attribute;
+		this.gini = gini;
 		this.isCategory = isCategory;
-		this.splitPoints = splitPoints;
+		this.splitPoint = splitPoint;
 	}
 
 	@Override
@@ -34,13 +41,13 @@ public class AttributeRWritable implements Writable, Cloneable {
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		this.attribute = new String(buff);
-		this.gainRatio = dataInput.readDouble();
+		this.gini = dataInput.readDouble();
 		this.isCategory = dataInput.readBoolean();
 		if (dataInput.readBoolean()) {
 			length = dataInput.readInt();
 			buff = new byte[length];
 			dataInput.readFully(buff, 0, length);
-			this.splitPoints = new String(buff);
+			this.splitPoint = new String(buff);
 		}
 	}
 
@@ -48,12 +55,12 @@ public class AttributeRWritable implements Writable, Cloneable {
 	public void write(DataOutput dataOutput) throws IOException {
 		dataOutput.writeInt(attribute.length());
 		dataOutput.writeBytes(attribute);
-		dataOutput.writeDouble(gainRatio);
+		dataOutput.writeDouble(gini);
 		dataOutput.writeBoolean(isCategory);
-		dataOutput.writeBoolean(null != splitPoints);
-		if (null != splitPoints) {
-			dataOutput.writeInt(splitPoints.length());
-			dataOutput.writeBytes(splitPoints);
+		dataOutput.writeBoolean(null != splitPoint);
+		if (null != splitPoint) {
+			dataOutput.writeInt(splitPoint.length());
+			dataOutput.writeBytes(splitPoint);
 		}
 	}
 
@@ -66,19 +73,19 @@ public class AttributeRWritable implements Writable, Cloneable {
 	}
 
 	public String getSplitPoints() {
-		return splitPoints;
+		return splitPoint;
 	}
 
 	public void setSplitPoints(String splitPoints) {
-		this.splitPoints = splitPoints;
+		this.splitPoint = splitPoints;
 	}
 
-	public double getGainRatio() {
-		return gainRatio;
+	public double getGini() {
+		return gini;
 	}
 
-	public void setGainRatio(double gainRatio) {
-		this.gainRatio = gainRatio;
+	public void setGainRatio(double gini) {
+		this.gini = gini;
 	}
 	
 	public boolean isCategory() {
@@ -89,12 +96,5 @@ public class AttributeRWritable implements Writable, Cloneable {
 		this.isCategory = isCategory;
 	}
 
-	public String[] obtainSplitPoints() {
-		if (null == splitPoints || splitPoints.length() == 0) {
-			return null;
-		}
-		return splitPoints.contains(",") ? splitPoints.split(",") :
-			new String[]{splitPoints};
-	}
 
 }

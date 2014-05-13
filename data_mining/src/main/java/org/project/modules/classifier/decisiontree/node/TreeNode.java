@@ -89,6 +89,38 @@ public class TreeNode extends Node implements Writable, Serializable {
 		return null;
 	}
 	
+	public Object classifySprint(Data data) {
+		List<Instance> instances = data.getInstances();
+		return classifySprint(instances.toArray(new Instance[0]));
+	}
+	
+	public Object classifySprint(Instance... instances) {
+		int length = instances.length;
+		if (length == 0) return null;
+		Object[] result = new Object[length];
+		for (int i = 0; i < length; i++) {
+			result[i] = classifySprint(instances[i]);
+		}
+		return result;
+	}
+	
+	public Object classifySprint(Instance instance) {
+		Object attributeValue = instance.getAttribute(attribute);
+		if (null == attributeValue) return null;
+		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+			String attrName = entry.getKey().toString();
+			if (attrName.indexOf(attributeValue.toString()) != -1) {
+				Object value = entry.getValue();
+				if (value instanceof TreeNode) {
+					return ((TreeNode) value).classifySprint(instance);
+				} else {
+					return value;
+				}
+			} 
+		}
+		return null;
+	}
+	
 	@Override
 	public void readFields(DataInput dataInput) throws IOException {
 		int length = dataInput.readInt();

@@ -2,8 +2,10 @@ package org.project.modules.classifier.decisiontree.mr;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
@@ -18,21 +20,21 @@ import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.project.modules.classifier.decisiontree.mr.writable.AttributeMWritable;
-import org.project.modules.classifier.decisiontree.mr.writable.AttributeRWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeGiniWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeWritable;
 
-public class DecisionTreeMR {
+public class DecisionTreeSprintMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(DecisionTreeMR.class);
+		job.setJarByClass(DecisionTreeSprintMR.class);
 		
 		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(AttributeMWritable.class);
+		job.setMapOutputValueClass(AttributeWritable.class);
 		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(AttributeRWritable.class);
+		job.setOutputValueClass(AttributeGiniWritable.class);
 		
-		job.setMapperClass(DecisionTreeMapper.class);
-		job.setReducerClass(DecisionTreeReducer.class);
+		job.setMapperClass(DecisionTreeSprintMapper.class);
+		job.setReducerClass(DecisionTreeSprintReducer.class);
 		
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
@@ -50,7 +52,6 @@ public class DecisionTreeMR {
 			Job job = new Job(configuration, "Decision Tree");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
-//			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
 			FileOutputFormat.setOutputPath(job, new Path(inputArgs[1]));
 			
 			configureJob(job);
@@ -62,8 +63,8 @@ public class DecisionTreeMR {
 	}
 }
 
-class DecisionTreeMapper extends Mapper<LongWritable, Text, 
-	Text, AttributeMWritable> {
+class DecisionTreeSprintMapper extends Mapper<LongWritable, Text, 
+	Text, AttributeWritable> {
 	
 	@Override
 	protected void setup(Context context) throws IOException,
@@ -83,10 +84,10 @@ class DecisionTreeMapper extends Mapper<LongWritable, Text,
 			isCategory = false;
 			String attribute = tokenizer.nextToken();
 			String[] entry = attribute.split(":");
-			context.write(new Text(entry[0]), new AttributeMWritable(id, category, entry[1]));
+			context.write(new Text(entry[0]), new AttributeWritable(id, category, entry[1]));
 		}
 		if (isCategory) {
-			context.write(new Text(category), new AttributeMWritable(id, category, category));
+			context.write(new Text(category), new AttributeWritable(id, category, category));
 		}
 	}
 	
@@ -96,7 +97,7 @@ class DecisionTreeMapper extends Mapper<LongWritable, Text,
 	}
 }
 
-class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, AttributeRWritable> {
+class DecisionTreeSprintReducer extends Reducer<Text, AttributeWritable, Text, AttributeGiniWritable> {
 	
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
@@ -104,21 +105,23 @@ class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, Attrib
 	}
 	
 	@Override
-	protected void reduce(Text key, Iterable<AttributeMWritable> values,
+	protected void reduce(Text key, Iterable<AttributeWritable> values,
 			Context context) throws IOException, InterruptedException {
 		String attributeName = key.toString();
 		double totalNum = 0.0;
 		Map<String, Map<String, Integer>> attrValueSplits = 
 				new HashMap<String, Map<String, Integer>>();
-		Iterator<AttributeMWritable> iterator = values.iterator();
+		Set<String> splitPoints = new HashSet<String>();
+		Iterator<AttributeWritable> iterator = values.iterator();
 		boolean isCategory = false;
 		while (iterator.hasNext()) {
-			AttributeMWritable attribute = iterator.next();
+			AttributeWritable attribute = iterator.next();
 			String attributeValue = attribute.getAttributeValue();
 			if (attributeName.equals(attributeValue)) {
 				isCategory = true;
 				break;
 			}
+			splitPoints.add(attributeValue);
 			Map<String, Integer> attrValueSplit = attrValueSplits.get(attributeValue);
 			if (null == attrValueSplit) {
 				attrValueSplit = new HashMap<String, Integer>();
@@ -138,36 +141,53 @@ class DecisionTreeReducer extends Reducer<Text, AttributeMWritable, Text, Attrib
 				sum += 1;
 			}
 			System.out.println("sum: " + sum);
-			context.write(key, new AttributeRWritable(attributeName,
+			context.write(key, new AttributeGiniWritable(attributeName,
 					sum, true, null));
 		} else {
-			double gainInfo = 0.0;
-			double splitInfo = 0.0;
-			for (Map<String, Integer> attrValueSplit : attrValueSplits.values()) {
-				double totalCategoryNum = 0;
-				for (Integer categoryNum : attrValueSplit.values()) {
-					totalCategoryNum += categoryNum;
+			String minSplitPoint = null;
+			double minSplitPointGini = 1.0;
+			Map<String, Double> splitPoint2Gini = new HashMap<String, Double>();
+			for (String splitPoint : splitPoints) {
+				double splitPointGini = 0.0;
+				double splitAboveNum = 0.0;
+				double splitBelowNum = 0.0;
+				Map<String, Integer> attrBelowSplit = new HashMap<String, Integer>();
+				for (Map.Entry<String, Map<String, Integer>> entry : 
+					attrValueSplits.entrySet()) {
+					String attrValue = entry.getKey();
+					Map<String, Integer> attrValueSplit = entry.getValue();
+					if (splitPoint.equals(attrValue)) {
+						for (Integer v : attrValueSplit.values()) {
+							splitAboveNum += v;
+						}
+						double aboveGini = 1.0;
+						for (Integer v : attrValueSplit.values()) {
+							aboveGini -= Math.pow((v / splitAboveNum), 2);
+						}
+						splitPointGini += (splitAboveNum / totalNum) * aboveGini;
+					} else {
+						for (Map.Entry<String, Integer> e : attrValueSplit.entrySet()) {
+							String k = e.getKey();
+							Integer v = e.getValue();
+							Integer count = attrBelowSplit.get(k);
+							attrBelowSplit.put(k, null == count ? v : v + count);
+							splitBelowNum += e.getValue();
+						}
+					}
 				}
-				double entropy = 0.0;
-				for (Integer categoryNum : attrValueSplit.values()) {
-					double p = categoryNum / totalCategoryNum;
-					entropy -= p * (Math.log(p) / Math.log(2));
+				double belowGini = 1.0;
+				for (Integer v : attrBelowSplit.values()) {
+					belowGini -= Math.pow((v / splitBelowNum), 2);
 				}
-				double dj = totalCategoryNum / totalNum;
-				gainInfo += dj * entropy;
-				splitInfo -= dj * (Math.log(dj) / Math.log(2));
+				splitPointGini += (splitBelowNum / totalNum) * belowGini;
+				splitPoint2Gini.put(splitPoint, splitPointGini);
+				if (minSplitPointGini > splitPointGini) {
+					minSplitPointGini = splitPointGini;
+					minSplitPoint = splitPoint;
+				}
 			}
-			double gainRatio = splitInfo == 0.0 ? 0.0 : gainInfo / splitInfo;
-			StringBuilder splitPoints = new StringBuilder();
-			for (String attrValue : attrValueSplits.keySet()) {
-				splitPoints.append(attrValue).append(",");
-			}
-			splitPoints.deleteCharAt(splitPoints.length() - 1);
-			System.out.println("attribute: " + attributeName);
-			System.out.println("gainRatio: " + gainRatio);
-			System.out.println("splitPoints: " + splitPoints.toString());
-			context.write(key, new AttributeRWritable(attributeName,
-					gainRatio, false, splitPoints.toString()));
+			context.write(key, new AttributeGiniWritable(key.toString(), 
+					minSplitPointGini, false, minSplitPoint));
 		}
 	}
 	

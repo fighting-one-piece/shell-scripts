@@ -32,7 +32,7 @@ import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builde
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
-import org.project.modules.classifier.decisiontree.mr.writable.AttributeRWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeGainWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
@@ -305,11 +305,11 @@ public class DecisionTreeMRTest {
 			reader = new SequenceFile.Reader(fs, path, conf);
 			Text key = (Text) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);
-			AttributeRWritable value = new AttributeRWritable();
+			AttributeGainWritable value = new AttributeGainWritable();
 			while (reader.next(key, value)) {
 				System.out.println(value.getAttribute());
 				System.out.println(value.getGainRatio());
-				value = new AttributeRWritable();
+				value = new AttributeGainWritable();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

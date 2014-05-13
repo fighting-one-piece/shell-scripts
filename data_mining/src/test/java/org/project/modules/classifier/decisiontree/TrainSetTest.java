@@ -11,50 +11,45 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.project.modules.classifier.decisiontree.original.SampleUtils;
-
 public class TrainSetTest {
 
-	@SuppressWarnings("unchecked")
 	public static void main(String[] args) {
-		String filePath = "d:\\trainset_extract_10.txt";
-		Object[] datas = SampleUtils.readDatasFromFile(filePath);
-		Map<String, Integer> attributeMap = (Map<String, Integer>) datas[3];
-		double attribute_all_count = attributeMap.values().size();
-		System.out.println("all count: " + attribute_all_count);
-		System.out.println("all count: " + attributeMap.keySet().size());
-		int i = 0, j = 0, k = 0;
-		for (Map.Entry<String, Integer> entry : attributeMap.entrySet()) {
-			int count = entry.getValue();
-			if (count == 1) {
-				i++;
-			} else if (count == 2) {
-				j++;
-			} else if (count <= 10) {
-				k++;
-			}
-		}
-		System.out.println("1: " + i + " 2: " + j + " 5: " + k);
+//		String filePath = "d:\\trainset_extract_10.txt";
+//		Object[] datas = SampleUtils.readDatasFromFile(filePath);
+//		Map<String, Integer> attributeMap = (Map<String, Integer>) datas[3];
+//		double attribute_all_count = attributeMap.values().size();
+//		System.out.println("all count: " + attribute_all_count);
+//		System.out.println("all count: " + attributeMap.keySet().size());
+//		int i = 0, j = 0, k = 0;
+//		for (Map.Entry<String, Integer> entry : attributeMap.entrySet()) {
+//			int count = entry.getValue();
+//			if (count == 1) {
+//				i++;
+//			} else if (count == 2) {
+//				j++;
+//			} else if (count <= 10) {
+//				k++;
+//			}
+//		}
+//		System.out.println("1: " + i + " 2: " + j + " 5: " + k);
 	}
 	
-	@SuppressWarnings("unchecked")
 	private static Set<String> obtainAttrs() {
 		Set<String> attributes = new HashSet<String>();
-		String filePath = "d:\\trainset_1000.txt";
-		Object[] datas = SampleUtils.readDatasFromFile(filePath);
-		Map<String, Integer> attributeMap = (Map<String, Integer>) datas[3];
-		double attribute_all_count = attributeMap.values().size();
-		System.out.println("all count: " + attribute_all_count);
-		for (Map.Entry<String, Integer> entry : attributeMap.entrySet()) {
-			String attribute = entry.getKey();
-			int count = entry.getValue();
-			if (count < 50) continue;
-			attributes.add(attribute);
-		}
+//		String filePath = "d:\\trainset_1000.txt";
+//		Object[] datas = SampleUtils.readDatasFromFile(filePath);
+//		Map<String, Integer> attributeMap = (Map<String, Integer>) datas[3];
+//		double attribute_all_count = attributeMap.values().size();
+//		System.out.println("all count: " + attribute_all_count);
+//		for (Map.Entry<String, Integer> entry : attributeMap.entrySet()) {
+//			String attribute = entry.getKey();
+//			int count = entry.getValue();
+//			if (count < 50) continue;
+//			attributes.add(attribute);
+//		}
 		return attributes;
 	}
 	
