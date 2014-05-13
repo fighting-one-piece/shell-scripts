@@ -14,7 +14,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 import org.project.utils.FileUtils;
-import org.project.utils.IdentityUtils;
 
 /** 数据处理类*/
 public class DataHandler {
@@ -170,29 +169,70 @@ public class DataHandler {
 		return finalResult;
 	}
 	
-	/**
-	 * 分割数据集
-	 * @param attribute
-	 * @param splitPoints
-	 * @return
-	 */
 	public static String[] splitDataSet(Data data, String[] attributes, 
-			String[] splitPoints) {
+			String splitPoint) {
 		Set<String> attributeSet = new HashSet<String>();
 		for (String attribute : attributes) {
 			attributeSet.add(attribute);
 		}
-		String tmpPath = FileUtils.obtainOSTmpPath();
-		String[] paths = new String[null == splitPoints || 
-				splitPoints.length == 0 ? 1 : splitPoints.length];
-		String path = null;
+		String[] paths = new String[2];
 		for (int i = 0, len = paths.length; i < len; i++) {
-			path = tmpPath + IdentityUtils.generateUUID() + ".txt";
-			paths[i] = path;
+			paths[i] = FileUtils.obtainRandomTxtPath();
 			OutputStream out = null;
 			BufferedWriter writer = null;
 			try {
-				File file = new File(path);
+				File file = new File(paths[i]);
+				if (!file.getParentFile().exists()) {
+					file.getParentFile().mkdir();
+				}
+				out = new FileOutputStream(file);
+				writer = new BufferedWriter(new OutputStreamWriter(out));
+				StringBuilder sb = null;
+				for (Instance instance : data.getInstances()) {
+					sb = new StringBuilder();
+					sb.append(instance.getId()).append("\t");
+					sb.append(instance.getCategory()).append("\t");
+					for (Map.Entry<String, Object> entry : 
+						instance.getAttributes().entrySet()) {
+						String attr = entry.getKey();
+						Object attrValue = entry.getValue();
+						if (!attributeSet.contains(attr)) {
+							continue;
+						}
+						sb.append(attr).append(":");
+						sb.append(attrValue).append("\t");
+					}
+					writer.write(sb.toString());
+					writer.newLine();
+				}
+				writer.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(writer);
+			}
+		}
+		return paths;
+	}
+	
+	/**
+	 * 分割成多个数据集
+	 */
+	public static String[] splitMultiDataSet(Data data, 
+			String[] attributes, String[] splitPoints) {
+		Set<String> attributeSet = new HashSet<String>();
+		for (String attribute : attributes) {
+			attributeSet.add(attribute);
+		}
+		String[] paths = new String[null == splitPoints || 
+				splitPoints.length == 0 ? 1 : splitPoints.length];
+		for (int i = 0, len = paths.length; i < len; i++) {
+			paths[i] = FileUtils.obtainRandomTxtPath();
+			OutputStream out = null;
+			BufferedWriter writer = null;
+			try {
+				File file = new File(paths[i]);
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdir();
 				}

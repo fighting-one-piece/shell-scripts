@@ -52,7 +52,7 @@ public class DecisionTreeSprintJob {
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(data, 0);
-			String[] tmpPaths = DataHandler.splitDataSet(
+			String[] tmpPaths = DataHandler.splitMultiDataSet(
 					data, data.getAttributes(), null);
 			System.out.println(tmpPaths[0]);
 			String name = tmpPaths[0].substring(tmpPaths[0].lastIndexOf(File.separator) + 1);
@@ -138,30 +138,31 @@ public class DecisionTreeSprintJob {
 		if (bestAttr.isCategory()) {
 			return attribute;
 		}
-		
-		
-//		String[] splitPoints = bestAttr.obtainSplitPoints();
-//		System.out.print("splitPoints: ");
-//		ShowUtils.print(splitPoints);
-//		TreeNode treeNode = new TreeNode(attribute);
-//		String[] subAttributes = new String[attributes.length - 1];
-//		for (int i = 0, j = 0; i < attributes.length; i++) {
-//			if (!attribute.equals(attributes[i])) {
-//				subAttributes[j++] = attributes[i];
-//			}
-//		}
-//		System.out.print("subAttributes: ");
-//		ShowUtils.print(subAttributes);
-//		String[] tmpPaths = DataHandler.splitDataSet(
-//				data, subAttributes, splitPoints);
-//		for (int i = 0, len = tmpPaths.length; i < len; i++) {
-//			String name = tmpPaths[0].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
-//			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
-//			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
-//			treeNode.setChild(splitPoints[i], build(hdfsPath, subAttributes));
-//		}
-//		return treeNode;
-		return null;
+		TreeNode treeNode = new TreeNode(attribute);
+		String splitPoint = bestAttr.getSplitPoint();
+		String[] subAttributes = new String[attributes.length - 1];
+		for (int i = 0, j = 0; i < attributes.length; i++) {
+			if (!attribute.equals(attributes[i])) {
+				subAttributes[j++] = attributes[i];
+			}
+		}
+		String[] tmpPaths = DataHandler.splitDataSet(
+				data, subAttributes, splitPoint);
+		Set<String> attributeValues = attrName2Values.get(attribute);
+		attributeValues.remove(splitPoint);
+		StringBuilder sb = new StringBuilder();
+		for (String attributeValue : attributeValues) {
+			sb.append(attributeValue).append(",");
+		}
+		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+		String[] names = new String[]{splitPoint, sb.toString()};
+		for (int i = 0; i < 2; i++) {
+			String name = tmpPaths[i].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
+			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
+			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
+			treeNode.setChild(names[i], build(hdfsPath, subAttributes));
+		}
+		return treeNode;
 	}
 	
 	private void classify(TreeNode treeNode, Path testSetPath, 
@@ -174,7 +175,7 @@ public class DecisionTreeSprintJob {
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
-			Object[] results = (Object[]) treeNode.classify(testData);
+			Object[] results = (Object[]) treeNode.classifySprint(testData);
 			String path = FileUtils.obtainRandomTxtPath();
 			out = new FileOutputStream(new File(path));
 			writer = new BufferedWriter(new OutputStreamWriter(out));

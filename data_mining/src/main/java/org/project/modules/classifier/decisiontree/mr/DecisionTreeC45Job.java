@@ -45,7 +45,7 @@ public class DecisionTreeC45Job {
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(data, 0);
-			String[] tmpPaths = DataHandler.splitDataSet(
+			String[] tmpPaths = DataHandler.splitMultiDataSet(
 					data, data.getAttributes(), null);
 			System.out.println(tmpPaths[0]);
 			String name = tmpPaths[0].substring(tmpPaths[0].lastIndexOf(File.separator) + 1);
@@ -144,10 +144,10 @@ public class DecisionTreeC45Job {
 		}
 		System.out.print("subAttributes: ");
 		ShowUtils.print(subAttributes);
-		String[] tmpPaths = DataHandler.splitDataSet(
+		String[] tmpPaths = DataHandler.splitMultiDataSet(
 				data, subAttributes, splitPoints);
 		for (int i = 0, len = tmpPaths.length; i < len; i++) {
-			String name = tmpPaths[0].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
+			String name = tmpPaths[i].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
 			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
 			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
 			treeNode.setChild(splitPoints[i], build(hdfsPath, subAttributes));

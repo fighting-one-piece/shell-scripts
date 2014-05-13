@@ -72,12 +72,12 @@ public class AttributeGiniWritable implements Writable, Cloneable {
 		this.attribute = attribute;
 	}
 
-	public String getSplitPoints() {
+	public String getSplitPoint() {
 		return splitPoint;
 	}
 
-	public void setSplitPoints(String splitPoints) {
-		this.splitPoint = splitPoints;
+	public void setSplitPoint(String splitPoint) {
+		this.splitPoint = splitPoint;
 	}
 
 	public double getGini() {

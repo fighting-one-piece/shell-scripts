@@ -24,7 +24,7 @@ import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class RandomForestC45Job {
+public class RandomForestSprintJob {
 	
 	private Configuration conf = null;
 	
@@ -134,7 +134,7 @@ public class RandomForestC45Job {
 			for (int i = 0; i < treeNum; i++) {
 				String input = prepareRandom(attributeNum);
 				dtArgs[0] = input;
-				DecisionTreeC45Job job = new DecisionTreeC45Job();
+				DecisionTreeSprintJob job = new DecisionTreeSprintJob();
 				job.run(dtArgs);
 			}
 			vote(output);
@@ -144,7 +144,7 @@ public class RandomForestC45Job {
 	}
 
 	public static void main(String[] args) {
-		RandomForestC45Job job = new RandomForestC45Job();
+		RandomForestSprintJob job = new RandomForestSprintJob();
 		job.run(args);
 	}
 }
