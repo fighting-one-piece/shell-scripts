@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /** 数据实体类*/
 public class Data {
@@ -39,19 +40,10 @@ public class Data {
 		this.splits = splits;
 	}
 	
-	public Data(List<Instance> instances, String[] attributes,
+	public Data(List<Instance> instances, String splitAttribute, 
 			String[] splitPoints) {
 		super();
 		this.instances = instances;
-		this.attributes = attributes;
-		this.splitPoints = splitPoints;
-	}
-	
-	public Data(List<Instance> instances, String[] attributes,
-			String splitAttribute, String[] splitPoints) {
-		super();
-		this.instances = instances;
-		this.attributes = attributes;
 		this.splitAttribute = splitAttribute;
 		this.splitPoints = splitPoints;
 	}
@@ -117,6 +109,20 @@ public class Data {
 	public void setSplits(Map<Object, List<Instance>> splits) {
 		this.splits = splits;
 	}
+	
+	/** 获取数量最多的类型 */
+	public Object obtainMaxCategory() {
+		int max = 0;
+		Object maxCategory = null;
+		for (Entry<Object, List<Instance>> entry : getSplits().entrySet()) {
+			int cur = entry.getValue().size();
+			if (cur > max) {
+				max = cur;
+				maxCategory = entry.getKey();
+			}
+		}
+		return maxCategory;
+	}
 
 	public String[] getPurningAttributes() {
 		return purningAttributes;
@@ -149,5 +155,7 @@ public class Data {
 	public void setSplitPoints(String[] splitPoints) {
 		this.splitPoints = splitPoints;
 	}
+	
+	
 	
 }

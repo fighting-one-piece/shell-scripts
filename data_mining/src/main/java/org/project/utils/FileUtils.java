@@ -7,6 +7,15 @@ public class FileUtils {
 	private FileUtils() {
 		
 	}
+	
+	public static File create(String path) {
+		File file = new File(path);
+		File parent = file.getParentFile();
+		if (!parent.exists()) {
+			parent.mkdir();
+		}
+		return file;
+	}
 
 	public static String obtainOSTmpPath() {
 		String os = System.getProperty("os.name").toLowerCase();

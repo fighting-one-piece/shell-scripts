@@ -11,7 +11,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
 /** ID3算法实现的决策树*/
-public class DecisionTreeID3Builder extends AbstractBuilder {
+public class DecisionTreeID3Builder extends DecisionTreeAbstractBuilder {
 
 	@Override
 	public BestAttribute chooseBestAttribute(Data data) {

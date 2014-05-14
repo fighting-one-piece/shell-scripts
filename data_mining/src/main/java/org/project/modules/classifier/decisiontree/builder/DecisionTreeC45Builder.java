@@ -11,7 +11,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
 /** C45算法实现的决策树*/
-public class DecisionTreeC45Builder extends AbstractBuilder {
+public class DecisionTreeC45Builder extends DecisionTreeAbstractBuilder {
 
 	@Override
 	public BestAttribute chooseBestAttribute(Data data) {

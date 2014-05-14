@@ -127,6 +127,19 @@ public class DecisionTreeSprintJob {
 	 * @return
 	 */
 	public Object build(String input, Data data) {
+		List<Instance> instances = data.getInstances();
+		if (instances.size() == 1) {
+			return instances.get(0).getCategory();
+		} else if (instances.size() > 1) {
+			boolean isEqual = true;
+			Object category = instances.get(0).getCategory();
+			for (Instance instance : instances) {
+				if (!category.equals(instance.getCategory())) {
+					isEqual = false;
+				}
+			}
+			if (isEqual) return category;
+		}
 		String output = HDFSUtils.HDFS_URL + "dt/temp/output";
 		try {
 			HDFSUtils.delete(conf, new Path(output));
@@ -156,24 +169,21 @@ public class DecisionTreeSprintJob {
 		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
 		String[] names = new String[]{splitPoint, sb.toString()};
 		Map<String, List<Instance>> path2Instances = DataHandler.splitData(
-				new Data(data.getInstances(), attributes, names));
+				new Data(data.getInstances(), attribute, names));
 		int index = 0;
 		for (Map.Entry<String, List<Instance>> entry : path2Instances.entrySet()) {
+			List<Instance> splitInstances = entry.getValue();
+			if (splitInstances.size() == 0) {
+				continue;
+			}
+			ShowUtils.print(instances);
 			String path = entry.getKey();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
 			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 			treeNode.setChild(names[index++], build(hdfsPath, 
-					new Data(attributes, entry.getValue())));
+					new Data(attributes, splitInstances)));
 		}
-//		String[] tmpPaths = DataHandler.splitData(
-//				new Data(data.getInstances(), attributes, names));
-//		for (int i = 0; i < 2; i++) {
-//			String name = tmpPaths[i].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
-//			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
-//			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
-//			treeNode.setChild(names[i], build(hdfsPath, subAttributes));
-//		}
 		return treeNode;
 	}
 	

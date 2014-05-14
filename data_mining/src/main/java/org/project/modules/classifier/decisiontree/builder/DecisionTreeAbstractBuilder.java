@@ -9,7 +9,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
-public abstract class AbstractBuilder implements Builder {
+public abstract class DecisionTreeAbstractBuilder implements Builder {
 
 	@Override
 	public Object build(Data data) {

@@ -72,15 +72,28 @@ public class DecisionTreeTest {
 	
 	@Test
 	public void splitData() {
-		String path = "d:\\trains_5.txt";
+		String path = "d:\\trainset_5.txt";
 		Data data = DataLoader.loadWithId(path);
 		Data splitData = new Data(data.getInstances(), 
-				new String[]{"age"}, 
+				"income", 
 				new String[]{"high", "medium,low"});
 		Map<String, List<Instance>> a = DataHandler.splitData(splitData);
 		for (Map.Entry<String, List<Instance>> entry : a.entrySet()) {
 			System.out.println(entry.getKey());
 			ShowUtils.print(entry.getValue());
+		}
+	}
+	
+	@Test
+	public void splitData1() {
+		String path = "d:\\trainset_5.txt";
+		Data data = DataLoader.loadWithId(path);
+		Data splitData = new Data(data.getInstances(), 
+				null, new String[]{"high", "medium,low"});
+		List<List<Instance>> instancess = DataHandler.split(splitData);
+		for (List<Instance> instances : instancess) {
+			ShowUtils.print(instances);
+			System.out.println("-------");
 		}
 	}
 	
@@ -97,7 +110,7 @@ public class DecisionTreeTest {
 	@Test
 	public void builderSprint() {
 //		String path = "d:\\trains14_id.txt";
-		String path = "d:\\trains_5.txt";
+		String path = "d:\\trainset_5.txt";
 		Data data = DataLoader.loadWithId(path);
 		DataHandler.fill(data, 0);
 		Builder builder = new DecisionTreeSprintBuilder();
