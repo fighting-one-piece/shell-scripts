@@ -134,15 +134,15 @@ class DecisionTreeSprintReducer extends Reducer<Text, AttributeWritable, Text, A
 		}
 		if (isCategory) {
 			System.out.println("is Category");
-			int sum = 0;
+			double initValue = 1.0;
 			iterator = values.iterator();
 			while (iterator.hasNext()) {
 				iterator.next();
-				sum += 1;
+				initValue = initValue / 2;
 			}
-			System.out.println("sum: " + sum);
+			System.out.println("initValue: " + initValue);
 			context.write(key, new AttributeGiniWritable(attributeName,
-					sum, true, null));
+					initValue, true, null));
 		} else {
 			String minSplitPoint = null;
 			double minSplitPointGini = 1.0;

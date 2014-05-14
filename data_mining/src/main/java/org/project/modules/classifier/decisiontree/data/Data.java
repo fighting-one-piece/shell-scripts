@@ -2,18 +2,26 @@ package org.project.modules.classifier.decisiontree.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /** 数据实体类*/
 public class Data {
 
 	/** 特征属性集合*/
 	private String[] attributes = null;
-	/** 特征属性集合*/
+	/** 剪枝特征属性集合，暂时没有用*/
 	private String[] purningAttributes = null;
 	/** 样本实例集合*/
 	private List<Instance> instances = null;
+	/** 数据集所要隐藏的属性*/
+	private String[] hideAttributes = null;
+	/** 数据集所要分割的属性*/
+	private String splitAttribute = null;
+	/** 数据集所要分割的值*/
+	private String[] splitPoints = null;
 	/** 样本实例集合的分裂信息*/
 	private Map<Object, List<Instance>> splits = null;
 	
@@ -31,8 +39,47 @@ public class Data {
 		this.splits = splits;
 	}
 	
+	public Data(List<Instance> instances, String[] attributes,
+			String[] splitPoints) {
+		super();
+		this.instances = instances;
+		this.attributes = attributes;
+		this.splitPoints = splitPoints;
+	}
+	
+	public Data(List<Instance> instances, String[] attributes,
+			String splitAttribute, String[] splitPoints) {
+		super();
+		this.instances = instances;
+		this.attributes = attributes;
+		this.splitAttribute = splitAttribute;
+		this.splitPoints = splitPoints;
+	}
+	
 	public String[] getAttributes() {
 		return attributes;
+	}
+	
+	public Set<String> getAttributeSet() {
+		Set<String> attributeSet = new HashSet<String>();
+		for (String attribute : attributes) {
+			attributeSet.add(attribute);
+		}
+		return attributeSet;
+	}
+	
+	public String[] getAttributesExcept(String... exceptAttributes) {
+		String[] subAttributes = new String[attributes.length - 1];
+		for (int i = 0, j = 0; i < attributes.length; i++) {
+			boolean isExcept = false;
+			for (String exceptAttribute : exceptAttributes) {
+				if (exceptAttribute.equals(attributes[i])) {
+					isExcept = true;
+				}
+			}
+			if (!isExcept) subAttributes[j++] = attributes[i];
+		}
+		return subAttributes;
 	}
 
 	public void setAttributes(String[] attributes) {
@@ -78,6 +125,29 @@ public class Data {
 	public void setPurningAttributes(String[] purningAttributes) {
 		this.purningAttributes = purningAttributes;
 	}
+	
+	public String[] getHideAttributes() {
+		return hideAttributes;
+	}
 
+	public void setHideAttributes(String[] hideAttributes) {
+		this.hideAttributes = hideAttributes;
+	}
+
+	public String getSplitAttribute() {
+		return splitAttribute;
+	}
+
+	public void setSplitAttribute(String splitAttribute) {
+		this.splitAttribute = splitAttribute;
+	}
+
+	public String[] getSplitPoints() {
+		return splitPoints;
+	}
+
+	public void setSplitPoints(String[] splitPoints) {
+		this.splitPoints = splitPoints;
+	}
 	
 }

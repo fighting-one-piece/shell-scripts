@@ -13,6 +13,7 @@ import org.project.modules.classifier.decisiontree.builder.DecisionTreeSprintBui
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.ShowUtils;
@@ -70,6 +71,20 @@ public class DecisionTreeTest {
 	}
 	
 	@Test
+	public void splitData() {
+		String path = "d:\\trains_5.txt";
+		Data data = DataLoader.loadWithId(path);
+		Data splitData = new Data(data.getInstances(), 
+				new String[]{"age"}, 
+				new String[]{"high", "medium,low"});
+		Map<String, List<Instance>> a = DataHandler.splitData(splitData);
+		for (Map.Entry<String, List<Instance>> entry : a.entrySet()) {
+			System.out.println(entry.getKey());
+			ShowUtils.print(entry.getValue());
+		}
+	}
+	
+	@Test
 	public void builderC45() {
 		String path = "d:\\trains_5.txt";
 		Data data = DataLoader.loadWithId(path);
@@ -81,7 +96,8 @@ public class DecisionTreeTest {
 	
 	@Test
 	public void builderSprint() {
-		String path = "d:\\trains14_id.txt";
+//		String path = "d:\\trains14_id.txt";
+		String path = "d:\\trains_5.txt";
 		Data data = DataLoader.loadWithId(path);
 		DataHandler.fill(data, 0);
 		Builder builder = new DecisionTreeSprintBuilder();

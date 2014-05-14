@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -169,41 +170,69 @@ public class DataHandler {
 		return finalResult;
 	}
 	
-	public static String[] splitDataSet(Data data, String[] attributes, 
-			String splitPoint) {
-		Set<String> attributeSet = new HashSet<String>();
-		for (String attribute : attributes) {
-			attributeSet.add(attribute);
-		}
-		String[] paths = new String[2];
-		for (int i = 0, len = paths.length; i < len; i++) {
-			paths[i] = FileUtils.obtainRandomTxtPath();
+	public static List<List<Instance>> split(Data data) {
+		String splitAttribute = data.getSplitAttribute();
+		String[] splitPoints = data.getSplitPoints();
+		return null;
+	}
+	
+	/** 分割数据集
+	 *  路径-->数据集 映射
+	 * */
+	public static Map<String, List<Instance>> splitData(Data data) {
+		Set<String> attributeSet = data.getAttributeSet();
+		String[] splitPoints = data.getSplitPoints();
+//		String[] paths = new String[null == splitPoints || 
+//				splitPoints.length == 0 ? 1 : splitPoints.length];
+		Map<String, List<Instance>> path2Instances = 
+				new HashMap<String, List<Instance>>();
+		int length = null == splitPoints || splitPoints.length == 0 
+				? 1 : splitPoints.length;
+		List<List<Instance>> instancess = new ArrayList<List<Instance>>();
+		for (int i = 0; i < length; i++) {
+//			paths[i] = FileUtils.obtainRandomTxtPath();
+			String path = FileUtils.obtainRandomTxtPath();
+			List<Instance> instances = new ArrayList<Instance>();
+			instancess.add(instances);
 			OutputStream out = null;
 			BufferedWriter writer = null;
 			try {
-				File file = new File(paths[i]);
+				File file = new File(path);
 				if (!file.getParentFile().exists()) {
 					file.getParentFile().mkdir();
 				}
 				out = new FileOutputStream(file);
 				writer = new BufferedWriter(new OutputStreamWriter(out));
 				StringBuilder sb = null;
+				Instance newInstance = null;
 				for (Instance instance : data.getInstances()) {
 					sb = new StringBuilder();
+					newInstance = new Instance();
 					sb.append(instance.getId()).append("\t");
+					newInstance.setId(instance.getId());
 					sb.append(instance.getCategory()).append("\t");
-					for (Map.Entry<String, Object> entry : 
-						instance.getAttributes().entrySet()) {
+					newInstance.setCategory(instance.getCategory());
+					boolean isWrite = false;
+					Map<String, Object> attrs = instance.getAttributes();
+					for (Map.Entry<String, Object> entry : attrs.entrySet()) {
 						String attr = entry.getKey();
-						Object attrValue = entry.getValue();
+						String attrValue = String.valueOf(entry.getValue());
+						if (null != splitPoints && splitPoints.length != 0
+								&& splitPoints[i].indexOf(attrValue) != -1) {
+							isWrite = true;
+						}
 						if (!attributeSet.contains(attr)) {
 							continue;
 						}
 						sb.append(attr).append(":");
 						sb.append(attrValue).append("\t");
+						newInstance.setAttribute(attr, attrValue);
 					}
-					writer.write(sb.toString());
-					writer.newLine();
+					if (isWrite || null == splitPoints) {
+						writer.write(sb.toString());
+						writer.newLine();
+						instances.add(newInstance);
+					}
 				}
 				writer.flush();
 			} catch (Exception e) {
@@ -212,8 +241,9 @@ public class DataHandler {
 				IOUtils.closeQuietly(out);
 				IOUtils.closeQuietly(writer);
 			}
+			path2Instances.put(path, instances);
 		}
-		return paths;
+		return path2Instances;
 	}
 	
 	/**
