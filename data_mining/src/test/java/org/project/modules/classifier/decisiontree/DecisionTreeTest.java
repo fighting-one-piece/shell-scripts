@@ -107,7 +107,7 @@ public class DecisionTreeTest {
 	public void builderSprint() {
 		String path = "d:\\trainset_extract_10_l.txt";
 //		String path = "d:\\trains14_id.txt";
-//		String path = "d:\\attribute_100_r_100.txt";
+//		String path = "d:\\attribute_1000_r_100.txt";
 		Data data = DataLoader.loadWithId(path);
 		DataHandler.fill(data, 1.0);
 		Builder builder = new DecisionTreeSprintBuilder();

@@ -67,8 +67,6 @@ public class DecisionTreeC45Job extends AbstractJob {
 			FileSystem fs = path.getFileSystem(conf);
 			Path[] paths = HDFSUtils.getPathFiles(fs, path);
 			ShowUtils.print(paths);
-//			List<AttributeRWritable> values = 
-//					new ArrayList<AttributeRWritable>();
 			double maxGainRatio = 0.0;
 			SequenceFile.Reader reader = null;
 			for (Path p : paths) {
@@ -77,7 +75,6 @@ public class DecisionTreeC45Job extends AbstractJob {
 						reader.getKeyClass(), conf);
 				AttributeGainWritable value = new AttributeGainWritable();
 				while (reader.next(key, value)) {
-//					values.add(value);
 					double gainRatio = value.getGainRatio();
 					if (gainRatio >= maxGainRatio) {
 						maxGainRatio = gainRatio;
@@ -87,14 +84,6 @@ public class DecisionTreeC45Job extends AbstractJob {
 				}
 				IOUtils.closeQuietly(reader);
 			}
-//			double maxGainRatio = 0.0;
-//			for (AttributeRWritable attribute : values) {
-//				double gainRatio = attribute.getGainRatio();
-//				if (gainRatio >= maxGainRatio) {
-//					maxGainRatio = gainRatio;
-//					maxAttribute = attribute;
-//				}
-//			}
 			System.out.println("output: " + path.toString());
 			HDFSUtils.delete(conf, path);
 			System.out.println("hdfs delete file : " + path.toString());

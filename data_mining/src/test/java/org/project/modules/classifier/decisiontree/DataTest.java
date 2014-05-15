@@ -56,7 +56,7 @@ public class DataTest {
 	
 	@Test
 	public void addLineNum() throws Exception {
-		FileUtils.addLineNum("D:\\trainset_extract_10.txt", "D:\\trainset_extract_10_l.txt");
+		FileUtils.addLineNum("D:\\trainset_extract_1.txt", "D:\\trainset_extract_1_l.txt");
 	}
 	
 	private Set<String> getAttribute(String input, int n) {
@@ -92,8 +92,8 @@ public class DataTest {
 	@Test
 	public void generateDataFile() {
 		String input = "D:\\trainset_extract_10_l.txt";
-		String output = "D:\\attribute_100_r_100.txt";
-		Set<String> attributes = getAttribute(input, 100);
+		String output = "D:\\attribute_1000_r_100.txt";
+		Set<String> attributes = getAttribute(input, 1000);
 		System.out.println(attributes.size());
 		List<Instance> instances = new ArrayList<Instance>();
 		InputStream in = null;
