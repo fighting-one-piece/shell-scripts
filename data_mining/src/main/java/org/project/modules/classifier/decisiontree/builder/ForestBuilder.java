@@ -12,7 +12,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
-public class ForestBuilder implements Builder {
+public class ForestBuilder extends BuilderAbstractImpl {
 	
 	private int treeNum = 0;
 	

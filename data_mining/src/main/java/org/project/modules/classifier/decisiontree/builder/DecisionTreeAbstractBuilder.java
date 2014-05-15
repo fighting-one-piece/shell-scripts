@@ -9,7 +9,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
-public abstract class DecisionTreeAbstractBuilder implements Builder {
+public abstract class DecisionTreeAbstractBuilder extends BuilderAbstractImpl {
 
 	@Override
 	public Object build(Data data) {
@@ -55,24 +55,6 @@ public abstract class DecisionTreeAbstractBuilder implements Builder {
 	 * @return
 	 */
 	public abstract BestAttribute chooseBestAttribute(Data data);
-	
-	/**
-	 * 获取数量最多的类型
-	 * @param splits
-	 * @return
-	 */
-	protected Object obtainMaxCategory(Map<Object, List<Instance>> splits) {
-		int max = 0;
-		Object maxCategory = null;
-		for (Entry<Object, List<Instance>> entry : splits.entrySet()) {
-			int cur = entry.getValue().size();
-			if (cur > max) {
-				max = cur;
-				maxCategory = entry.getKey();
-			}
-		}
-		return maxCategory;
-	}
 	
 
 }

@@ -26,9 +26,7 @@ import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class DecisionTreeC45Job {
-	
-	private Configuration conf = null;
+public class DecisionTreeC45Job extends AbstractJob {
 	
 	private Data data = null;
 	
@@ -49,7 +47,7 @@ public class DecisionTreeC45Job {
 					data, data.getAttributes(), null);
 			System.out.println(tmpPaths[0]);
 			String name = tmpPaths[0].substring(tmpPaths[0].lastIndexOf(File.separator) + 1);
-			path = HDFSUtils.HDFS_URL + "dt/temp/" + name;
+			path = HDFSUtils.HDFS_TEMP_DATA_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, tmpPaths[0], path);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -112,7 +110,7 @@ public class DecisionTreeC45Job {
 	 * @return
 	 */
 	public Object build(String input, String[] attributes) {
-		String output = HDFSUtils.HDFS_URL + "dt/temp/output";
+		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
 		try {
 			HDFSUtils.delete(conf, new Path(output));
 			System.out.println("delete path : " + output);
@@ -148,7 +146,7 @@ public class DecisionTreeC45Job {
 				data, subAttributes, splitPoints);
 		for (int i = 0, len = tmpPaths.length; i < len; i++) {
 			String name = tmpPaths[i].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
-			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
+			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
 			treeNode.setChild(splitPoints[i], build(hdfsPath, subAttributes));
 		}
@@ -218,7 +216,10 @@ public class DecisionTreeC45Job {
 	
 	public static void main(String[] args) {
 		DecisionTreeC45Job job = new DecisionTreeC45Job();
+		long startTime = System.currentTimeMillis();
 		job.run(args);
+		long endTime = System.currentTimeMillis();
+		System.out.println("spend time: " + (endTime - startTime));
 	}
 
 }

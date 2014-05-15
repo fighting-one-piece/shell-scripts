@@ -24,9 +24,7 @@ import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class RandomForestSprintJob {
-	
-	private Configuration conf = null;
+public class RandomForestSprintJob extends AbstractJob {
 	
 	private Data data = null;
 	
@@ -145,6 +143,9 @@ public class RandomForestSprintJob {
 
 	public static void main(String[] args) {
 		RandomForestSprintJob job = new RandomForestSprintJob();
+		long startTime = System.currentTimeMillis();
 		job.run(args);
+		long endTime = System.currentTimeMillis();
+		System.out.println("spend time: " + (endTime - startTime));
 	}
 }

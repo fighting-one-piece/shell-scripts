@@ -1,17 +1,26 @@
-package org.project.modules.classifier.decisiontree.builder;
+package org.project.modules.classifier.decisiontree.mr;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.hadoop.conf.Configuration;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
-public class BuilderAbstractImpl implements Builder {
+public abstract class AbstractJob {
 
-	@Override
-	public Object build(Data data) {
-		return null;
+	protected Configuration conf = null;
+	
+	protected AbstractJob() {
+		
+	}
+	
+	protected Configuration getConfiguration() {
+		if (null == conf) {
+			conf = new Configuration();
+		}
+		return conf;
 	}
 	
 	/**
@@ -62,5 +71,5 @@ public class BuilderAbstractImpl implements Builder {
 		}
 		return null;
 	}
-
+	
 }

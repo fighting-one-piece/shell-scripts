@@ -17,8 +17,14 @@ import org.apache.hadoop.fs.Path;
 
 public class HDFSUtils {
 
+	/** HDFS URL*/
 	public static final String HDFS_URL = "hdfs://centos.host1:9000/user/hadoop/data/";
+	/** HDFS 临时数据存放 URL*/
+	public static final String HDFS_TEMP_DATA_URL = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/";
+	/** HDFS 临时输出数据存放 URL*/
+	public static final String HDFS_TEMP_OUTPUT_URL = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/output";
 	
+	/** 获取HDFS上某路径下所有文件*/
 	public static Path[] getPathFiles(FileSystem fs, Path path)
 			throws IOException {
 		if (!fs.exists(path)) {
@@ -37,12 +43,14 @@ public class HDFSUtils {
 		return files.toArray(new Path[files.size()]);
 	}
 	
+	/** 拷贝本地文件到HDFS*/
 	public static void copyFromLocalFile(Configuration conf, 
 			String localPath, String hdfsPath) {
 		Path path = new Path(hdfsPath);
 		copyFromLocalFile(conf, localPath, path);
 	}
 	
+	/** 拷贝本地文件到HDFS*/
 	public static void copyFromLocalFile(Configuration conf, 
 			String localPath, Path path) {
 		if (conf == null) {

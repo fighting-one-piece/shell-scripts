@@ -53,10 +53,10 @@ public class DecisionTree {
 	public void run() {
 		Data data = DataLoader.load(trainFilePath);
 		DataHandler.fill(data, 0);
-		TreeNode tree = (TreeNode) treeBuilder.build(data);
+		TreeNode treeNode = (TreeNode) treeBuilder.build(data);
 		Data testData = DataLoader.load(testFilePath);
-		DataHandler.fill(testData.getInstances(), data.getPurningAttributes() , 0);
-		Object[] results = (Object[]) tree.classify(testData);
+		DataHandler.fill(testData.getInstances(), data.getAttributes() , 0);
+		Object[] results = (Object[]) treeNode.classify(testData);
 		ShowUtils.print(results);
 	}
 

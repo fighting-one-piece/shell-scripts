@@ -7,33 +7,21 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import org.project.modules.classifier.decisiontree.data.Attribute;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 
-public class DecisionTreeSprintBuilder implements Builder {
+public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 	
 	@Override
 	public Object build(Data data) {
-		List<Instance> instances = data.getInstances();
-		if (instances.size() == 1) {
-			return instances.get(0).getCategory();
-		} else if (instances.size() > 1) {
-			boolean isEqual = true;
-			Object category = instances.get(0).getCategory();
-			for (Instance instance : instances) {
-				if (!category.equals(instance.getCategory())) {
-					isEqual = false;
-				}
-			}
-			if (isEqual) return category;
-		}
+		Object preHandleResult = preHandle(data);
+		if (null != preHandleResult) return preHandleResult;
 		Map<String, List<Attribute>> attributeTableMap = 
 				new HashMap<String, List<Attribute>>();
-		for (Instance instance : instances) {
+		for (Instance instance : data.getInstances()) {
 			String category = String.valueOf(instance.getCategory());
 			Map<String, Object> attrs = instance.getAttributes();
 			for (Map.Entry<String, Object> entry : attrs.entrySet()) {
@@ -47,6 +35,7 @@ public class DecisionTreeSprintBuilder implements Builder {
 						attrName, String.valueOf(entry.getValue()), category));
 			}
 		}
+		System.out.println(attributeTableMap.size());
 		Set<String> attributes = new HashSet<String>();
 		for (String attribute : data.getAttributes()) {
 			attributes.add(attribute);
@@ -58,7 +47,6 @@ public class DecisionTreeSprintBuilder implements Builder {
 		for (Map.Entry<String, List<Attribute>> entry : 
 			attributeTableMap.entrySet()) {
 			String attribute = entry.getKey();
-//			System.out.println("attribute: " + attribute);
 			if (!attributes.contains(attribute)) {
 				continue;
 			}
@@ -72,22 +60,25 @@ public class DecisionTreeSprintBuilder implements Builder {
 			}
 		}
 		System.out.println("splitAttribute: " + splitAttribute);
+		if (null == splitAttribute) {
+			System.out.println("");
+		}
 		TreeNode treeNode = new TreeNode(splitAttribute);
 		
 		attributes.remove(splitAttribute);
 		Set<String> attributeValues = new HashSet<String>();
-		List<List<Instance>> splitInstances = new ArrayList<List<Instance>>();
-		List<Instance> splitInstance1 = new ArrayList<Instance>();
-		List<Instance> splitInstance2 = new ArrayList<Instance>();
-		splitInstances.add(splitInstance1);
-		splitInstances.add(splitInstance2);
+		List<List<Instance>> splitInstancess = new ArrayList<List<Instance>>();
+		List<Instance> splitInstances1 = new ArrayList<Instance>();
+		List<Instance> splitInstances2 = new ArrayList<Instance>();
+		splitInstancess.add(splitInstances1);
+		splitInstancess.add(splitInstances2);
 		for (Instance instance : data.getInstances()) {
 			Object value = instance.getAttribute(splitAttribute);
 			attributeValues.add(String.valueOf(value));
 			if (value.equals(minSplitPoint)) {
-				splitInstance1.add(instance);
+				splitInstances1.add(instance);
 			} else {
-				splitInstance2.add(instance);
+				splitInstances2.add(instance);
 			}
 		}
 		attributeValues.remove(minSplitPoint);
@@ -98,8 +89,10 @@ public class DecisionTreeSprintBuilder implements Builder {
 		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
 		String[] names = new String[]{minSplitPoint, sb.toString()};
 		for (int i = 0; i < 2; i++) {
+			List<Instance> splitInstances = splitInstancess.get(i);
+			if (splitInstances.size() == 0) continue;
 			Data subData = new Data(attributes.toArray(new String[0]),
-					splitInstances.get(i));
+					splitInstances);
 			Object child = build(subData);
 			treeNode.setChild(names[i], child);
 		}
@@ -171,24 +164,6 @@ public class DecisionTreeSprintBuilder implements Builder {
 //		System.out.println("minSplitPoint: " + minSplitPoint);
 //		System.out.println("minSplitPointGini: " + minSplitPointGini);
 		return new Object[]{minSplitPoint, minSplitPointGini};
-	}
-	
-	/**
-	 * 获取数量最多的类型
-	 * @param splits
-	 * @return
-	 */
-	protected Object obtainMaxCategory(Data data) {
-		int max = 0;
-		Object maxCategory = null;
-		for (Entry<Object, List<Instance>> entry : data.getSplits().entrySet()) {
-			int cur = entry.getValue().size();
-			if (cur > max) {
-				max = cur;
-				maxCategory = entry.getKey();
-			}
-		}
-		return maxCategory;
 	}
 	
 }

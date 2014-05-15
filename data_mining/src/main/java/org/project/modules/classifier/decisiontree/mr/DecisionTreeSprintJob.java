@@ -32,9 +32,7 @@ import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class DecisionTreeSprintJob {
-	
-	private Configuration conf = null;
+public class DecisionTreeSprintJob extends AbstractJob {
 	
 	private Data data = null;
 	
@@ -53,24 +51,23 @@ public class DecisionTreeSprintJob {
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(data, 0);
-			Map<String, List<Instance>> path2Instances = DataHandler.splitData(data);
-			for (String tmpPath : path2Instances.keySet()) {
-				System.out.println(tmpPath);
-				String name = tmpPath.substring(tmpPath.lastIndexOf(File.separator) + 1);
-				hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
-				HDFSUtils.copyFromLocalFile(conf, tmpPath, hdfsPath);
-				attrName2Values = new HashMap<String, Set<String>>();
-				for (Instance instance : data.getInstances()) {
-					for (Map.Entry<String, Object> entry : 
-						instance.getAttributes().entrySet()) {
-						String attrName = entry.getKey();
-						Set<String> values = attrName2Values.get(attrName);
-						if (null == values) {
-							values = new HashSet<String>();
-							attrName2Values.put(attrName, values);
-						}
-						values.add(String.valueOf(entry.getValue()));
+			String path = FileUtils.obtainRandomTxtPath();
+			DataHandler.writeData(path, data);
+			System.out.println(path);
+			String name = path.substring(path.lastIndexOf(File.separator) + 1);
+			hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+			attrName2Values = new HashMap<String, Set<String>>();
+			for (Instance instance : data.getInstances()) {
+				for (Map.Entry<String, Object> entry : 
+					instance.getAttributes().entrySet()) {
+					String attrName = entry.getKey();
+					Set<String> values = attrName2Values.get(attrName);
+					if (null == values) {
+						values = new HashSet<String>();
+						attrName2Values.put(attrName, values);
 					}
+					values.add(String.valueOf(entry.getValue()));
 				}
 			}
 		} catch (IOException e) {
@@ -127,20 +124,9 @@ public class DecisionTreeSprintJob {
 	 * @return
 	 */
 	public Object build(String input, Data data) {
-		List<Instance> instances = data.getInstances();
-		if (instances.size() == 1) {
-			return instances.get(0).getCategory();
-		} else if (instances.size() > 1) {
-			boolean isEqual = true;
-			Object category = instances.get(0).getCategory();
-			for (Instance instance : instances) {
-				if (!category.equals(instance.getCategory())) {
-					isEqual = false;
-				}
-			}
-			if (isEqual) return category;
-		}
-		String output = HDFSUtils.HDFS_URL + "dt/temp/output";
+		Object preHandleResult = preHandle(data);
+		if (null != preHandleResult) return preHandleResult;
+		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
 		try {
 			HDFSUtils.delete(conf, new Path(output));
 			System.out.println("delete path : " + output);
@@ -176,10 +162,9 @@ public class DecisionTreeSprintJob {
 			if (splitInstances.size() == 0) {
 				continue;
 			}
-			ShowUtils.print(instances);
 			String path = entry.getKey();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
+			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 			treeNode.setChild(names[index++], build(hdfsPath, 
 					new Data(attributes, splitInstances)));
@@ -250,7 +235,10 @@ public class DecisionTreeSprintJob {
 	
 	public static void main(String[] args) {
 		DecisionTreeSprintJob job = new DecisionTreeSprintJob();
+		long startTime = System.currentTimeMillis();
 		job.run(args);
+		long endTime = System.currentTimeMillis();
+		System.out.println("spend time: " + (endTime - startTime));
 	}
 
 }

@@ -239,13 +239,10 @@ public class DataHandler {
 					sb = new StringBuilder();
 					sb.append(instance.getId()).append("\t");
 					sb.append(instance.getCategory()).append("\t");
-					boolean isWrite = false;
 					Map<String, Object> attrs = instance.getAttributes();
 					for (Map.Entry<String, Object> entry : attrs.entrySet()) {
 						sb.append(entry.getKey()).append(":");
 						sb.append(entry.getValue()).append("\t");
-					}
-					if (isWrite || null == splitPoints) {
 					}
 					writer.write(sb.toString());
 					writer.newLine();
@@ -315,6 +312,35 @@ public class DataHandler {
 			}
 		}
 		return paths;
+	}
+	
+	public static void writeData(String path, Data data) {
+		OutputStream out = null;
+		BufferedWriter writer = null;
+		try {
+			File file = FileUtils.create(path);
+			out = new FileOutputStream(file);
+			writer = new BufferedWriter(new OutputStreamWriter(out));
+			StringBuilder sb = null;
+			for (Instance instance : data.getInstances()) {
+				sb = new StringBuilder();
+				sb.append(instance.getId()).append("\t");
+				sb.append(instance.getCategory()).append("\t");
+				Map<String, Object> attrs = instance.getAttributes();
+				for (Map.Entry<String, Object> entry : attrs.entrySet()) {
+					sb.append(entry.getKey()).append(":");
+					sb.append(entry.getValue()).append("\t");
+				}
+				writer.write(sb.toString());
+				writer.newLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(writer);
+		}
 	}
 	
 }
