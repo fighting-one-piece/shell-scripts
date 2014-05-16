@@ -170,41 +170,19 @@ public class DataHandler {
 		return finalResult;
 	}
 	
-	public static List<List<Instance>> split(DataSplit dataSplit) {
-		List<List<Instance>> instancess = new ArrayList<List<Instance>>();
-		Data data = dataSplit.getData();
-		String splitAttribute = dataSplit.getSplitAttribute();
-		String[] splitPoints = dataSplit.getSplitPoints();
-		if (null == splitAttribute || null == splitPoints) {
-			instancess.add(data.getInstances());
-			return instancess;
-		}
-		for (String splitPoint : splitPoints) {
-			List<Instance> instances = new ArrayList<Instance>();
-			instancess.add(instances);
-			for (Instance instance : data.getInstances()) {
-				String splitAttributeValue = String.valueOf(
-						instance.getAttribute(splitAttribute));
-				if (splitPoint.indexOf(splitAttributeValue) != -1) {
-					instance.removeAttribute(splitAttribute);
-					instances.add(instance);
-				}
-			}
-		}
-		return instancess;
-	}
-	
-	public static List<List<Instance>> split(Data data) {
-		List<List<Instance>> instancess = new ArrayList<List<Instance>>();
+	/** 数据集分割*/
+	public static DataSplit split(Data data) {
+		DataSplit dataSplit = new DataSplit();
 		String splitAttribute = data.getSplitAttribute();
 		String[] splitPoints = data.getSplitPoints();
 		if (null == splitAttribute || null == splitPoints) {
-			instancess.add(data.getInstances());
-			return instancess;
+			DataSplitItem item = new DataSplitItem();
+			item.setInstances(data.getInstances());
+			dataSplit.addItem(item);
+			return dataSplit;
 		}
 		for (String splitPoint : splitPoints) {
 			List<Instance> instances = new ArrayList<Instance>();
-			instancess.add(instances);
 			for (Instance instance : data.getInstances()) {
 				String splitAttributeValue = String.valueOf(
 						instance.getAttribute(splitAttribute));
@@ -213,108 +191,24 @@ public class DataHandler {
 					instances.add(instance);
 				}
 			}
-		}
-		return instancess;
-	}
-	
-	/** 分割数据集  路径-->数据集 映射 **/
-	public static Map<String, List<Instance>> splitData(Data data) {
-		Map<String, List<Instance>> path2Instances = 
-				new HashMap<String, List<Instance>>();
-		List<List<Instance>> instancess = split(data);
-		String[] splitPoints = data.getSplitPoints();
-		int length = null == splitPoints || splitPoints.length == 0 
-				? 1 : splitPoints.length;
-		for (int i = 0; i < length; i++) {
-			List<Instance> instances = instancess.get(i);
 			String path = FileUtils.obtainRandomTxtPath();
-			OutputStream out = null;
-			BufferedWriter writer = null;
-			try {
-				File file = FileUtils.create(path);
-				out = new FileOutputStream(file);
-				writer = new BufferedWriter(new OutputStreamWriter(out));
-				StringBuilder sb = null;
-				for (Instance instance : instances) {
-					sb = new StringBuilder();
-					sb.append(instance.getId()).append("\t");
-					sb.append(instance.getCategory()).append("\t");
-					Map<String, Object> attrs = instance.getAttributes();
-					for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-						sb.append(entry.getKey()).append(":");
-						sb.append(entry.getValue()).append("\t");
-					}
-					writer.write(sb.toString());
-					writer.newLine();
-				}
-				writer.flush();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				IOUtils.closeQuietly(out);
-				IOUtils.closeQuietly(writer);
-			}
-			path2Instances.put(path, instances);
+			writeInstances(path, instances);
+			DataSplitItem item = new DataSplitItem();
+			item.setPath(path);
+			item.setSplitPoint(splitPoint);
+			item.setInstances(instances);
+			dataSplit.addItem(item);
 		}
-		return path2Instances;
+		return dataSplit;
 	}
 	
-	/**
-	 * 分割成多个数据集
-	 */
-	public static String[] splitMultiDataSet(Data data, 
-			String[] attributes, String[] splitPoints) {
-		Set<String> attributeSet = new HashSet<String>();
-		for (String attribute : attributes) {
-			attributeSet.add(attribute);
-		}
-		String[] paths = new String[null == splitPoints || 
-				splitPoints.length == 0 ? 1 : splitPoints.length];
-		for (int i = 0, len = paths.length; i < len; i++) {
-			paths[i] = FileUtils.obtainRandomTxtPath();
-			OutputStream out = null;
-			BufferedWriter writer = null;
-			try {
-				File file = FileUtils.create(paths[i]);
-				out = new FileOutputStream(file);
-				writer = new BufferedWriter(new OutputStreamWriter(out));
-				StringBuilder sb = null;
-				for (Instance instance : data.getInstances()) {
-					sb = new StringBuilder();
-					sb.append(instance.getId()).append("\t");
-					sb.append(instance.getCategory()).append("\t");
-					boolean isWrite = false;
-					for (Map.Entry<String, Object> entry : 
-						instance.getAttributes().entrySet()) {
-						String attr = entry.getKey();
-						Object attrValue = entry.getValue();
-						if (null != splitPoints && splitPoints.length != 0
-								&& splitPoints[i].equals(attrValue)) {
-							isWrite = true;
-						}
-						if (!attributeSet.contains(attr)) {
-							continue;
-						}
-						sb.append(attr).append(":");
-						sb.append(attrValue).append("\t");
-					}
-					if (isWrite || null == splitPoints) {
-						writer.write(sb.toString());
-						writer.newLine();
-					}
-				}
-				writer.flush();
-			} catch (Exception e) {
-				e.printStackTrace();
-			} finally {
-				IOUtils.closeQuietly(out);
-				IOUtils.closeQuietly(writer);
-			}
-		}
-		return paths;
-	}
-	
+	/** 将数据写入某个文件*/
 	public static void writeData(String path, Data data) {
+		writeInstances(path, data.getInstances());
+	}
+	
+	/** 将数据写入某个文件*/
+	public static void writeInstances(String path, List<Instance> instances) {
 		OutputStream out = null;
 		BufferedWriter writer = null;
 		try {
@@ -322,7 +216,7 @@ public class DataHandler {
 			out = new FileOutputStream(file);
 			writer = new BufferedWriter(new OutputStreamWriter(out));
 			StringBuilder sb = null;
-			for (Instance instance : data.getInstances()) {
+			for (Instance instance : instances) {
 				sb = new StringBuilder();
 				sb.append(instance.getId()).append("\t");
 				sb.append(instance.getCategory()).append("\t");

@@ -35,12 +35,7 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 						attrName, String.valueOf(entry.getValue()), category));
 			}
 		}
-		System.out.println(attributeTableMap.size());
-		Set<String> attributes = new HashSet<String>();
-		for (String attribute : data.getAttributes()) {
-			attributes.add(attribute);
-		}
-		if (attributes.size() == 0) return obtainMaxCategory(data);
+		Set<String> attributes = data.getAttributeSet();
 		String splitAttribute = null;
 		String minSplitPoint = null;
 		double minSplitPointGini = 1.0;
@@ -60,9 +55,6 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 			}
 		}
 		System.out.println("splitAttribute: " + splitAttribute);
-		if (null == splitAttribute) {
-			System.out.println("");
-		}
 		TreeNode treeNode = new TreeNode(splitAttribute);
 		
 		attributes.remove(splitAttribute);

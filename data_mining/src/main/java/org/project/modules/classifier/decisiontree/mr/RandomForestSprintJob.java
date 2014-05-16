@@ -42,13 +42,13 @@ public class RandomForestSprintJob extends AbstractJob {
 	
 	private String prepareRandom(int attributeNum) {
 		Data randomData = DataLoader.loadRandom(data, attributeNum);
-		String[] tmpPaths = DataHandler.splitMultiDataSet(
-				randomData, randomData.getAttributes(), null);
-		System.out.println(tmpPaths[0]);
-		String name = tmpPaths[0].substring(tmpPaths[0].lastIndexOf(File.separator) + 1);
-		String path = HDFSUtils.HDFS_URL + "dt/temp/" + name;
-		HDFSUtils.copyFromLocalFile(conf, tmpPaths[0], path);
-		return path;
+		String path = FileUtils.obtainRandomTxtPath();
+		DataHandler.writeData(path, randomData);
+		System.out.println(path);
+		String name = path.substring(path.lastIndexOf(File.separator) + 1);
+		String hdfsPath = HDFSUtils.HDFS_URL + "dt/temp/" + name;
+		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+		return hdfsPath;
 	}
 	
 	private void vote(String output) {

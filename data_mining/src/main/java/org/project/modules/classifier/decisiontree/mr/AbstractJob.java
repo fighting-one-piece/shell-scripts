@@ -16,6 +16,8 @@ public abstract class AbstractJob {
 		
 	}
 	
+	public abstract void run(String[] args);
+	
 	protected Configuration getConfiguration() {
 		if (null == conf) {
 			conf = new Configuration();

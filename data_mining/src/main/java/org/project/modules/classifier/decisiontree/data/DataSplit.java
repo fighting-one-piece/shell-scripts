@@ -1,45 +1,36 @@
 package org.project.modules.classifier.decisiontree.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DataSplit {
-
-	/** 数据集*/
-	private Data data = null;
-	/** 数据集所要分割的属性*/
-	private String splitAttribute = null;
-	/** 数据集所要分割的值*/
-	private String[] splitPoints = null;
 	
-	public DataSplit() {
-		
+	/** 数据分割条目集合*/
+	private List<DataSplitItem> items = null;
+	
+	public void addItem(DataSplitItem item) {
+		getItems().add(item);
 	}
 	
-	public DataSplit(Data data, String splitAttribute, String[] splitPoints) {
-		super();
-		this.data = data;
-		this.splitAttribute = splitAttribute;
-		this.splitPoints = splitPoints;
+	public DataSplitItem getItemBySplitPoint(String splitPoint) {
+		for (DataSplitItem item : getItems()) {
+			if (splitPoint.equalsIgnoreCase(item.getSplitPoint())) {
+				return item;
+			}
+		}
+		return null;
 	}
 
-	public Data getData() {
-		return data;
+	public List<DataSplitItem> getItems() {
+		if (null == items) {
+			items = new ArrayList<DataSplitItem>();
+		}
+		return items;
 	}
-	public void setData(Data data) {
-		this.data = data;
+
+	public void setItems(List<DataSplitItem> items) {
+		this.items = items;
 	}
-	public String getSplitAttribute() {
-		return splitAttribute;
-	}
-	public void setSplitAttribute(String splitAttribute) {
-		this.splitAttribute = splitAttribute;
-	}
-	public String[] getSplitPoints() {
-		return splitPoints;
-	}
-	public void setSplitPoints(String[] splitPoints) {
-		this.splitPoints = splitPoints;
-	}
-	
-	
-	
+
 	
 }

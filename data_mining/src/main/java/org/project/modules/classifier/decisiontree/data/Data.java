@@ -61,7 +61,8 @@ public class Data {
 	}
 	
 	public String[] getAttributesExcept(String... exceptAttributes) {
-		String[] subAttributes = new String[attributes.length - 1];
+		int length = attributes.length - exceptAttributes.length;
+		String[] subAttributes = new String[length];
 		for (int i = 0, j = 0; i < attributes.length; i++) {
 			boolean isExcept = false;
 			for (String exceptAttribute : exceptAttributes) {

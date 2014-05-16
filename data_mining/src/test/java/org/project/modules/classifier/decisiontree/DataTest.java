@@ -59,6 +59,34 @@ public class DataTest {
 		FileUtils.addLineNum("D:\\trainset_extract_1.txt", "D:\\trainset_extract_1_l.txt");
 	}
 	
+	private Set<String> calculateAttribute(String input) {
+		Set<String> attributes = new HashSet<String>();
+		InputStream in = null;
+		BufferedReader reader = null;
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				StringTokenizer tokenizer = new StringTokenizer(line);
+				line = reader.readLine();
+				tokenizer.nextToken();
+				tokenizer.nextToken();
+				while (tokenizer.hasMoreTokens()) {
+					String value = tokenizer.nextToken();
+					String[] entry = value.split(":");
+					attributes.add(entry[0]);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+		}
+		return attributes;
+	}
+	
 	private Set<String> getAttribute(String input, int n) {
 		Set<String> attributes = new HashSet<String>();
 		InputStream in = null;
@@ -87,6 +115,14 @@ public class DataTest {
 			IOUtils.closeQuietly(reader);
 		}
 		return attributes;
+	}
+	
+	@Test
+	public void viewAttributeNum() {
+		String input = "D:\\trainset_extract_1_l.txt";
+		System.out.println(calculateAttribute(input).size());
+		input = "D:\\trainset_extract_10_l.txt";
+		System.out.println(calculateAttribute(input).size());
 	}
 	
 	@Test

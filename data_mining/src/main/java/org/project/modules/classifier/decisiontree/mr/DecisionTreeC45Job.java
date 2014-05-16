@@ -19,6 +19,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.data.DataSplit;
+import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGainWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
@@ -36,23 +38,23 @@ public class DecisionTreeC45Job extends AbstractJob {
 	 * @return
 	 */
 	public String prepare(Path input) {
-		String path = null;
+		String hdfsPath = null;
 		try {
 			FileSystem fs = input.getFileSystem(conf);
 			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(data, 0);
-			String[] tmpPaths = DataHandler.splitMultiDataSet(
-					data, data.getAttributes(), null);
-			System.out.println(tmpPaths[0]);
-			String name = tmpPaths[0].substring(tmpPaths[0].lastIndexOf(File.separator) + 1);
-			path = HDFSUtils.HDFS_TEMP_DATA_URL + name;
-			HDFSUtils.copyFromLocalFile(conf, tmpPaths[0], path);
+			String path = FileUtils.obtainRandomTxtPath();
+			DataHandler.writeData(path, data);
+			System.out.println(path);
+			String name = path.substring(path.lastIndexOf(File.separator) + 1);
+			hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return path;
+		return hdfsPath;
 	}
 	
 	/**
@@ -98,7 +100,9 @@ public class DecisionTreeC45Job extends AbstractJob {
 	 * @param input
 	 * @return
 	 */
-	public Object build(String input, String[] attributes) {
+	public Object build(String input, Data data) {
+		Object preHandleResult = preHandle(data);
+		if (null != preHandleResult) return preHandleResult;
 		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
 		try {
 			HDFSUtils.delete(conf, new Path(output));
@@ -119,25 +123,18 @@ public class DecisionTreeC45Job extends AbstractJob {
 		String[] splitPoints = bestAttr.obtainSplitPoints();
 		System.out.print("splitPoints: ");
 		ShowUtils.print(splitPoints);
-//		if (null != splitPoints && splitPoints.length == 1) {
-//			return category;
-//		}
 		TreeNode treeNode = new TreeNode(attribute);
-		String[] subAttributes = new String[attributes.length - 1];
-		for (int i = 0, j = 0; i < attributes.length; i++) {
-			if (!attribute.equals(attributes[i])) {
-				subAttributes[j++] = attributes[i];
-			}
-		}
-		System.out.print("subAttributes: ");
-		ShowUtils.print(subAttributes);
-		String[] tmpPaths = DataHandler.splitMultiDataSet(
-				data, subAttributes, splitPoints);
-		for (int i = 0, len = tmpPaths.length; i < len; i++) {
-			String name = tmpPaths[i].substring(tmpPaths[i].lastIndexOf(File.separator) + 1);
+		String[] attributes = data.getAttributesExcept(attribute);
+		
+		DataSplit dataSplit = DataHandler.split(new Data(
+				data.getInstances(), attribute, splitPoints));
+		for (DataSplitItem item : dataSplit.getItems()) {
+			String path = item.getPath();
+			String name = path.substring(path.lastIndexOf(File.separator) + 1);
 			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
-			HDFSUtils.copyFromLocalFile(conf, tmpPaths[i], hdfsPath);
-			treeNode.setChild(splitPoints[i], build(hdfsPath, subAttributes));
+			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
+					new Data(attributes, item.getInstances())));
 		}
 		return treeNode;
 	}
@@ -193,7 +190,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 				System.exit(2);
 			}
 			String input = prepare(new Path(inputArgs[0]));
-			TreeNode treeNode = (TreeNode) build(input, data.getAttributes());
+			TreeNode treeNode = (TreeNode) build(input, data);
 			TreeNodeHelper.print(treeNode, 0, null);
 			String testSetPath = inputArgs[1];
 			String output = inputArgs[2];

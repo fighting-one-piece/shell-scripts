@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +23,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.data.DataSplit;
+import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGiniWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
@@ -154,21 +155,33 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		}
 		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
 		String[] names = new String[]{splitPoint, sb.toString()};
-		Map<String, List<Instance>> path2Instances = DataHandler.splitData(
-				new Data(data.getInstances(), attribute, names));
-		int index = 0;
-		for (Map.Entry<String, List<Instance>> entry : path2Instances.entrySet()) {
-			List<Instance> splitInstances = entry.getValue();
-			if (splitInstances.size() == 0) {
-				continue;
-			}
-			String path = entry.getKey();
+		
+		DataSplit dataSplit = DataHandler.split(new Data(
+				data.getInstances(), attribute, names));
+		for (DataSplitItem item : dataSplit.getItems()) {
+			String path = item.getPath();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
 			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-			treeNode.setChild(names[index++], build(hdfsPath, 
-					new Data(attributes, splitInstances)));
+			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
+					new Data(attributes, item.getInstances())));
 		}
+		
+//		Map<String, List<Instance>> path2Instances = DataHandler.splitData(
+//				new Data(data.getInstances(), attribute, names));
+//		int index = 0;
+//		for (Map.Entry<String, List<Instance>> entry : path2Instances.entrySet()) {
+//			List<Instance> splitInstances = entry.getValue();
+//			if (splitInstances.size() == 0) {
+//				continue;
+//			}
+//			String path = entry.getKey();
+//			String name = path.substring(path.lastIndexOf(File.separator) + 1);
+//			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+//			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+//			treeNode.setChild(names[index++], build(hdfsPath, 
+//					new Data(attributes, splitInstances)));
+//		}
 		return treeNode;
 	}
 	

@@ -43,7 +43,7 @@ public class TreeNodeHelper {
 	 ** 将决策树输出到标准输出 
 	 **/
 	public static void print(Object obj, int level, Object from) {
-		if (level > 20) return;
+//		if (level > 20) return;
 		for (int i = 0; i < level; i++)
 			System.out.print("|-----");
 		if (from != null)
