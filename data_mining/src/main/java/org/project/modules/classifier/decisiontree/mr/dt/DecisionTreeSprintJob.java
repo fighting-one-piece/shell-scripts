@@ -1,4 +1,4 @@
-package org.project.modules.classifier.decisiontree.mr;
+package org.project.modules.classifier.decisiontree.mr.dt;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -6,6 +6,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -21,16 +25,20 @@ import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.DataSplit;
 import org.project.modules.classifier.decisiontree.data.DataSplitItem;
-import org.project.modules.classifier.decisiontree.mr.writable.AttributeGainWritable;
+import org.project.modules.classifier.decisiontree.data.Instance;
+import org.project.modules.classifier.decisiontree.mr.AbstractJob;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeGiniWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class DecisionTreeC45Job extends AbstractJob {
+public class DecisionTreeSprintJob extends AbstractJob {
 	
 	private Data data = null;
+	
+	private Map<String, Set<String>> attrName2Values = null;
 	
 	/**
 	 * 对数据集做预处理
@@ -51,6 +59,19 @@ public class DecisionTreeC45Job extends AbstractJob {
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
 			hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+			attrName2Values = new HashMap<String, Set<String>>();
+			for (Instance instance : data.getInstances()) {
+				for (Map.Entry<String, Object> entry : 
+					instance.getAttributes().entrySet()) {
+					String attrName = entry.getKey();
+					Set<String> values = attrName2Values.get(attrName);
+					if (null == values) {
+						values = new HashSet<String>();
+						attrName2Values.put(attrName, values);
+					}
+					values.add(String.valueOf(entry.getValue()));
+				}
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -62,27 +83,31 @@ public class DecisionTreeC45Job extends AbstractJob {
 	 * @param output
 	 * @return
 	 */
-	public AttributeGainWritable chooseBestAttribute(String output) {
-		AttributeGainWritable maxAttribute = null;
+	public AttributeGiniWritable chooseBestAttribute(String output) {
+		AttributeGiniWritable minSplitAttribute = null;
 		Path path = new Path(output);
 		try {
 			FileSystem fs = path.getFileSystem(conf);
 			Path[] paths = HDFSUtils.getPathFiles(fs, path);
 			ShowUtils.print(paths);
-			double maxGainRatio = 0.0;
+			double minSplitPointGini = 1.0;
 			SequenceFile.Reader reader = null;
 			for (Path p : paths) {
 				reader = new SequenceFile.Reader(fs, p, conf);
 				Text key = (Text) ReflectionUtils.newInstance(
 						reader.getKeyClass(), conf);
-				AttributeGainWritable value = new AttributeGainWritable();
+				AttributeGiniWritable value = new AttributeGiniWritable();
 				while (reader.next(key, value)) {
-					double gainRatio = value.getGainRatio();
-					if (gainRatio >= maxGainRatio) {
-						maxGainRatio = gainRatio;
-						maxAttribute = value;
+					double gini = value.getGini();
+					if (value.isCategory()) {
+						System.out.println("attr: " + value.getAttribute());
+						System.out.println("gini: " + gini);
 					}
-					value = new AttributeGainWritable();
+					if (gini <= minSplitPointGini) {
+						minSplitPointGini = gini;
+						minSplitAttribute = value;
+					}
+					value = new AttributeGiniWritable();
 				}
 				IOUtils.closeQuietly(reader);
 			}
@@ -92,7 +117,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return maxAttribute;
+		return minSplitAttribute;
 	}
 	
 	/**
@@ -110,24 +135,30 @@ public class DecisionTreeC45Job extends AbstractJob {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		String[] paths = new String[]{input, output};
-		DecisionTreeC45MR.main(paths);
+		String[] args = new String[]{input, output};
+		DecisionTreeSprintMR.main(args);
 		
-		AttributeGainWritable bestAttr = chooseBestAttribute(output);
+		AttributeGiniWritable bestAttr = chooseBestAttribute(output);
 		String attribute = bestAttr.getAttribute();
 		System.out.println("best attribute: " + attribute);
 		System.out.println("isCategory: " + bestAttr.isCategory());
 		if (bestAttr.isCategory()) {
 			return attribute;
 		}
-		String[] splitPoints = bestAttr.obtainSplitPoints();
-		System.out.print("splitPoints: ");
-		ShowUtils.print(splitPoints);
 		TreeNode treeNode = new TreeNode(attribute);
+		String splitPoint = bestAttr.getSplitPoint();
 		String[] attributes = data.getAttributesExcept(attribute);
+		Set<String> attributeValues = attrName2Values.get(attribute);
+		attributeValues.remove(splitPoint);
+		StringBuilder sb = new StringBuilder();
+		for (String attributeValue : attributeValues) {
+			sb.append(attributeValue).append(",");
+		}
+		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+		String[] names = new String[]{splitPoint, sb.toString()};
 		
 		DataSplit dataSplit = DataHandler.split(new Data(
-				data.getInstances(), attribute, splitPoints));
+				data.getInstances(), attribute, names));
 		for (DataSplitItem item : dataSplit.getItems()) {
 			String path = item.getPath();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
@@ -149,7 +180,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
 			DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
-			Object[] results = (Object[]) treeNode.classify(testData);
+			Object[] results = (Object[]) treeNode.classifySprint(testData);
 			String path = FileUtils.obtainRandomTxtPath();
 			out = new FileOutputStream(new File(path));
 			writer = new BufferedWriter(new OutputStreamWriter(out));
@@ -201,7 +232,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 	}
 	
 	public static void main(String[] args) {
-		DecisionTreeC45Job job = new DecisionTreeC45Job();
+		DecisionTreeSprintJob job = new DecisionTreeSprintJob();
 		long startTime = System.currentTimeMillis();
 		job.run(args);
 		long endTime = System.currentTimeMillis();

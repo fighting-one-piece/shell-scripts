@@ -1,4 +1,4 @@
-package org.project.modules.classifier.decisiontree.mr;
+package org.project.modules.classifier.decisiontree.mr.dt;
 
 import java.io.IOException;
 import java.util.ArrayList;

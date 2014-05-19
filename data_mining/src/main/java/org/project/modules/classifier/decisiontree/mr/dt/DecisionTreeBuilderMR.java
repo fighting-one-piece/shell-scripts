@@ -1,4 +1,4 @@
-package org.project.modules.classifier.decisiontree.mr;
+package org.project.modules.classifier.decisiontree.mr.dt;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,22 +21,21 @@ import org.project.modules.classifier.decisiontree.builder.Builder;
 import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
-import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 
-public class RandomForestBuilderMR {
+public class DecisionTreeBuilderMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(RandomForestBuilderMR.class);
+		job.setJarByClass(DecisionTreeBuilderMR.class);
 		
-		job.setOutputKeyClass(Text.class);
+		job.setOutputKeyClass(LongWritable.class);
 		job.setOutputValueClass(TreeNodeWritable.class);
 		
-		job.setMapperClass(RandomForestBuilderMapper.class);
-		job.setNumReduceTasks(0);
+		job.setMapperClass(DecisionTreeBuilderMapper.class);
+		job.setNumReduceTasks(0); 
 		
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
@@ -47,19 +46,18 @@ public class RandomForestBuilderMR {
 		try {
 			String[] inputArgs = new GenericOptionsParser(
 						configuration, args).getRemainingArgs();
-			if (inputArgs.length != 4) {
+			if (inputArgs.length != 2) {
 				System.out.println("error");
 				System.exit(2);
 			}
-			configuration.set("forest.tree.number", inputArgs[2]);
-			configuration.set("random.attribute.number", inputArgs[3]);
-			
-			Job job = new Job(configuration, "Random Forest");
+			Job job = new Job(configuration, "Decision Tree");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
+//			FileInputFormat.addInputPath(job, new Path(inputArgs[0]));
 			FileOutputFormat.setOutputPath(job, new Path(inputArgs[1]));
-
+			
 			configureJob(job);
+			
 			System.out.println(job.waitForCompletion(true) ? 0 : 1);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -67,26 +65,19 @@ public class RandomForestBuilderMR {
 	}
 }
 
-class RandomForestBuilderMapper extends Mapper<LongWritable, Text, Text, TreeNodeWritable> {
-
-	private int treeNum = 0;
-	
-	private int attributeNum = 0;
+class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text, 
+	LongWritable, TreeNodeWritable> {
 	
 	private List<Instance> instances = new ArrayList<Instance>();
 	
 	private Set<String> attributes = new HashSet<String>();
 	
 	@Override
-	protected void setup(Context context) throws IOException, InterruptedException {
+	protected void setup(Context context) throws IOException,
+			InterruptedException {
 		super.setup(context);
-		Configuration conf = context.getConfiguration();
-		treeNum = Integer.parseInt(conf.get("forest.tree.number", "10"));
-		attributeNum = Integer.parseInt(conf.get("random.attribute.number", "1"));
-		System.out.println("treeNum: " + treeNum);
-		System.out.println("attributeNum: " + attributeNum);
 	}
-	
+
 	@Override
 	protected void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException {
@@ -99,27 +90,19 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, Text, TreeNod
 		super.cleanup(context);
 		Data data = new Data(attributes.toArray(new String[0]), instances);
 		DataHandler.fill(data, 0);
-		int attrLen = data.getAttributes().length;
-		if (attributeNum > attrLen) attributeNum = attrLen;
-		int length = attrLen / 2;
-		if (attributeNum < length) attributeNum = length;
-		System.out.println("data attribute len: " + data.getAttributes().length);
-		System.out.println("data instances len: " + data.getInstances().size());
-		for (int i = 1; i <= treeNum; i++) {
-			Data randomData = DataLoader.loadRandom(data, attributeNum);
-			Builder builder = new DecisionTreeC45Builder();
-			TreeNode treeNode = (TreeNode) builder.build(randomData);
+		System.out.println("builder map data attribute len: " + data.getAttributes().length);
+		System.out.println("builder map data instances len: " + data.getInstances().size());
+		Builder builder = new DecisionTreeC45Builder();
+		Object result = builder.build(data);
+		System.out.println("builder object: " + result);
+		if (result instanceof TreeNode) {
 			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-			TreeNodeHelper.purningTreeNode(treeNode, 20, 0, treeNodes);
-			int j = 0;
-			for (TreeNode node : treeNodes) {
-				TreeNodeWritable output = new TreeNodeWritable(node);
-				context.write(new Text(i + "_" + (++j)), output);
-				System.out.println(i + "_" + j + " tree build success");
+			TreeNodeHelper.purningTreeNode((TreeNode) result, 25, 0, treeNodes);
+			int i = 0;
+			for (TreeNode treeNode : treeNodes) {
+				TreeNodeWritable output = new TreeNodeWritable(treeNode);
+				context.write(new LongWritable(++i), output);
 			}
-//			TreeNodeWritable output = new TreeNodeWritable(treeNode);
-//			context.write(new IntWritable(i), output);
 		}
 	}
 }
-
