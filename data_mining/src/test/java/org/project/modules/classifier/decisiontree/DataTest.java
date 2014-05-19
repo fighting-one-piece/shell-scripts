@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class DataTest {
 				while (tokenizer.hasMoreTokens()) {
 					String value = tokenizer.nextToken();
 					String[] entry = value.split(":");
-					if (attributes.size() != 100) {
+					if (attributes.size() != n) {
 						attributes.add(entry[0]);
 					}
 				}
@@ -127,20 +128,17 @@ public class DataTest {
 	
 	@Test
 	public void generateDataFile() {
-		String input = "D:\\trainset_extract_10_l.txt";
-		String output = "D:\\attribute_1000_r_100.txt";
-		Set<String> attributes = getAttribute(input, 1000);
+		String input = "D:\\trainset_extract_1_l.txt";
+		String output = "D:\\attribute_700_r_10.txt";
+		int attributeNum = 700;
+		Set<String> attributes = getAttribute(input, attributeNum);
 		System.out.println(attributes.size());
 		List<Instance> instances = new ArrayList<Instance>();
 		InputStream in = null;
 		BufferedReader reader = null;
-//		OutputStream out = null;
-//		BufferedWriter writer = null;
 		try {
 			in = new FileInputStream(new File(input));
 			reader = new BufferedReader(new InputStreamReader(in));
-//			out = new FileOutputStream(new File(output));
-//			writer = new BufferedWriter(new OutputStreamWriter(out));
 			String line = reader.readLine();
 			while (!("").equals(line) && null != line) {
 				StringTokenizer tokenizer = new StringTokenizer(line);
@@ -148,7 +146,7 @@ public class DataTest {
 				instance.setId(Long.parseLong(tokenizer.nextToken()));
 				instance.setCategory(tokenizer.nextToken());
 				int index = 0;
-				while (tokenizer.hasMoreTokens() && index < 100) {
+				while (tokenizer.hasMoreTokens() && index < attributeNum) {
 					String value = tokenizer.nextToken();
 					String[] entry = value.split(":");
 					if (attributes.contains(entry[0])) {
@@ -157,14 +155,14 @@ public class DataTest {
 						index++;
 					}
 				}
-				while (index < 100) {
-					for (String attribute : attributes) {
-						Object value = instance.getAttribute(attribute);
-						if (null == value) {
-							instance.setAttribute(attribute, "1.0");
-							System.out.println("add: " + index);
-							index++;
-						}
+				Iterator<String> iter = attributes.iterator();
+				while (iter.hasNext() && index < attributeNum) {
+					String attribute = iter.next();
+					Object value = instance.getAttribute(attribute);
+					if (null == value) {
+						instance.setAttribute(attribute, "1.0");
+						System.out.println("add: " + index);
+						index++;
 					}
 				}
 				instances.add(instance);
@@ -175,8 +173,6 @@ public class DataTest {
 		} finally {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(reader);
-//			IOUtils.closeQuietly(out);
-//			IOUtils.closeQuietly(writer);
 		}
 		DataHandler.writeData(output, new Data(
 				attributes.toArray(new String[0]), instances));

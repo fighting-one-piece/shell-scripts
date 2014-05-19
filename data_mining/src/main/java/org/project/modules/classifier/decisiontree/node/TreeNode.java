@@ -108,8 +108,8 @@ public class TreeNode extends Node implements Writable, Serializable {
 		Object attributeValue = instance.getAttribute(attribute);
 		if (null == attributeValue) return null;
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
-			String attrName = entry.getKey().toString();
-			if (attrName.indexOf(attributeValue.toString()) != -1) {
+			String key = String.valueOf(entry.getKey());
+			if (key.indexOf(attributeValue.toString()) != -1) {
 				Object value = entry.getValue();
 				if (value instanceof TreeNode) {
 					return ((TreeNode) value).classifySprint(instance);

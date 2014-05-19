@@ -166,22 +166,6 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
 					new Data(attributes, item.getInstances())));
 		}
-		
-//		Map<String, List<Instance>> path2Instances = DataHandler.splitData(
-//				new Data(data.getInstances(), attribute, names));
-//		int index = 0;
-//		for (Map.Entry<String, List<Instance>> entry : path2Instances.entrySet()) {
-//			List<Instance> splitInstances = entry.getValue();
-//			if (splitInstances.size() == 0) {
-//				continue;
-//			}
-//			String path = entry.getKey();
-//			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-//			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
-//			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-//			treeNode.setChild(names[index++], build(hdfsPath, 
-//					new Data(attributes, splitInstances)));
-//		}
 		return treeNode;
 	}
 	

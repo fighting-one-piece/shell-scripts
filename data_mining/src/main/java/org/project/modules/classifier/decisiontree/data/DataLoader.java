@@ -43,9 +43,11 @@ public class DataLoader {
 		try {
 			reader = new BufferedReader(new InputStreamReader(inStream));
 			String line = reader.readLine();
+			Instance instance = null;
 			while (!("").equals(line) && null != line) {
-				instances.add(containId ? DataHandler.extractWithId(line, attributes)
-						: DataHandler.extract(line, attributes));
+				instance = containId ? DataHandler.extractWithId(line, attributes)
+						: DataHandler.extract(line, attributes);
+				instances.add(instance);
 				line = reader.readLine();
 			}
 		} catch (Exception e) {

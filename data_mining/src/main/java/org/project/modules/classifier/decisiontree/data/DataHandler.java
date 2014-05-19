@@ -22,23 +22,6 @@ public class DataHandler {
 	/**
 	 * 抽取文本信息
 	 * @param line 文本
-	 * @return
-	 */
-	public static Instance extract(String line) {
-		StringTokenizer tokenizer = new StringTokenizer(line);
-		Instance instance = new Instance();
-		instance.setCategory(tokenizer.nextToken());
-		while (tokenizer.hasMoreTokens()) {
-			String value = tokenizer.nextToken();
-			String[] entry = value.split(":");
-			instance.setAttribute(entry[0], entry[1]);
-		}
-		return instance;
-	}
-	
-	/**
-	 * 抽取文本信息
-	 * @param line 文本
 	 * @param attributes 特征属性集
 	 * @return
 	 */

@@ -15,6 +15,8 @@ public class Data {
 	private String[] attributes = null;
 	/** 剪枝特征属性集合，暂时没有用*/
 	private String[] purningAttributes = null;
+	/** 数据集类型集合*/
+	private Object[] categories = null;
 	/** 样本实例集合*/
 	private List<Instance> instances = null;
 	/** 数据集所要隐藏的属性*/
@@ -77,6 +79,21 @@ public class Data {
 
 	public void setAttributes(String[] attributes) {
 		this.attributes = attributes;
+	}
+
+	public Object[] getCategories() {
+		if (null == categories) {
+			int length = instances.size();
+			categories = new String[length];
+			for (int i = 0; i < length; i++) {
+				categories[i] = instances.get(i).getCategory();
+			}
+		}
+		return categories;
+	}
+
+	public void setCategories(Object[] categories) {
+		this.categories = categories;
 	}
 
 	public List<Instance> getInstances() {
