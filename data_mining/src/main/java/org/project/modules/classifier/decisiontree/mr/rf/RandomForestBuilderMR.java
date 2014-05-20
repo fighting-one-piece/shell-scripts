@@ -110,7 +110,7 @@ class RandomForestBuilderMapper extends Mapper<LongWritable, Text, Text, TreeNod
 			Builder builder = new DecisionTreeC45Builder();
 			TreeNode treeNode = (TreeNode) builder.build(randomData);
 			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-			TreeNodeHelper.purningTreeNode(treeNode, 20, 0, treeNodes);
+			TreeNodeHelper.splitTreeNode(treeNode, 20, 0, treeNodes);
 			int j = 0;
 			for (TreeNode node : treeNodes) {
 				TreeNodeWritable output = new TreeNodeWritable(node);

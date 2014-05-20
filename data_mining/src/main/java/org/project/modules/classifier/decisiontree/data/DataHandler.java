@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -78,13 +79,13 @@ public class DataHandler {
 	/** 缺失数据填充默认值*/
 	public static void fill(List<Instance> instances, String[] attributes, Object fillValue) {
 		fillValue = null == fillValue ? 0 : fillValue;
-		for (Instance instance : instances) {
-			Map<String, Object> instanceAttrs = instance.getAttributes();
+		for (String attribute : attributes) {
 			Object attrValue = null;
-			for (int i = 0, attrLen = attributes.length; i < attrLen; i++) {
-				attrValue = instanceAttrs.get(attributes[i]);
-				instanceAttrs.put(attributes[i], 
-						null == attrValue ? fillValue : attrValue);
+			for (Instance instance : instances) {
+				attrValue = instance.getAttribute(attribute);
+				if (null == attrValue) {
+					instance.setAttribute(attribute,  fillValue);
+				}
 			}
 		}
 	}
@@ -119,10 +120,85 @@ public class DataHandler {
 				}
 			}
 		}
-		data.setPurningAttributes(b.toArray(new String[0]));
+		data.setPurningAttributes(a.toArray(new String[0]));
 		System.out.println("all attribute size: " + attributes.length);
 		System.out.println("remove attribute size: " + a.size());
 		System.out.println("remain attribute size: " + b.size());
+	}
+	
+	public static void computeFill(Data data, Object fillValue) {
+		List<Instance> instances = data.getInstances();
+		String[] attributes = data.getAttributes();
+		Map<String, Map<Object, Integer>> all = 
+				new HashMap<String, Map<Object, Integer>>();
+		for (String attribute : attributes) {
+			Map<Object, Integer> values = all.get(attribute);
+			if (null == values) {
+				values = new HashMap<Object, Integer>();
+				all.put(attribute, values);
+			}
+			for (Instance instance : instances) {
+				Object value = instance.getAttribute(attribute);
+				if (null == value) continue;
+				Integer count = values.get(value);
+				values.put(value, null == count ? 1 : count + 1);
+			}
+		}
+		
+		for (String attribute : attributes) {
+			Map<Object, Integer> values = all.get(attribute);
+			int kCount = values.keySet().size();
+			if (kCount <= 1) {
+				Object attrValue = null;
+				for (Instance instance : instances) {
+					attrValue = instance.getAttribute(attribute);
+					if (null == attrValue) {
+						instance.setAttribute(attribute,  fillValue);
+					}
+				}
+			} else {
+				int nullValueCount = 0;
+				for (Instance instance : instances) {
+					Object value = instance.getAttribute(attribute);
+					if (null == value) {
+						nullValueCount += 1;
+					}
+				}
+				double valuesCount = 0;
+				for (int count : values.values()) {
+					valuesCount += count;
+				}
+				Map<Object, Integer> takeValues = new HashMap<Object, Integer>();
+				int temp = nullValueCount;
+				for (Map.Entry<Object, Integer> entry : values.entrySet()) {
+					Object k = entry.getKey();
+					int v = entry.getValue();
+					Double p = v / valuesCount * nullValueCount;
+					if (--kCount > 0) {
+						takeValues.put(k, p.intValue());
+						temp = temp - p.intValue(); 
+					} else {
+						takeValues.put(k, temp);
+					}
+				}
+				Object attrValue = null;
+				for (Instance instance : instances) {
+					attrValue = instance.getAttribute(attribute);
+					if (null == attrValue) {
+						for (Map.Entry<Object, Integer> entry : 
+							takeValues.entrySet()) {
+							Object k = entry.getKey();
+							int v = entry.getValue();
+							if (v != 0) {
+								instance.setAttribute(attribute, k);
+								takeValues.put(k, v - 1);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	/** *
@@ -183,6 +259,21 @@ public class DataHandler {
 			dataSplit.addItem(item);
 		}
 		return dataSplit;
+	}
+	
+	/** 数据集分割*/
+	public static Collection<List<Instance>> split(List<Instance> instances, int splitNum) {
+		Map<Integer, List<Instance>> map = new HashMap<Integer, List<Instance>>();
+		for (int i = 0, len = instances.size(); i < len; i++) {
+			int key = i % splitNum;
+			List<Instance> temp = map.get(key);
+			if (null == temp) {
+				temp = new ArrayList<Instance>();
+				map.put(key, temp);
+			}
+			temp.add(instances.get(i));
+		}
+		return map.values();
 	}
 	
 	/** 将数据写入某个文件*/

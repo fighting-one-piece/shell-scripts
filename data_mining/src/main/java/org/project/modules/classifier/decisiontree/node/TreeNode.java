@@ -22,7 +22,7 @@ public class TreeNode extends Node implements Writable, Serializable {
 	
 	private String attribute = null;
 	
-	private Map<Object, Object> children = new HashMap<Object, Object>();
+	private Map<Object, Object> children = null;
 
 	public TreeNode() {
 		
@@ -41,19 +41,32 @@ public class TreeNode extends Node implements Writable, Serializable {
 	}
 
 	public Object getChild(Object attrValue) {
-		return children.get(attrValue);
+		return getChildren().get(attrValue);
 	}
 
 	public void setChild(Object attrValue, Object child) {
-		children.put(attrValue, child);
+		getChildren().put(attrValue, child);
 	}
 
 	public Map<Object, Object> getChildren() {
+		if (null == children) {
+			children = new HashMap<Object, Object>();
+		}
 		return children;
 	}
 	
 	public void setChildren(Map<Object, Object> children) {
 		this.children = children;
+	}
+	
+	public int getLeafNumber() {
+		int leafNum = 0;
+		for (Map.Entry<Object, Object> entry : getChildren().entrySet()) {
+			if (!(entry.getValue() instanceof TreeNode)) {
+				leafNum += 1;
+			}
+		}
+		return leafNum;
 	}
 
 	@Override
@@ -140,6 +153,5 @@ public class TreeNode extends Node implements Writable, Serializable {
 		dataOutput.writeInt(sb.length());
 		dataOutput.write(sb.toString().getBytes());
 	}
-	
 	
 }

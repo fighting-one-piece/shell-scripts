@@ -21,6 +21,7 @@ import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.utils.FileUtils;
+import org.project.utils.ShowUtils;
 
 public class DataTest {
 
@@ -176,6 +177,32 @@ public class DataTest {
 		}
 		DataHandler.writeData(output, new Data(
 				attributes.toArray(new String[0]), instances));
+	}
+	
+	@Test
+	public void compute() {
+		Map<Object, Integer> takeValues = new HashMap<Object, Integer>();
+		Map<Object, Integer> values = new HashMap<Object, Integer>();
+		values.put("a", 3);
+		values.put("b", 4);
+		values.put("c", 5);
+		double valuesCount = 0;
+		for (int count : values.values()) {
+			valuesCount += count;
+		}
+		int k = values.keySet().size();
+		int temp = 90;
+		for (Map.Entry<Object, Integer> entry : values.entrySet()) {
+			int value = entry.getValue();
+			Double p = value / valuesCount * 90;
+			if (--k > 0) {
+				takeValues.put(entry.getKey(), p.intValue());
+				temp = temp - p.intValue(); 
+			} else {
+				takeValues.put(entry.getKey(), temp);
+			}
+		}
+		ShowUtils.print(takeValues);
 	}
 	
 	

@@ -104,7 +104,7 @@ public class DecisionTreeMRTest {
 		DataHandler.fill(data, 0);
 		TreeNode treeNode = (TreeNode) treeBuilder.build(data);
 		Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-		TreeNodeHelper.purningTreeNode(treeNode, 25, 0, treeNodes);
+		TreeNodeHelper.splitTreeNode(treeNode, 25, 0, treeNodes);
 		for (TreeNode node : treeNodes) {
 			StringBuilder sb = new StringBuilder();
 			TreeNodeHelper.treeNode2json(node, sb);
@@ -258,7 +258,7 @@ public class DecisionTreeMRTest {
 			DataHandler.fill(data, 0);
 			TreeNode treeNode = (TreeNode) treeBuilder.build(data);
 			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-			TreeNodeHelper.purningTreeNode(treeNode, 25, 0, treeNodes);
+			TreeNodeHelper.splitTreeNode(treeNode, 25, 0, treeNodes);
 			for (TreeNode node : treeNodes) {
 				StringBuilder sb = new StringBuilder();
 				TreeNodeHelper.treeNode2json(node, sb);

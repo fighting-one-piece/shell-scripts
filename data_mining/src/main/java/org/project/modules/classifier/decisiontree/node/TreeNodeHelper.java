@@ -21,8 +21,8 @@ public class TreeNodeHelper {
 		return (TreeNode) json2TreeNode(jsonData);
 	}
 	
-	/** 截开树**/
-	public static void purningTreeNode(TreeNode treeNode, int n, 
+	/** 分割树**/
+	public static void splitTreeNode(TreeNode treeNode, int max, 
 			int level, Set<TreeNode> treeNodes) {
 		level++;
 		if (level == 1) treeNodes.add(treeNode); 
@@ -30,11 +30,11 @@ public class TreeNodeHelper {
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			Object value = entry.getValue();
 			if (value instanceof TreeNode) {
-				if (level > n) {
+				if (level > max) {
 					children.put(entry.getKey(), null);
 				} 
-				purningTreeNode((TreeNode) value, n, 
-						level > n ? 0 : level, treeNodes);
+				splitTreeNode((TreeNode) value, max, 
+						level > max ? 0 : level, treeNodes);
 			}
 		}
 	}

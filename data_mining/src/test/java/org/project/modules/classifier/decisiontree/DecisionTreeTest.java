@@ -21,7 +21,7 @@ import org.project.utils.ShowUtils;
 public class DecisionTreeTest {
 	
 	@Test
-	public void purning() {
+	public void splitTreeNode() {
 		Builder treeBuilder = new DecisionTreeC45Builder();
 		String trainFilePath = "d:\\trainset_extract_10.txt";
 		Data data = DataLoader.load(trainFilePath);
@@ -29,7 +29,7 @@ public class DecisionTreeTest {
 		System.out.println("data attrs: " + data.getAttributes().length);
 		TreeNode treeNode = (TreeNode) treeBuilder.build(data);
 		Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-		TreeNodeHelper.purningTreeNode(treeNode, 25, 0, treeNodes);
+		TreeNodeHelper.splitTreeNode(treeNode, 25, 0, treeNodes);
 		System.out.println(treeNodes.size());
 		List<Object[]> results = new ArrayList<Object[]>();
 		Set<String> attributes = new HashSet<String>();
@@ -116,5 +116,23 @@ public class DecisionTreeTest {
 		dataError.report();
 	}
 	
+	@Test
+	public void repruning() {
+		String path = "d:\\attribute_100_r_100.txt";
+		Data data = DataLoader.loadWithId(path);
+		DataHandler.fill(data, 1.0);
+		Builder builder = new DecisionTreeSprintBuilder();
+		TreeNode treeNode = (TreeNode) builder.build(data);
+		TreeNodeHelper.print(treeNode, 0, null);
+		String p = "d:\\attribute_10_r_10.txt";
+		Data testData = DataLoader.loadWithId(p);
+		System.out.println("data attributes:　" + data.getAttributes().length);
+		System.out.println("testdata attributes:　" + testData.getAttributes().length);
+		DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
+		Object[] results = (Object[]) treeNode.classifySprint(testData);
+		ShowUtils.print(results);
+		DataError dataError = new DataError(testData.getCategories(), results);
+		dataError.report();
+	}
 	
 }

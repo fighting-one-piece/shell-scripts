@@ -97,7 +97,7 @@ class DecisionTreeBuilderMapper extends Mapper<LongWritable, Text,
 		System.out.println("builder object: " + result);
 		if (result instanceof TreeNode) {
 			Set<TreeNode> treeNodes = new HashSet<TreeNode>();
-			TreeNodeHelper.purningTreeNode((TreeNode) result, 25, 0, treeNodes);
+			TreeNodeHelper.splitTreeNode((TreeNode) result, 25, 0, treeNodes);
 			int i = 0;
 			for (TreeNode treeNode : treeNodes) {
 				TreeNodeWritable output = new TreeNodeWritable(treeNode);
