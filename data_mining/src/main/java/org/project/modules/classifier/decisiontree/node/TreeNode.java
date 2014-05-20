@@ -13,14 +13,16 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
 /**
- ** 决策树（非叶结点），决策树中的每个非叶结点都引导了一棵决策树 *
+ ** 决策树（非叶结点），决策树中的每个非叶结点都引导了一棵决策树 
  *  每个非叶结点包含一个分支属性和多个分支，分支属性的每个值对应一个分支，该分支引导了一棵子决策树
  */
 public class TreeNode extends Node implements Writable, Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private String attribute = null;
+	private String name = null;
+	
+	private int record = 0;
 	
 	private Map<Object, Object> children = null;
 
@@ -28,24 +30,32 @@ public class TreeNode extends Node implements Writable, Serializable {
 		
 	}
 	
-	public TreeNode(String attribute) {
-		this.attribute = attribute;
+	public TreeNode(String name) {
+		this.name = name;
 	}
 
-	public String getAttribute() {
-		return attribute;
+	public String getName() {
+		return name;
 	}
 	
-	public void setAttribute(String attribute) {
-		this.attribute = attribute;
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public int getRecord() {
+		return record;
 	}
 
-	public Object getChild(Object attrValue) {
-		return getChildren().get(attrValue);
+	public void setRecord(int record) {
+		this.record = record;
 	}
 
-	public void setChild(Object attrValue, Object child) {
-		getChildren().put(attrValue, child);
+	public Object getChild(Object attributeValue) {
+		return getChildren().get(attributeValue);
+	}
+
+	public void setChild(Object attributeValue, Object child) {
+		getChildren().put(attributeValue, child);
 	}
 
 	public Map<Object, Object> getChildren() {
@@ -87,7 +97,7 @@ public class TreeNode extends Node implements Writable, Serializable {
 	}
 	
 	public Object classify(Instance instance) {
-		Object attributeValue = instance.getAttribute(attribute);
+		Object attributeValue = instance.getAttribute(name);
 		if (null == attributeValue) return null;
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			if (attributeValue.equals(entry.getKey())) {
@@ -118,7 +128,7 @@ public class TreeNode extends Node implements Writable, Serializable {
 	}
 	
 	public Object classifySprint(Instance instance) {
-		Object attributeValue = instance.getAttribute(attribute);
+		Object attributeValue = instance.getAttribute(name);
 		if (null == attributeValue) return null;
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			String key = String.valueOf(entry.getKey());
@@ -141,7 +151,7 @@ public class TreeNode extends Node implements Writable, Serializable {
 		dataInput.readFully(buff, 0, length);
 		String jsonData = new String(buff);
 		TreeNode temp = (TreeNode) TreeNodeHelper.json2TreeNode(jsonData);
-		this.attribute = temp.getAttribute();
+		this.name = temp.getName();
 		this.children = temp.getChildren();
 	}
 	

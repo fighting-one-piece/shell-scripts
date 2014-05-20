@@ -126,27 +126,19 @@ public class DataHandler {
 		System.out.println("remain attribute size: " + b.size());
 	}
 	
+	/** 计算特征值比例填充*/
 	public static void computeFill(Data data, Object fillValue) {
 		List<Instance> instances = data.getInstances();
 		String[] attributes = data.getAttributes();
-		Map<String, Map<Object, Integer>> all = 
-				new HashMap<String, Map<Object, Integer>>();
+		Map<String, Map<Object, Integer>> attributeValueStatistics = 
+				attributeValueStatistics(instances, attributes);
+		computeFill(instances, attributes, attributeValueStatistics, fillValue);
+	}
+	
+	public static void computeFill(List<Instance> instances, String[] attributes,
+			Map<String, Map<Object, Integer>> attributeValueStatistics, Object fillValue) {
 		for (String attribute : attributes) {
-			Map<Object, Integer> values = all.get(attribute);
-			if (null == values) {
-				values = new HashMap<Object, Integer>();
-				all.put(attribute, values);
-			}
-			for (Instance instance : instances) {
-				Object value = instance.getAttribute(attribute);
-				if (null == value) continue;
-				Integer count = values.get(value);
-				values.put(value, null == count ? 1 : count + 1);
-			}
-		}
-		
-		for (String attribute : attributes) {
-			Map<Object, Integer> values = all.get(attribute);
+			Map<Object, Integer> values = attributeValueStatistics.get(attribute);
 			int kCount = values.keySet().size();
 			if (kCount <= 1) {
 				Object attrValue = null;
@@ -199,6 +191,26 @@ public class DataHandler {
 				}
 			}
 		}
+	}
+	
+	public static Map<String, Map<Object, Integer>> attributeValueStatistics(
+			List<Instance> instances, String[] attributes) {
+		Map<String, Map<Object, Integer>> attributeValueStatistics = 
+				new HashMap<String, Map<Object, Integer>>();
+		for (String attribute : attributes) {
+			Map<Object, Integer> values = attributeValueStatistics.get(attribute);
+			if (null == values) {
+				values = new HashMap<Object, Integer>();
+				attributeValueStatistics.put(attribute, values);
+			}
+			for (Instance instance : instances) {
+				Object value = instance.getAttribute(attribute);
+				if (null == value) continue;
+				Integer count = values.get(value);
+				values.put(value, null == count ? 1 : count + 1);
+			}
+		}
+		return attributeValueStatistics;
 	}
 	
 	/** *

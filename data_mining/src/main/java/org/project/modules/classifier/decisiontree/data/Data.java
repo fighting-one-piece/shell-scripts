@@ -13,8 +13,6 @@ public class Data {
 
 	/** 特征属性集合*/
 	private String[] attributes = null;
-	/** 剪枝特征属性集合，暂时没有用*/
-	private String[] purningAttributes = null;
 	/** 数据集类型集合*/
 	private Object[] categories = null;
 	/** 样本实例集合*/
@@ -25,6 +23,8 @@ public class Data {
 	private String splitAttribute = null;
 	/** 数据集所要分割的值*/
 	private String[] splitPoints = null;
+	/** 剪枝特征属性集合，暂时没有用*/
+	private String[] purningAttributes = null;
 	/** 样本实例集合的分裂信息*/
 	private Map<Object, List<Instance>> splits = null;
 	

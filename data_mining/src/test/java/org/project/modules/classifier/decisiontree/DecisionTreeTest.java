@@ -49,7 +49,7 @@ public class DecisionTreeTest {
 	}
 	
 	private void obtainAttributes(TreeNode treeNode, Set<String> attributes) {
-		attributes.add(treeNode.getAttribute());
+		attributes.add(treeNode.getName());
 		Map<Object, Object> children = treeNode.getChildren();
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			Object value = entry.getValue();
@@ -118,17 +118,18 @@ public class DecisionTreeTest {
 	
 	@Test
 	public void repruning() {
-		String path = "d:\\attribute_100_r_100.txt";
-		Data data = DataLoader.loadWithId(path);
-		DataHandler.fill(data, 1.0);
+		String path = "d:\\trainset_extract_10.txt";
+		Data data = DataLoader.load(path);
+		DataHandler.computeFill(data, 1.0);
 		Builder builder = new DecisionTreeSprintBuilder();
 		TreeNode treeNode = (TreeNode) builder.build(data);
 		TreeNodeHelper.print(treeNode, 0, null);
-		String p = "d:\\attribute_10_r_10.txt";
-		Data testData = DataLoader.loadWithId(p);
+		String p = "d:\\trainset_extract_1.txt";
+		Data testData = DataLoader.load(p);
 		System.out.println("data attributes:　" + data.getAttributes().length);
 		System.out.println("testdata attributes:　" + testData.getAttributes().length);
-		DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
+		DataHandler.computeFill(testData.getInstances(), data.getAttributes(), 
+				DataHandler.attributeValueStatistics(data.getInstances(), data.getAttributes()), 1.0);
 		Object[] results = (Object[]) treeNode.classifySprint(testData);
 		ShowUtils.print(results);
 		DataError dataError = new DataError(testData.getCategories(), results);

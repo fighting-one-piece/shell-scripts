@@ -132,14 +132,14 @@ public class DecisionTreeMRTest {
 		System.out.println(sb.toString());
 		
 		TreeNode temp = (TreeNode) TreeNodeHelper.json2TreeNode(sb.toString());
-		System.out.println(temp.getAttribute());
+		System.out.println(temp.getName());
 		ShowUtils.print(temp.getChildren());
 	}
 	
 	private void handle(TreeNode treeNode, StringBuilder sb) {
 		sb.append("{");
 		sb.append("\"attribute\":");
-		sb.append("\"" + treeNode.getAttribute()).append("\",");
+		sb.append("\"" + treeNode.getName()).append("\",");
 		Map<Object, Object> children = treeNode.getChildren();
 		if (children.size() != 0) {
 			sb.append("\"children\":");
@@ -182,7 +182,7 @@ public class DecisionTreeMRTest {
 		reader.startArray();
 		while (reader.hasNext()) {
 			TreeNode treeNode = reader.readObject(TreeNode.class);
-			System.out.println(treeNode.getAttribute());
+			System.out.println(treeNode.getName());
 			System.out.println(treeNode.getChildren());
 		}
 		reader.endArray();
@@ -222,7 +222,7 @@ public class DecisionTreeMRTest {
 		reader.startObject();
 		while (reader.hasNext()) {
 			TreeNode treeNode = reader.readObject(TreeNode.class);
-			System.out.println(treeNode.getAttribute());
+			System.out.println(treeNode.getName());
 			System.out.println(treeNode.getChildren());
 			break;
 		}
@@ -286,7 +286,7 @@ public class DecisionTreeMRTest {
 			while (reader.next(key, value)) {
 				TreeNode treeNode = value.getTreeNode();
 				if (null  == treeNode) continue;
-				System.out.println(treeNode.getAttribute());
+				System.out.println(treeNode.getName());
 				value = new TreeNodeWritable();
 			}
 		} catch (IOException e) {

@@ -50,7 +50,7 @@ public class TreeNodeHelper {
 			System.out.printf("(%s):", from);
 		if (obj instanceof TreeNode) {
 			TreeNode tree = (TreeNode) obj;
-			String attrName = tree.getAttribute();
+			String attrName = tree.getName();
 			System.out.printf("[%s = ?]\n", attrName);
 			for (Object attrValue : tree.getChildren().keySet()) {
 				Object child = tree.getChild(attrValue);
@@ -76,7 +76,7 @@ public class TreeNodeHelper {
 		try {
 			if (jsonObject.containsKey("children")) {
 				TreeNode treeNode = new TreeNode();
-				treeNode.setAttribute((String) jsonObject.get("attribute"));
+				treeNode.setName((String) jsonObject.get("attribute"));
 				JSONObject v = (JSONObject) jsonObject.get("children");
 				Map<Object, Object> children = new HashMap<Object, Object>();
 				Set<Map.Entry<Object, Object>> entries = v.entrySet();
@@ -101,7 +101,7 @@ public class TreeNodeHelper {
 	public static void treeNode2json(TreeNode treeNode, StringBuilder sb) {
 		sb.append("{");
 		sb.append("\"attribute\":");
-		sb.append("\"" + treeNode.getAttribute()).append("\",");
+		sb.append("\"" + treeNode.getName()).append("\",");
 		Map<Object, Object> children = treeNode.getChildren();
 		if (children.size() != 0) {
 			sb.append("\"children\":");
@@ -124,7 +124,7 @@ public class TreeNodeHelper {
 	}
 	
 	public static void obtainAttributes(TreeNode treeNode, Set<String> attributes) {
-		attributes.add(treeNode.getAttribute());
+		attributes.add(treeNode.getName());
 		Map<Object, Object> children = treeNode.getChildren();
 		for (Map.Entry<Object, Object> entry : children.entrySet()) {
 			Object value = entry.getValue();
