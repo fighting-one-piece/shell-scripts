@@ -2,20 +2,20 @@ package org.project.modules.association.apriori.data;
 
 public class Instance {
 
-	private Object[] values = null;
+	private String[] values = null;
 	
 	public Instance() {
 	}
 	
-	public Instance(Object[] values) {
+	public Instance(String[] values) {
 		this.values = values;
 	}
 
-	public Object[] getValues() {
+	public String[] getValues() {
 		return values;
 	}
 
-	public void setValues(Object[] values) {
+	public void setValues(String[] values) {
 		this.values = values;
 	}
 	
