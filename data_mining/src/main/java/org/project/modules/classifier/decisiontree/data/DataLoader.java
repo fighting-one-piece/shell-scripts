@@ -67,13 +67,6 @@ public class DataLoader {
 		String[] attributes = data.getAttributes();
 		List<Instance> instances = data.getInstances();
 		Random random = new Random();
-//		int minRandomAttributeCount = attributes.length / 30;
-//		int randomAttributeCount = minRandomAttributeCount + 
-//				random.nextInt(attributes.length + 1 - minRandomAttributeCount);
-//		while (randomAttributeCount < 3) {
-//			System.out.println("randomAttributeCount: " + randomAttributeCount);
-//			randomAttributeCount = random.nextInt(attributes.length);
-//		}
 		Set<String> randomAttributeSet = new HashSet<String>();
 		while (randomAttributeSet.size() < attributeNum) {
 			randomAttributeSet.add(attributes[random.nextInt(attributes.length)]);
@@ -92,5 +85,5 @@ public class DataLoader {
 		return new Data(randomAttributeSet.toArray(new String[0]), 
 				new ArrayList<Instance>(instanceSet));
 	}
-
+	
 }

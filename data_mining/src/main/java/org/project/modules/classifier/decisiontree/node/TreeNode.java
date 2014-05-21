@@ -49,6 +49,10 @@ public class TreeNode extends Node implements Writable, Serializable {
 	public void setRecord(int record) {
 		this.record = record;
 	}
+	
+	public void addOneRecord() {
+		this.record += 1;
+	}
 
 	public Object getChild(Object attributeValue) {
 		return getChildren().get(attributeValue);
@@ -67,6 +71,20 @@ public class TreeNode extends Node implements Writable, Serializable {
 	
 	public void setChildren(Map<Object, Object> children) {
 		this.children = children;
+	}
+	
+	public void clearChildren() {
+		getChildren().clear();
+	}
+	
+	public boolean hasBranchNode() {
+		boolean hasBranchNode = false;
+		for (Map.Entry<Object, Object> entry : getChildren().entrySet()) {
+			if (entry.getValue() instanceof TreeNode) {
+				hasBranchNode = true;
+			}
+		}
+		return hasBranchNode;
 	}
 	
 	public int getLeafNumber() {
@@ -99,7 +117,8 @@ public class TreeNode extends Node implements Writable, Serializable {
 	public Object classify(Instance instance) {
 		Object attributeValue = instance.getAttribute(name);
 		if (null == attributeValue) return null;
-		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+		addOneRecord();
+		for (Map.Entry<Object, Object> entry : getChildren().entrySet()) {
 			if (attributeValue.equals(entry.getKey())) {
 				Object value = entry.getValue();
 				if (value instanceof TreeNode) {
@@ -130,7 +149,8 @@ public class TreeNode extends Node implements Writable, Serializable {
 	public Object classifySprint(Instance instance) {
 		Object attributeValue = instance.getAttribute(name);
 		if (null == attributeValue) return null;
-		for (Map.Entry<Object, Object> entry : children.entrySet()) {
+		addOneRecord();
+		for (Map.Entry<Object, Object> entry : getChildren().entrySet()) {
 			String key = String.valueOf(entry.getKey());
 			if (key.indexOf(attributeValue.toString()) != -1) {
 				Object value = entry.getValue();

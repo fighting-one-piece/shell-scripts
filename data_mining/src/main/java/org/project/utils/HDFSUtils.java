@@ -18,11 +18,12 @@ import org.apache.hadoop.fs.Path;
 public class HDFSUtils {
 
 	/** HDFS URL*/
-	public static final String HDFS_URL = "hdfs://centos.host1:9000/user/hadoop/data/";
+//	public static final String HDFS_URL = "hdfs://centos.host1:9000/user/hadoop/data/";
+	public static final String HDFS_URL = "hdfs://hadoop-namenode-1896:9000/user/hadoop_hudong/project/";
 	/** HDFS 临时数据存放 URL*/
-	public static final String HDFS_TEMP_DATA_URL = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/";
+	public static final String HDFS_TEMP_DATA_URL = HDFS_URL + "dt/temp/";
 	/** HDFS 临时输出数据存放 URL*/
-	public static final String HDFS_TEMP_OUTPUT_URL = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/output";
+	public static final String HDFS_TEMP_OUTPUT_URL = HDFS_URL + "dt/temp/output";
 	
 	/** 获取HDFS上某路径下所有文件*/
 	public static Path[] getPathFiles(FileSystem fs, Path path)

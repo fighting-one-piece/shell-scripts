@@ -6,7 +6,7 @@ import java.util.Set;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
-public class TNode extends Node {
+public class DefaultTreeNode extends Node {
 	
 	private static final long serialVersionUID = 1L;
 	

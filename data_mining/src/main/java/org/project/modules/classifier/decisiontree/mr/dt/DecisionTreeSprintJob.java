@@ -52,7 +52,8 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
-			DataHandler.fill(data, 0);
+//			DataHandler.fill(data, 1.0);
+			DataHandler.computeFill(data, 1.0);
 			String path = FileUtils.obtainRandomTxtPath();
 			DataHandler.writeData(path, data);
 			System.out.println(path);
@@ -179,7 +180,8 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, testSetPath);
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
-			DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
+//			DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
+			DataHandler.computeFill(testData, data, 1.0);
 			Object[] results = (Object[]) treeNode.classifySprint(testData);
 			String path = FileUtils.obtainRandomTxtPath();
 			out = new FileOutputStream(new File(path));

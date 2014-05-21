@@ -45,6 +45,7 @@ public class BuilderAbstractImpl implements Builder {
 	protected Object preHandle(Data data) {
 		String[] attributes = data.getAttributes();
 		if (null == attributes || attributes.length == 0) {
+			System.out.println("attributes is null");
 			return obtainMaxCategory(data);
 		}
 		List<Instance> instances = data.getInstances();

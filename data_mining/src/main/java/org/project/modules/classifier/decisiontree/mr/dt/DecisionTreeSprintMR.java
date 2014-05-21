@@ -49,6 +49,7 @@ public class DecisionTreeSprintMR {
 				System.out.println("error, please input two path. input and output");
 				System.exit(2);
 			}
+//			configuration.set("mapred.job.queue.name", "q_hudong");
 			Job job = new Job(configuration, "Decision Tree");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));

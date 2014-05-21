@@ -37,6 +37,21 @@ public class TreeNodeHelper {
 						level > max ? 0 : level, treeNodes);
 			}
 		}
+	} 
+	
+	public static void pruningTreeNode(TreeNode treeNode, Object maxCategory) {
+		if (treeNode.hasBranchNode()) {
+			Map<Object, Object> children = treeNode.getChildren();
+			for (Map.Entry<Object, Object> entry : children.entrySet()) {
+				if (entry.getValue() instanceof TreeNode) {
+					pruningTreeNode((TreeNode) entry.getValue(), maxCategory);
+				}
+			}
+		} else {
+			System.out.println("tree node: " + treeNode.getName());
+			treeNode.setName(String.valueOf(maxCategory));
+			treeNode.clearChildren();
+		}
 	}
 
 	/** 
@@ -51,7 +66,9 @@ public class TreeNodeHelper {
 		if (obj instanceof TreeNode) {
 			TreeNode tree = (TreeNode) obj;
 			String attrName = tree.getName();
-			System.out.printf("[%s = ?]\n", attrName);
+			int record = tree.getRecord();
+			String recordStr = "(" + record + ")";
+			System.out.printf("[%s = ?]\n", attrName + recordStr);
 			for (Object attrValue : tree.getChildren().keySet()) {
 				Object child = tree.getChild(attrValue);
 				print(child, level + 1, attrName + " = "

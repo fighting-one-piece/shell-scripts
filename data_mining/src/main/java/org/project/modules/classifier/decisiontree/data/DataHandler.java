@@ -6,9 +6,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -90,7 +90,7 @@ public class DataHandler {
 		}
 	}
 	
-	/** 移除部分属性并填充缺失属性默认值*/
+	/** 移除部分出现次数少的属性并填充其他缺失属性默认值*/
 	public static void removeAndFill(Data data, int n, Object fillValue) {
 		List<Instance> instances = data.getInstances();
 		String[] attributes = data.getAttributes();
@@ -103,27 +103,27 @@ public class DataHandler {
 				map.put(key, null == value ? 1 : value + 1);
 			}
 		}
-		Set<String> a = new HashSet<String>();
-		Set<String> b = new HashSet<String>();
+		Set<String> removeSet = new HashSet<String>();
+		Set<String> remainSet = new HashSet<String>();
 		for (Instance instance : instances) {
 			Map<String, Object> attrs = instance.getAttributes();
 			Object attrValue = null;
 			for (int i = 0, attrLen = attributes.length; i < attrLen; i++) {
 				attrValue = attrs.get(attributes[i]);
 				if (map.get(attributes[i]) < n) {
-					a.add(attributes[i]);
+					removeSet.add(attributes[i]);
 					attrs.remove(attributes[i]);
 				} else {
 					attrs.put(attributes[i], 
 							null == attrValue ? fillValue : attrValue);
-					b.add(attributes[i]);
+					remainSet.add(attributes[i]);
 				}
 			}
 		}
-		data.setPurningAttributes(a.toArray(new String[0]));
+		data.setPurningAttributes(removeSet.toArray(new String[0]));
 		System.out.println("all attribute size: " + attributes.length);
-		System.out.println("remove attribute size: " + a.size());
-		System.out.println("remain attribute size: " + b.size());
+		System.out.println("remove attribute size: " + removeSet.size());
+		System.out.println("remain attribute size: " + remainSet.size());
 	}
 	
 	/** 计算特征值比例填充*/
@@ -132,6 +132,16 @@ public class DataHandler {
 		String[] attributes = data.getAttributes();
 		Map<String, Map<Object, Integer>> attributeValueStatistics = 
 				attributeValueStatistics(instances, attributes);
+		computeFill(instances, attributes, attributeValueStatistics, fillValue);
+	}
+	
+	/** 计算特征值比例填充,针对于测试数据集*/
+	public static void computeFill(Data testData, Data trainData, Object fillValue) {
+		List<Instance> instances = trainData.getInstances();
+		String[] attributes = trainData.getAttributes();
+		Map<String, Map<Object, Integer>> attributeValueStatistics = 
+				attributeValueStatistics(instances, attributes);
+		instances = testData.getInstances();
 		computeFill(instances, attributes, attributeValueStatistics, fillValue);
 	}
 	
@@ -193,6 +203,16 @@ public class DataHandler {
 		}
 	}
 	
+	/** 特征属性统计*/
+	public static Set<String> attributeStatistics(List<Instance> instances) {
+		Set<String> attributes = new HashSet<String>();
+		for (Instance instance : instances) {
+			attributes.addAll(instance.getAttributes().keySet());
+		}
+		return attributes;
+	}
+	
+	/** 特征属性值统计*/
 	public static Map<String, Map<Object, Integer>> attributeValueStatistics(
 			List<Instance> instances, String[] attributes) {
 		Map<String, Map<Object, Integer>> attributeValueStatistics = 
@@ -274,7 +294,36 @@ public class DataHandler {
 	}
 	
 	/** 数据集分割*/
-	public static Collection<List<Instance>> split(List<Instance> instances, int splitNum) {
+	public static DataSet split(Data data, int splitNum, int trainNum, int testNum) {
+		List<Instance> instances = data.getInstances();
+		System.out.println("data all attributes:　" + data.getAttributes().length);
+		System.out.println("data all size:　" + instances.size());
+		Iterator<List<Instance>> instancess = DataHandler.split(instances, splitNum);
+		Data trainData = new Data();
+		while (trainNum > 0) {
+			trainData.getInstances().addAll(instancess.next());
+			trainNum--;
+		}
+		Set<String> trainAttributes = DataHandler.attributeStatistics(
+				trainData.getInstances());
+		trainData.setAttributes(trainAttributes.toArray(new String[0]));
+		System.out.println("train data attributes:　" + trainData.getAttributes().length);
+		System.out.println("train data instances:　" + trainData.getInstances().size());
+		Data testData = new Data();
+		while (testNum > 0) {
+			testData.getInstances().addAll(instancess.next());
+			testNum--;
+		}
+		Set<String> testAttributes = DataHandler.attributeStatistics(
+				testData.getInstances());
+		testData.setAttributes(testAttributes.toArray(new String[0]));
+		System.out.println("test data attributes:　" + testData.getAttributes().length);
+		System.out.println("test data instances:　" + testData.getInstances().size());
+		return new DataSet(trainData, testData);
+	}
+	
+	/** 数据集分割*/
+	public static Iterator<List<Instance>> split(List<Instance> instances, int splitNum) {
 		Map<Integer, List<Instance>> map = new HashMap<Integer, List<Instance>>();
 		for (int i = 0, len = instances.size(); i < len; i++) {
 			int key = i % splitNum;
@@ -285,7 +334,7 @@ public class DataHandler {
 			}
 			temp.add(instances.get(i));
 		}
-		return map.values();
+		return map.values().iterator();
 	}
 	
 	/** 将数据写入某个文件*/

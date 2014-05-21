@@ -1,6 +1,6 @@
 package org.project.modules.classifier.decisiontree.pruning;
 
-/** 代价复杂度剪枝*/
-public class CCPruning {
+/** 最小错误剪枝*/
+public class PruningME {
 
 }
