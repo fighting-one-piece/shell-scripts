@@ -108,16 +108,22 @@ public class DecisionTreeTest {
 	
 	@Test
 	public void buildWithSprintAndComputeFill() {
-		String path = "d:\\trainset_extract_10.txt";
-		Data data = DataLoader.load(path);
+//		String path = "d:\\attribute_1000_r_10.txt";
+		String path = "d:\\trainset_extract_10_l.txt";
+//		String path = "d:\\trains14_id.txt";
+//		Data data = DataLoader.load(path);
+		Data data = DataLoader.loadWithId(path);
 		System.out.println("data attributes:　" + data.getAttributes().length);
 //		DataHandler.fill(data, 1.0);
 		DataHandler.computeFill(data, 1.0);
 		Builder builder = new DecisionTreeSprintBuilder();
 		TreeNode treeNode = (TreeNode) builder.build(data);
 		TreeNodeHelper.print(treeNode, 0, null);
-		String p = "d:\\trainset_extract_1.txt";
-		Data testData = DataLoader.load(p);
+//		String p = "d:\\attribute_500_r_10.txt";
+		String p = "d:\\trainset_extract_1_l.txt";
+//		String p = "d:\\trains14_id.txt";
+//		Data testData = DataLoader.load(p);
+		Data testData = DataLoader.loadWithId(p);
 		System.out.println("testdata attributes:　" + testData.getAttributes().length);
 //		DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
 		DataHandler.computeFill(testData, data, 1.0);
@@ -145,7 +151,7 @@ public class DecisionTreeTest {
 	
 	@Test
 	public void pruningREP() {
-		String path = "d:\\trainset_extract_10.txt";
+		String path = "d:\\trainset_1000.txt";
 		Data data = DataLoader.load(path);
 		DataSet dataSet = DataHandler.split(data, 3, 2, 1);
 		Data trainData = dataSet.getTrainData();

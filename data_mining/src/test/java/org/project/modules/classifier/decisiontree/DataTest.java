@@ -19,6 +19,8 @@ import org.junit.Test;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.data.DataSplit;
+import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.utils.FileUtils;
 import org.project.utils.ShowUtils;
@@ -217,5 +219,26 @@ public class DataTest {
 		DataHandler.writeData("d:\\a.txt", testData);
 	}
 	
+	@Test
+	public void split() {
+		String path = "d:\\trains14_id.txt";
+		Data data = DataLoader.loadWithId(path);
+		data.setSplitAttribute("age");
+		data.setSplitPoints(new String[]{"middle_aged",
+				"youth,senior"});
+		DataSplit ds = DataHandler.split(data);
+		System.out.println("~~~~~~~");
+		for(Instance i : data.getInstances()) {
+			i.print();
+		}
+		System.out.println("~~~~~~~");
+		for (DataSplitItem item : ds.getItems()) {
+			System.out.println("---");
+			for(Instance i : item.getInstances()) {
+				i.print();
+			}
+			System.out.println("---");
+		}
+	}
 	
 }

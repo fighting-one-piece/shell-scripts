@@ -85,8 +85,7 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 			if (splitInstances.size() == 0) continue;
 			Data subData = new Data(attributes.toArray(new String[0]),
 					splitInstances);
-			Object child = build(subData);
-			treeNode.setChild(names[i], child);
+			treeNode.setChild(names[i], build(subData));
 		}
 		return treeNode;
 	}
@@ -146,15 +145,11 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 				belowGini -= Math.pow((v / splitBelowNum), 2);
 			}
 			splitPointGini += (splitBelowNum / totalNum) * belowGini;
-//			System.out.println("splitPoint: " + splitPoint);
-//			System.out.println("splitPointGini: " + splitPointGini);
 			if (minSplitPointGini > splitPointGini) {
 				minSplitPointGini = splitPointGini;
 				minSplitPoint = splitPoint;
 			}
 		}
-//		System.out.println("minSplitPoint: " + minSplitPoint);
-//		System.out.println("minSplitPointGini: " + minSplitPointGini);
 		return new Object[]{minSplitPoint, minSplitPointGini};
 	}
 	

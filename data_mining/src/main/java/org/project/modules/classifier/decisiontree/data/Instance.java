@@ -6,7 +6,7 @@ import java.util.Map;
 /** 
  ** 样本实例，包含多个属性和一个指明样本所属分类的分类值 
  **/
-public class Instance {
+public class Instance implements Cloneable {
 	
 	/** 实例行号*/
 	private Long id = null;
@@ -66,6 +66,30 @@ public class Instance {
 
 	public void setWeight(double weight) {
 		this.weight = weight;
+	}
+	
+	@Override
+	protected Instance clone() throws CloneNotSupportedException {
+		Instance newInstance = new Instance();
+		newInstance.setId(getId());
+		newInstance.setCategory(getCategory());
+		Map<String, Object> newAttributes = new HashMap<String, Object>();
+		for (Map.Entry<String, Object> entry : getAttributes().entrySet()) {
+			newAttributes.put(entry.getKey(), entry.getValue());
+		}
+		newInstance.setAttributes(newAttributes);
+		return newInstance;
+	}
+	
+	public void print() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(id).append("\t");
+		sb.append(category).append("\t");
+		for (Map.Entry<String, Object> entry : getAttributes().entrySet()) {
+			sb.append(entry.getKey()).append(":");
+			sb.append(entry.getValue()).append("\t");
+		}
+		System.out.println(sb.toString());
 	}
 	
 }

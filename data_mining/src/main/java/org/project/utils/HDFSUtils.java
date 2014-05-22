@@ -72,21 +72,23 @@ public class HDFSUtils {
 		}
 	}
 
-	public static void delete(Configuration conf, Iterable<Path> paths)
-			throws IOException {
+	public static void delete(Configuration conf, Iterable<Path> paths) {
 		if (conf == null) {
 			conf = new Configuration();
 		}
-		for (Path path : paths) {
-			FileSystem fs = path.getFileSystem(conf);
-			if (fs.exists(path)) {
-				fs.delete(path, true);
+		try {
+			for (Path path : paths) {
+				FileSystem fs = path.getFileSystem(conf);
+				if (fs.exists(path)) {
+					fs.delete(path, true);
+				}
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
-	public static void delete(Configuration conf, Path... paths)
-			throws IOException {
+	public static void delete(Configuration conf, Path... paths) {
 		delete(conf, Arrays.asList(paths));
 	}
 }

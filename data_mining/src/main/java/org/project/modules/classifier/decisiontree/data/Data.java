@@ -107,6 +107,18 @@ public class Data {
 		this.instances = instances;
 	}
 	
+	public List<Instance> copyInstances() {
+		List<Instance> copyInstances = new ArrayList<Instance>();
+		for (Instance instance : getInstances()) {
+			try {
+				copyInstances.add(instance.clone());
+			} catch (CloneNotSupportedException e) {
+				e.printStackTrace();
+			}
+		}
+		return copyInstances;
+	}
+	
 	public Map<Object, List<Instance>> getSplits() {
 		if (null == splits) {
 			splits = new HashMap<Object, List<Instance>>();

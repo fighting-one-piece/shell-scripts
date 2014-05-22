@@ -105,12 +105,8 @@ public class DecisionTreeC45Job extends AbstractJob {
 		Object preHandleResult = preHandle(data);
 		if (null != preHandleResult) return preHandleResult;
 		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
-		try {
-			HDFSUtils.delete(conf, new Path(output));
-			System.out.println("delete path : " + output);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		HDFSUtils.delete(conf, new Path(output));
+		System.out.println("delete output path : " + output);
 		String[] paths = new String[]{input, output};
 		DecisionTreeC45MR.main(paths);
 		

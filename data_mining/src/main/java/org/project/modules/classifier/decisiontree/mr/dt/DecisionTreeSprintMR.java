@@ -49,7 +49,7 @@ public class DecisionTreeSprintMR {
 				System.out.println("error, please input two path. input and output");
 				System.exit(2);
 			}
-//			configuration.set("mapred.job.queue.name", "q_hudong");
+			configuration.set("mapred.job.queue.name", "q_hudong");
 			Job job = new Job(configuration, "Decision Tree");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
@@ -147,7 +147,6 @@ class DecisionTreeSprintReducer extends Reducer<Text, AttributeWritable, Text, A
 		} else {
 			String minSplitPoint = null;
 			double minSplitPointGini = 1.0;
-			Map<String, Double> splitPoint2Gini = new HashMap<String, Double>();
 			for (String splitPoint : splitPoints) {
 				double splitPointGini = 0.0;
 				double splitAboveNum = 0.0;
@@ -181,7 +180,6 @@ class DecisionTreeSprintReducer extends Reducer<Text, AttributeWritable, Text, A
 					belowGini -= Math.pow((v / splitBelowNum), 2);
 				}
 				splitPointGini += (splitBelowNum / totalNum) * belowGini;
-				splitPoint2Gini.put(splitPoint, splitPointGini);
 				if (minSplitPointGini > splitPointGini) {
 					minSplitPointGini = splitPointGini;
 					minSplitPoint = splitPoint;

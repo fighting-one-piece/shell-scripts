@@ -21,6 +21,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
+import org.project.modules.classifier.decisiontree.data.DataError;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.DataSplit;
@@ -130,12 +131,8 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		Object preHandleResult = preHandle(data);
 		if (null != preHandleResult) return preHandleResult;
 		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
-		try {
-			HDFSUtils.delete(conf, new Path(output));
-			System.out.println("delete path : " + output);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		HDFSUtils.delete(conf, new Path(output));
+		System.out.println("delete output path : " + output);
 		String[] args = new String[]{input, output};
 		DecisionTreeSprintMR.main(args);
 		
@@ -183,6 +180,9 @@ public class DecisionTreeSprintJob extends AbstractJob {
 //			DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
 			DataHandler.computeFill(testData, data, 1.0);
 			Object[] results = (Object[]) treeNode.classifySprint(testData);
+			ShowUtils.print(results);
+			DataError dataError = new DataError(testData.getCategories(), results);
+			dataError.report();
 			String path = FileUtils.obtainRandomTxtPath();
 			out = new FileOutputStream(new File(path));
 			writer = new BufferedWriter(new OutputStreamWriter(out));
