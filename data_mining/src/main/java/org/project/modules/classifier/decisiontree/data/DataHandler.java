@@ -266,7 +266,7 @@ public class DataHandler {
 		DataSplit dataSplit = new DataSplit();
 		String splitAttribute = data.getSplitAttribute();
 		String[] splitPoints = data.getSplitPoints();
-		List<Instance> copyInstances = data.copyInstances();
+//		List<Instance> copyInstances = data.copyInstances();
 		if (null == splitAttribute || null == splitPoints) {
 			DataSplitItem item = new DataSplitItem();
 			item.setInstances(data.getInstances());
@@ -275,7 +275,7 @@ public class DataHandler {
 		}
 		for (String splitPoint : splitPoints) {
 			List<Instance> instances = new ArrayList<Instance>();
-			for (Instance instance : copyInstances) {
+			for (Instance instance : data.getInstances()) {
 				String splitAttributeValue = String.valueOf(
 						instance.getAttribute(splitAttribute));
 				if (splitPoint.indexOf(splitAttributeValue) != -1) {

@@ -17,6 +17,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
+import org.project.modules.classifier.decisiontree.data.DataError;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.DataSplit;
@@ -31,30 +32,18 @@ import org.project.utils.ShowUtils;
 
 public class DecisionTreeC45Job extends AbstractJob {
 	
-	private Data data = null;
-	
 	/**
 	 * 对数据集做预处理
 	 * @param input
 	 * @return
 	 */
-	public String prepare(Path input) {
-		String hdfsPath = null;
-		try {
-			FileSystem fs = input.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
-			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
-			data = DataLoader.load(fsInputStream, true);
-			DataHandler.fill(data, 0);
-			String path = FileUtils.obtainRandomTxtPath();
-			DataHandler.writeData(path, data);
-			System.out.println(path);
-			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
-			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public String prepare(Data trainData) {
+		String path = FileUtils.obtainRandomTxtPath();
+		DataHandler.writeData(path, trainData);
+		System.out.println(path);
+		String name = path.substring(path.lastIndexOf(File.separator) + 1);
+		String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 		return hdfsPath;
 	}
 	
@@ -136,17 +125,27 @@ public class DecisionTreeC45Job extends AbstractJob {
 		return treeNode;
 	}
 	
-	private void classify(TreeNode treeNode, Path testSetPath, 
-			String output) {
+	private void classify(TreeNode treeNode, String trainSet, String testSet, String output) {
 		OutputStream out = null;
 		BufferedWriter writer = null;
 		try {
-			FileSystem fs = testSetPath.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, testSetPath);
-			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+			Path trainSetPath = new Path(trainSet);
+			FileSystem trainFS = trainSetPath.getFileSystem(conf);
+			Path[] trainHdfsPaths = HDFSUtils.getPathFiles(trainFS, trainSetPath);
+			FSDataInputStream trainFSInputStream = trainFS.open(trainHdfsPaths[0]);
+			Data trainData = DataLoader.load(trainFSInputStream, true);
+			
+			Path testSetPath = new Path(testSet);
+			FileSystem testFS = testSetPath.getFileSystem(conf);
+			Path[] testHdfsPaths = HDFSUtils.getPathFiles(testFS, testSetPath);
+			FSDataInputStream fsInputStream = testFS.open(testHdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
-			DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
+			
+			DataHandler.fill(testData.getInstances(), trainData.getAttributes(), 0);
 			Object[] results = (Object[]) treeNode.classify(testData);
+			ShowUtils.print(results);
+			DataError dataError = new DataError(testData.getCategories(), results);
+			dataError.report();
 			String path = FileUtils.obtainRandomTxtPath();
 			out = new FileOutputStream(new File(path));
 			writer = new BufferedWriter(new OutputStreamWriter(out));
@@ -159,7 +158,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 			}
 			writer.flush();
 			Path outputPath = new Path(output);
-			fs = outputPath.getFileSystem(conf);
+			FileSystem fs = outputPath.getFileSystem(conf);
 			if (!fs.exists(outputPath)) {
 				fs.mkdirs(outputPath);
 			}
@@ -186,12 +185,16 @@ public class DecisionTreeC45Job extends AbstractJob {
 				System.out.println("3. result output path.");
 				System.exit(2);
 			}
-			String input = prepare(new Path(inputArgs[0]));
-			TreeNode treeNode = (TreeNode) build(input, data);
+			Path input = new Path(inputArgs[0]);
+			FileSystem fs = input.getFileSystem(conf);
+			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
+			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+			Data trainData = DataLoader.load(fsInputStream, true);
+			DataHandler.fill(trainData, 0);
+			String hdfsInput = prepare(trainData);
+			TreeNode treeNode = (TreeNode) build(hdfsInput, trainData);
 			TreeNodeHelper.print(treeNode, 0, null);
-			String testSetPath = inputArgs[1];
-			String output = inputArgs[2];
-			classify(treeNode, new Path(testSetPath), output);
+			classify(treeNode, inputArgs[0], inputArgs[1], inputArgs[2]);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

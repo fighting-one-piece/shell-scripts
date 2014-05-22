@@ -71,27 +71,42 @@ public class AprioriBuilder {
 		List<ItemSet> candidateItem = new ArrayList<ItemSet>();
 		while (f1Iter.hasNext()) {
 			ItemSet item1 = f1Iter.next();
-			System.out.println("%%");
-			ShowUtils.print(item1.getItem());
-			System.out.println("%%");
+//			System.out.println("%%");
+//			ShowUtils.print(item1.getItem());
+//			System.out.println("%%");
 			while (f2Iter.hasNext()) {
 				ItemSet item2 = f2Iter.next();
-				ItemSet temp = new ItemSet(item1.getItem());
-				System.out.println("~");
-				ShowUtils.print(temp.getItem());
-				System.out.println("**");
-				ShowUtils.print(item2.getItem());
-				System.out.println("~");
+//				System.out.println("&&");
+//				ShowUtils.print(item2.getItem());
+//				System.out.println("&&");
+				ItemSet temp = new ItemSet();
+				temp.getItem().addAll(item1.getItem());
 				if (!temp.getItem().containsAll(item2.getItem())) {
 					temp.getItem().addAll(item2.getItem());
-					candidateItem.add(temp);
+					boolean isContain = false;
+					for (ItemSet itemSet : candidateItem) {
+						if (itemSet.getItem().containsAll(temp.getItem())) {
+							isContain = true;
+						}
+					}
+					if (!isContain) {
+						candidateItem.add(temp);
+					}
 				}
 			}
+			f2Iter = frequencyItemSet.get(0).iterator();
 		}
 		candidateItemSet.add(candidateItem);
+		List<ItemSet> frequencyItem = new ArrayList<ItemSet>();
+		for (ItemSet itemSet : candidateItem) {
+			int support = calculateSupport(itemSet.getItem().toArray(new String[0]));
+			if (support > minSupport) {
+				frequencyItem.add(itemSet);
+			}
+		}
+		frequencyItemSet.add(frequencyItem);
 	}
 	
-	@SuppressWarnings("unused")
 	private void frequency_itemset(List<ItemSet> items) {
 		List<ItemSet> temp = new ArrayList<ItemSet>(items);
 		List<ItemSet> results = new ArrayList<ItemSet>();
@@ -222,6 +237,9 @@ public class AprioriBuilder {
 		print(ab.getCandidateItemSet());
 		print(ab.getFrequencyItemSet());
 		ab.frequency_k_itemset(2);
+		print(ab.getCandidateItemSet());
+		print(ab.getFrequencyItemSet());
+		ab.frequency_k_itemset(3);
 		print(ab.getCandidateItemSet());
 		print(ab.getFrequencyItemSet());
 	}

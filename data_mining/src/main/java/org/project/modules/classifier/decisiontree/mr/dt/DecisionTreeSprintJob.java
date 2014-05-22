@@ -37,45 +37,32 @@ import org.project.utils.ShowUtils;
 
 public class DecisionTreeSprintJob extends AbstractJob {
 	
-	private Data data = null;
-	
 	private Map<String, Set<String>> attrName2Values = null;
 	
 	/**
 	 * 对数据集做预处理
-	 * @param input
+	 * @param trainData
 	 * @return
 	 */
-	public String prepare(Path input) {
-		String hdfsPath = null;
-		try {
-			FileSystem fs = input.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
-			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
-			data = DataLoader.load(fsInputStream, true);
-//			DataHandler.fill(data, 1.0);
-			DataHandler.computeFill(data, 1.0);
-			String path = FileUtils.obtainRandomTxtPath();
-			DataHandler.writeData(path, data);
-			System.out.println(path);
-			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
-			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-			attrName2Values = new HashMap<String, Set<String>>();
-			for (Instance instance : data.getInstances()) {
-				for (Map.Entry<String, Object> entry : 
-					instance.getAttributes().entrySet()) {
-					String attrName = entry.getKey();
-					Set<String> values = attrName2Values.get(attrName);
-					if (null == values) {
-						values = new HashSet<String>();
-						attrName2Values.put(attrName, values);
-					}
-					values.add(String.valueOf(entry.getValue()));
+	public String prepare(Data trainData) {
+		String path = FileUtils.obtainRandomTxtPath();
+		DataHandler.writeData(path, trainData);
+		System.out.println(path);
+		String name = path.substring(path.lastIndexOf(File.separator) + 1);
+		String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+		attrName2Values = new HashMap<String, Set<String>>();
+		for (Instance instance : trainData.getInstances()) {
+			for (Map.Entry<String, Object> entry : 
+				instance.getAttributes().entrySet()) {
+				String attrName = entry.getKey();
+				Set<String> values = attrName2Values.get(attrName);
+				if (null == values) {
+					values = new HashSet<String>();
+					attrName2Values.put(attrName, values);
 				}
+				values.add(String.valueOf(entry.getValue()));
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		return hdfsPath;
 	}
@@ -127,8 +114,8 @@ public class DecisionTreeSprintJob extends AbstractJob {
 	 * @param input
 	 * @return
 	 */
-	public Object build(String input, Data data) {
-		Object preHandleResult = preHandle(data);
+	public Object build(String input, Data trainData) {
+		Object preHandleResult = preHandle(trainData);
 		if (null != preHandleResult) return preHandleResult;
 		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
 		HDFSUtils.delete(conf, new Path(output));
@@ -145,7 +132,7 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		}
 		TreeNode treeNode = new TreeNode(attribute);
 		String splitPoint = bestAttr.getSplitPoint();
-		String[] attributes = data.getAttributesExcept(attribute);
+		String[] attributes = trainData.getAttributesExcept(attribute);
 		Set<String> attributeValues = attrName2Values.get(attribute);
 		attributeValues.remove(splitPoint);
 		StringBuilder sb = new StringBuilder();
@@ -156,7 +143,7 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		String[] names = new String[]{splitPoint, sb.toString()};
 		
 		DataSplit dataSplit = DataHandler.split(new Data(
-				data.getInstances(), attribute, names));
+				trainData.getInstances(), attribute, names));
 		for (DataSplitItem item : dataSplit.getItems()) {
 			String path = item.getPath();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
@@ -168,17 +155,24 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		return treeNode;
 	}
 	
-	private void classify(TreeNode treeNode, Path testSetPath, 
-			String output) {
+	private void classify(TreeNode treeNode, String trainSet, String testSet, String output) {
 		OutputStream out = null;
 		BufferedWriter writer = null;
 		try {
-			FileSystem fs = testSetPath.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, testSetPath);
-			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+			Path trainSetPath = new Path(trainSet);
+			FileSystem trainFS = trainSetPath.getFileSystem(conf);
+			Path[] trainHdfsPaths = HDFSUtils.getPathFiles(trainFS, trainSetPath);
+			FSDataInputStream trainFSInputStream = trainFS.open(trainHdfsPaths[0]);
+			Data trainData = DataLoader.load(trainFSInputStream, true);
+			
+			Path testSetPath = new Path(testSet);
+			FileSystem testFS = testSetPath.getFileSystem(conf);
+			Path[] testHdfsPaths = HDFSUtils.getPathFiles(testFS, testSetPath);
+			FSDataInputStream fsInputStream = testFS.open(testHdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
+			
 //			DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
-			DataHandler.computeFill(testData, data, 1.0);
+			DataHandler.computeFill(testData, trainData, 1.0);
 			Object[] results = (Object[]) treeNode.classifySprint(testData);
 			ShowUtils.print(results);
 			DataError dataError = new DataError(testData.getCategories(), results);
@@ -195,7 +189,7 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			}
 			writer.flush();
 			Path outputPath = new Path(output);
-			fs = outputPath.getFileSystem(conf);
+			FileSystem fs = outputPath.getFileSystem(conf);
 			if (!fs.exists(outputPath)) {
 				fs.mkdirs(outputPath);
 			}
@@ -222,12 +216,16 @@ public class DecisionTreeSprintJob extends AbstractJob {
 				System.out.println("3. result output path.");
 				System.exit(2);
 			}
-			String input = prepare(new Path(inputArgs[0]));
-			TreeNode treeNode = (TreeNode) build(input, data);
+			Path input = new Path(inputArgs[0]);
+			FileSystem fs = input.getFileSystem(conf);
+			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
+			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+			Data trainData = DataLoader.load(fsInputStream, true);
+			DataHandler.computeFill(trainData, 1.0);
+			String hdfsInput = prepare(trainData);
+			TreeNode treeNode = (TreeNode) build(hdfsInput, trainData);
 			TreeNodeHelper.print(treeNode, 0, null);
-			String testSetPath = inputArgs[1];
-			String output = inputArgs[2];
-			classify(treeNode, new Path(testSetPath), output);
+			classify(treeNode, inputArgs[0], inputArgs[1], inputArgs[2]);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
