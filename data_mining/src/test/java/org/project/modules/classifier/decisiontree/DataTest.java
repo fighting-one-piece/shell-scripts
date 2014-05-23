@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
+import net.sf.json.JSONObject;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.data.Data;
@@ -23,14 +25,15 @@ import org.project.modules.classifier.decisiontree.data.DataSplit;
 import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.utils.FileUtils;
+import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
 
 public class DataTest {
 
 	@Test
 	public void a() {
-		String path = "d:\\trainset_100.txt";
-		Data data = DataLoader.load(path);
+		String path = "d:\\trainset_10000_l.txt";
+		Data data = DataLoader.loadWithId(path);
 		Map<String, Map<Object, Integer>> a = 
 				new HashMap<String, Map<Object, Integer>>();
 		for (Instance instance : data.getInstances()) {
@@ -59,8 +62,39 @@ public class DataTest {
 	}
 	
 	@Test
+	public void load() {
+		String path = "d:\\trainset_5000_l.txt";
+		Data data = DataLoader.loadWithId(path);
+		System.out.println(data.getAttributes().length);
+		System.out.println(data.getInstances().size());
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Test
+	public void jsonInstance() {
+		Instance instance = new Instance();
+//		instance.setId(1L);
+		instance.setCategory(1);
+		instance.setAttribute("1", 1);
+		instance.setAttribute("2", 2);
+		instance.setAttribute("3", 3);
+		String jsonData = JSONUtils.object2json(instance);
+		System.out.println(jsonData);
+//		Instance i = (Instance) JSONUtils.json2Object(jsonData, Instance.class);
+//		System.out.println(i.getId());
+//		System.out.println(i.getCategory());
+//		i.print();
+		JSONObject jsonObject = JSONUtils.json2Object(jsonData);
+		Instance i = new Instance();
+		i.setId(jsonObject.getLong("id"));
+		i.setCategory(jsonObject.get("category"));
+		i.setAttributes(jsonObject.getJSONObject("attributes"));
+		i.print();
+	}
+	
+	@Test
 	public void addLineNum() throws Exception {
-		FileUtils.addLineNum("D:\\trainset_extract_1.txt", "D:\\trainset_extract_1_l.txt");
+		FileUtils.addLineNum("D:\\trainset_5000.txt", "D:\\trainset_5000_l.txt");
 	}
 	
 	private Set<String> calculateAttribute(String input) {
@@ -127,13 +161,15 @@ public class DataTest {
 		System.out.println(calculateAttribute(input).size());
 		input = "D:\\trainset_extract_10_l.txt";
 		System.out.println(calculateAttribute(input).size());
+		input = "D:\\trainset_10000_l.txt";
+		System.out.println(calculateAttribute(input).size());
 	}
 	
 	@Test
 	public void generateDataFile() {
-		String input = "D:\\trainset_extract_1_l.txt";
-		String output = "D:\\attribute_700_r_10.txt";
-		int attributeNum = 700;
+		String input = "D:\\trainset_10000_l.txt";
+		String output = "D:\\attribute_100_r_10000.txt";
+		int attributeNum = 100;
 		Set<String> attributes = getAttribute(input, attributeNum);
 		System.out.println(attributes.size());
 		List<Instance> instances = new ArrayList<Instance>();

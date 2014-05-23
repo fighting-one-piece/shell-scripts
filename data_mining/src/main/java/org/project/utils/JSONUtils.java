@@ -60,9 +60,9 @@ public class JSONUtils {
 				if (!jsonObject.containsKey(name)) {
 					continue;
 				}
-				field.getType();
 				field.setAccessible(true);
-				field.set(object, jsonObject.get(name));
+				Object value = jsonObject.get(name);
+				field.set(object, value);
 				field.setAccessible(false);
 			}
 		} catch (InstantiationException e) {

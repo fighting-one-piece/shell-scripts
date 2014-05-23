@@ -35,7 +35,7 @@ import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
 
-public class DecisionTreeSprintJob extends AbstractJob {
+public class DecisionTreeSprintBJob extends AbstractJob {
 	
 	private Map<String, Set<String>> attrName2Values = null;
 	
@@ -232,7 +232,7 @@ public class DecisionTreeSprintJob extends AbstractJob {
 	}
 	
 	public static void main(String[] args) {
-		DecisionTreeSprintJob job = new DecisionTreeSprintJob();
+		DecisionTreeSprintBJob job = new DecisionTreeSprintBJob();
 		long startTime = System.currentTimeMillis();
 		job.run(args);
 		long endTime = System.currentTimeMillis();

@@ -21,7 +21,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.mr.AbstractJob;
-import org.project.modules.classifier.decisiontree.mr.dt.DecisionTreeSprintJob;
+import org.project.modules.classifier.decisiontree.mr.dt.DecisionTreeSprintSJob;
 import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.ShowUtils;
@@ -30,10 +30,11 @@ public class RandomForestSprintJob extends AbstractJob {
 	
 	private Data data = null;
 	
-	public void prepare(Path input) {
+	public void prepare(String input) {
 		try {
-			FileSystem fs = input.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
+			Path inputPath = new Path(input);
+			FileSystem fs = inputPath.getFileSystem(conf);
+			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, inputPath);
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			data = DataLoader.load(fsInputStream, true);
 //			DataHandler.fill(data, 1.0);
@@ -129,16 +130,15 @@ public class RandomForestSprintJob extends AbstractJob {
 			int treeNum = Integer.parseInt(inputArgs[3]);
 			int attributeNum = Integer.parseInt(inputArgs[4]);
 			
-			prepare(new Path(inputArgs[0]));
-			String output = inputArgs[2];
-			String[] dtArgs = new String[]{inputArgs[0], inputArgs[1], output};
+			prepare(inputArgs[0]);
+			String[] dtArgs = new String[]{inputArgs[0], inputArgs[1], inputArgs[2]};
 			for (int i = 0; i < treeNum; i++) {
 				String input = prepareRandom(attributeNum);
 				dtArgs[0] = input;
-				DecisionTreeSprintJob job = new DecisionTreeSprintJob();
+				DecisionTreeSprintSJob job = new DecisionTreeSprintSJob();
 				job.run(dtArgs);
 			}
-			vote(output);
+			vote(inputArgs[2]);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
