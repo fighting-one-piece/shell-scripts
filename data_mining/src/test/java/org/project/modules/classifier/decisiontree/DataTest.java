@@ -1,10 +1,14 @@
 package org.project.modules.classifier.decisiontree;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,6 +21,9 @@ import java.util.StringTokenizer;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
@@ -25,6 +32,7 @@ import org.project.modules.classifier.decisiontree.data.DataSplit;
 import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.utils.FileUtils;
+import org.project.utils.HDFSUtils;
 import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
 
@@ -63,7 +71,7 @@ public class DataTest {
 	
 	@Test
 	public void load() {
-		String path = "d:\\trainset_5000_l.txt";
+		String path = "d:\\trainset_linenum.txt";
 		Data data = DataLoader.loadWithId(path);
 		System.out.println(data.getAttributes().length);
 		System.out.println(data.getInstances().size());
@@ -73,17 +81,13 @@ public class DataTest {
 	@Test
 	public void jsonInstance() {
 		Instance instance = new Instance();
-//		instance.setId(1L);
+		instance.setId(1L);
 		instance.setCategory(1);
 		instance.setAttribute("1", 1);
 		instance.setAttribute("2", 2);
 		instance.setAttribute("3", 3);
 		String jsonData = JSONUtils.object2json(instance);
 		System.out.println(jsonData);
-//		Instance i = (Instance) JSONUtils.json2Object(jsonData, Instance.class);
-//		System.out.println(i.getId());
-//		System.out.println(i.getCategory());
-//		i.print();
 		JSONObject jsonObject = JSONUtils.json2Object(jsonData);
 		Instance i = new Instance();
 		i.setId(jsonObject.getLong("id"));
@@ -94,7 +98,7 @@ public class DataTest {
 	
 	@Test
 	public void addLineNum() throws Exception {
-		FileUtils.addLineNum("D:\\trainset_5000.txt", "D:\\trainset_5000_l.txt");
+		FileUtils.addLineNum("D:\\trainset.txt", "D:\\trainset_l.txt");
 	}
 	
 	private Set<String> calculateAttribute(String input) {
@@ -161,7 +165,7 @@ public class DataTest {
 		System.out.println(calculateAttribute(input).size());
 		input = "D:\\trainset_extract_10_l.txt";
 		System.out.println(calculateAttribute(input).size());
-		input = "D:\\trainset_10000_l.txt";
+		input = "D:\\trainset_extract_100_l.txt";
 		System.out.println(calculateAttribute(input).size());
 	}
 	
@@ -277,4 +281,180 @@ public class DataTest {
 		}
 	}
 	
+	@Test
+	public void generateTrainSet() {
+		String input = "d:\\trainset_extract_100.txt";
+		String output = "d:\\trainset.txt";
+		int num = 10;
+		BufferedReader reader = null;
+		InputStream in = null;
+		BufferedWriter writer = null;
+		OutputStream out = null;
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			out = new FileOutputStream(new File(output));
+			writer = new BufferedWriter(new OutputStreamWriter(out));
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				int index = 0;
+				while((++index) <= num) {
+					writer.write(line);
+					writer.newLine();
+				}
+				line = reader.readLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(writer);
+		}
+	}
+	
+	@Test
+	public void extractTrainSet() {
+		String input = "d:\\trainset.txt";
+		String output = "d:\\trainset_linenum_10.txt";
+		int linenum = 10;
+		BufferedReader reader = null;
+		InputStream in = null;
+		BufferedWriter writer = null;
+		OutputStream out = null;
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			out = new FileOutputStream(new File(output));
+			writer = new BufferedWriter(new OutputStreamWriter(out));
+			String line = reader.readLine();
+			int index = 0;
+			while (!("").equals(line) && null != line) {
+				if((++index) > linenum) break;
+				writer.write(line);
+				writer.newLine();
+				line = reader.readLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(writer);
+		}
+	}
+	
+	@Test
+	public void extractTrainSetByCategory() {
+		String input = "d:\\trainset.txt";
+		String output = "d:\\trainset_linenum_10.txt";
+		int linenum = 10;
+		BufferedReader reader = null;
+		InputStream in = null;
+		BufferedWriter writer = null;
+		OutputStream out = null;
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			out = new FileOutputStream(new File(output));
+			writer = new BufferedWriter(new OutputStreamWriter(out));
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				StringTokenizer tokenizer = new StringTokenizer(line);
+				String category = tokenizer.nextToken();
+				Integer value = map.get(category);
+				value = null == value ? 1 : value + 1;
+				map.put(category, value);
+				if (value <= linenum) {
+					writer.write(line);
+					writer.newLine();
+				}
+				line = reader.readLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(writer);
+		}
+	}
+	
+	@Test
+	public void read() throws Exception {
+		Configuration conf = new Configuration();
+		conf.addResource(new Path(
+				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
+		String input = "hdfs://centos.host1:9000/user/hadoop/data/temp/a.txt";
+		InputStream in = null;
+		BufferedReader reader = null;
+		try {
+			Path inputPath = new Path(input);
+			FileSystem fs = inputPath.getFileSystem(conf);
+			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, inputPath);
+			in = fs.open(hdfsPaths[0]);
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				System.out.println(line);
+				line = reader.readLine();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+		}
+	}
+	
+	@Test
+	public void write() throws Exception {
+		Configuration conf = new Configuration();
+		conf.addResource(new Path(
+				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
+		String input = "d:\\trainset_extract_100.txt";
+		String output = "hdfs://centos.host1:9000/user/hadoop/data/temp/a.txt";
+		
+		InputStream in = new FileInputStream(new File(input));
+		Path outputPath = new Path(output);
+		FileSystem fs = outputPath.getFileSystem(conf);
+		OutputStream out = fs.create(outputPath);;
+		IOUtils.copy(in, out);
+		IOUtils.closeQuietly(in);
+		IOUtils.closeQuietly(out);
+	}
+	
+	@Test
+	public void write1() throws Exception {
+		Configuration conf = new Configuration();
+		conf.addResource(new Path(
+				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
+		String input = "d:\\trainset_extract_100.txt";
+		String output = "hdfs://centos.host1:9000/user/hadoop/data/temp/a.txt";
+		
+		InputStream in = new FileInputStream(new File(input));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+		Path outputPath = new Path(output);
+		FileSystem fs = outputPath.getFileSystem(conf);
+		OutputStream out = fs.create(outputPath);
+		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(out));
+		String line = reader.readLine();
+		while (!("").equals(line) && null != line) {
+			writer.write(line);
+			writer.newLine();
+			line = reader.readLine();
+		}
+		writer.flush();
+		IOUtils.closeQuietly(in);
+		IOUtils.closeQuietly(reader);
+		IOUtils.closeQuietly(out);
+		IOUtils.closeQuietly(writer);
+	}
 }
