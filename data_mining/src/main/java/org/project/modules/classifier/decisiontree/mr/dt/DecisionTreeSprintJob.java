@@ -2,6 +2,7 @@ package org.project.modules.classifier.decisiontree.mr.dt;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,21 +11,18 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
@@ -32,19 +30,33 @@ import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
+import org.project.modules.classifier.decisiontree.data.DataLoader;
+import org.project.modules.classifier.decisiontree.data.DataSplit;
+import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.AbstractJob;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGiniWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeWritable;
+import org.project.modules.classifier.decisiontree.node.TreeNode;
+import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.HDFSUtils;
 import org.project.utils.IdentityUtils;
+import org.project.utils.ShowUtils;
 
 public class DecisionTreeSprintJob extends AbstractJob {
 	
+	private Map<String, Map<String, Set<String>>> map = null;
+	
+//	private Map<String, Set<String>> attributeToValues = null;
+	
+//	private Set<String> allAttributes = null;
+	
+	/** 数据拆分*/
 	private List<String> split(String input) {
-		List<String> paths = new ArrayList<String>();
+		List<String> inputs = new ArrayList<String>();
 		InputStream in = null;
 		BufferedReader reader = null;
 		try {
@@ -57,13 +69,16 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			int index = 0;
 			String line = reader.readLine();
 			while (!("").equals(line) && null != line) {
-				if ((index++) == 10000) {
-					paths.add(writeToHDFS(lines));
+				lines.add(line);
+				if ((index++) == 13) {
+					inputs.add(writeToHDFS(lines));
 					lines = new ArrayList<String>();
 					index = 0;
 				}
-				lines.add(line);
 				line = reader.readLine();
+			}
+			if (lines.size() > 0) {
+				inputs.add(writeToHDFS(lines));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -71,7 +86,7 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(reader);
 		}
-		return paths;
+		return inputs;
 	}
 	
 	private String writeToHDFS(List<String> lines) {
@@ -85,7 +100,8 @@ public class DecisionTreeSprintJob extends AbstractJob {
 		DataHandler.computeFill(data, 1.0);
 		OutputStream out = null;
 		BufferedWriter writer = null;
-		String output = HDFSUtils.HDFS_TEMP_DATA_URL + IdentityUtils.generateUUID();
+		String outputDir = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
+		String output = outputDir + File.separator + IdentityUtils.generateUUID();
 		try {
 			Path outputPath = new Path(output);
 			FileSystem fs = outputPath.getFileSystem(conf);
@@ -111,7 +127,31 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			IOUtils.closeQuietly(out);
 			IOUtils.closeQuietly(writer);
 		}
-		return output;
+		addPathToAttributeValueStatisticsMap(output, instances);
+		return outputDir;
+	}
+	
+	private void addPathToAttributeValueStatisticsMap(String path, List<Instance> instances) {
+		if (null == map) {
+			map = new HashMap<String, Map<String, Set<String>>>();
+		}
+		Map<String, Set<String>> attributeValueStatistics = map.get(path);
+		if (null == attributeValueStatistics) {
+			attributeValueStatistics = new HashMap<String, Set<String>>();
+			map.put(path, attributeValueStatistics);
+		}
+		for (Instance instance : instances) {
+			Map<String, Object> children = instance.getAttributes();
+			for (Map.Entry<String, Object> entry : children.entrySet()) {
+				String attributeName = entry.getKey();
+				Set<String> values = attributeValueStatistics.get(attributeName);
+				if (null == values) {
+					values = new HashSet<String>();
+					attributeValueStatistics.put(attributeName, values);
+				}
+				values.add(String.valueOf(entry.getValue()));
+			}
+		}
 	}
 	
 	private Job createJob(String jobName, String input, String output) {
@@ -125,11 +165,11 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			
 			job.setJarByClass(DecisionTreeSprintJob.class);
 			
-			job.setMapperClass(ComputeGiniMapper.class);
+			job.setMapperClass(CalculateGiniMapper.class);
 			job.setMapOutputKeyClass(Text.class);
 			job.setMapOutputValueClass(AttributeWritable.class);
 			
-			job.setReducerClass(ComputeGiniReducer.class);
+			job.setReducerClass(CalculateGiniReducer.class);
 			job.setOutputKeyClass(Text.class);
 			job.setOutputValueClass(AttributeGiniWritable.class);
 			
@@ -139,6 +179,133 @@ public class DecisionTreeSprintJob extends AbstractJob {
 			e.printStackTrace();
 		}
 		return job;
+	}
+	
+	private AttributeGiniWritable chooseBestAttribute(String... outputs) {
+		AttributeGiniWritable minSplitAttribute = null;
+		double minSplitPointGini = 1.0;
+		try {
+			for (String output : outputs) {
+				System.out.println("choose output: " + output);
+				Path outputPath = new Path(output);
+				FileSystem fs = outputPath.getFileSystem(conf);
+				Path[] paths = HDFSUtils.getPathFiles(fs, outputPath);
+				ShowUtils.print(paths);
+				SequenceFile.Reader reader = null;
+				for (Path path : paths) {
+					reader = new SequenceFile.Reader(fs, path, conf);
+					Text key = (Text) ReflectionUtils.newInstance(
+							reader.getKeyClass(), conf);
+					AttributeGiniWritable value = new AttributeGiniWritable();
+					while (reader.next(key, value)) {
+						double gini = value.getGini();
+						System.out.println(value.getAttribute() + " : " + gini);
+						if (gini <= minSplitPointGini) {
+							minSplitPointGini = gini;
+							minSplitAttribute = value;
+						}
+						value = new AttributeGiniWritable();
+					}
+					IOUtils.closeQuietly(reader);
+				}
+				System.out.println("delete hdfs file start: " + outputPath.toString());
+				HDFSUtils.delete(conf, outputPath);
+				System.out.println("delete hdfs file end: " + outputPath.toString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (null == minSplitAttribute) {
+			System.out.println("minSplitAttribute is null");
+		}
+		return minSplitAttribute;
+	}
+	
+	private Data obtainData(String input) throws IOException {
+		Path inputPath = new Path(input);
+		FileSystem fs = inputPath.getFileSystem(conf);
+		Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, inputPath);
+		FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+		Data data = DataLoader.load(fsInputStream, true);
+		DataHandler.computeFill(data, 1.0);
+		return data;
+	}
+	
+	private Object build(List<String> inputs) throws IOException {
+		List<String> outputs = new ArrayList<String>();
+		JobControl jobControl = new JobControl("CalculateGini");
+		for (String input : inputs) {
+			System.out.println("split path: " + input);
+			String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL + IdentityUtils.generateUUID();
+			outputs.add(output);
+			Configuration conf = new Configuration();
+			ControlledJob controlledJob = new ControlledJob(conf);
+			controlledJob.setJob(createJob(input, input, output));
+			jobControl.addJob(controlledJob);
+		}
+		Thread jcThread = new Thread(jobControl);  
+        jcThread.start();  
+        while(true){  
+            if(jobControl.allFinished()){  
+                System.out.println(jobControl.getSuccessfulJobList());  
+                jobControl.stop();  
+                AttributeGiniWritable bestAttr = chooseBestAttribute(
+                		outputs.toArray(new String[0]));
+                String attribute = bestAttr.getAttribute();
+        		System.out.println("best attribute: " + attribute);
+        		System.out.println("isCategory: " + bestAttr.isCategory());
+        		if (bestAttr.isCategory()) {
+        			return attribute;
+        		}
+        		TreeNode treeNode = new TreeNode(attribute);
+        		Map<String, List<String>> splitToInputs = 
+        				new HashMap<String, List<String>>();
+        		for (String input : inputs) {
+        			Data data = obtainData(input);
+        			String splitPoint = bestAttr.getSplitPoint();
+        			Map<String, Set<String>> attrName2Values = 
+        					DataHandler.attributeValueStatistics(data.getInstances());
+        			Set<String> attributeValues = attrName2Values.get(attribute);
+        			System.out.println("attributeValues:");
+        			ShowUtils.print(attributeValues);
+        			if (attrName2Values.size() == 0 || null == attributeValues) {
+        				continue;
+        			}
+        			attributeValues.remove(splitPoint);
+        			StringBuilder sb = new StringBuilder();
+        			for (String attributeValue : attributeValues) {
+        				sb.append(attributeValue).append(",");
+        			}
+        			if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+        			String[] names = new String[]{splitPoint, sb.toString()};
+        			DataSplit dataSplit = DataHandler.split(new Data(
+        					data.getInstances(), attribute, names));
+        			for (DataSplitItem item : dataSplit.getItems()) {
+        				if (item.getInstances().size() == 0) continue;
+        				String path = item.getPath();
+        				String name = path.substring(path.lastIndexOf(File.separator) + 1);
+        				String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
+        				HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+        				String split = item.getSplitPoint();
+        				List<String> nextInputs = splitToInputs.get(split);
+        				if (null == nextInputs) {
+        					nextInputs = new ArrayList<String>();
+        					splitToInputs.put(split, nextInputs);
+        				}
+        				nextInputs.add(hdfsPath);
+        			}
+        		}
+        		for (Map.Entry<String, List<String>> entry : 
+        			splitToInputs.entrySet()) {
+        			treeNode.setChild(entry.getKey(), build(entry.getValue()));
+        		}
+        		return treeNode;
+            }  
+            if(jobControl.getFailedJobList().size() > 0){  
+                System.out.println(jobControl.getFailedJobList());  
+                jobControl.stop();  
+            }  
+        }  
 	}
 	
 	public void run(String[] args) {
@@ -153,27 +320,9 @@ public class DecisionTreeSprintJob extends AbstractJob {
 				System.out.println("3. result output path.");
 				System.exit(2);
 			}
-			List<String> paths = split(inputArgs[0]);
-			JobControl jobControl = new JobControl("ComputeGini");
-			for (String path : paths) {
-				System.out.println("split path: " + path);
-				String output = null;
-				ControlledJob controlledJob = new ControlledJob(conf);
-				controlledJob.setJob(createJob(path, path, output));
-				jobControl.addJob(controlledJob);
-			}
-			Thread jcThread = new Thread(jobControl);  
-	        jcThread.start();  
-	        while(true){  
-	            if(jobControl.allFinished()){  
-	                System.out.println(jobControl.getSuccessfulJobList());  
-	                jobControl.stop();  
-	            }  
-	            if(jobControl.getFailedJobList().size() > 0){  
-	                System.out.println(jobControl.getFailedJobList());  
-	                jobControl.stop();  
-	            }  
-	        }  
+			List<String> inputs = split(inputArgs[0]);
+			TreeNode treeNode = (TreeNode) build(inputs);
+			TreeNodeHelper.print(treeNode, 0, null);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -189,143 +338,3 @@ public class DecisionTreeSprintJob extends AbstractJob {
 
 }
 
-class ComputeGiniMapper extends Mapper<LongWritable, Text, Text, AttributeWritable> {
-
-	@Override
-	protected void setup(Context context) throws IOException,
-			InterruptedException {
-		super.setup(context);
-	}
-
-	@Override
-	protected void map(LongWritable key, Text value, Context context)
-			throws IOException, InterruptedException {
-		String line = value.toString();
-		StringTokenizer tokenizer = new StringTokenizer(line);
-		Long id = Long.parseLong(tokenizer.nextToken());
-		String category = tokenizer.nextToken();
-		boolean isCategory = true;
-		while (tokenizer.hasMoreTokens()) {
-			isCategory = false;
-			String attribute = tokenizer.nextToken();
-			String[] entry = attribute.split(":");
-			context.write(new Text(entry[0]), new AttributeWritable(id,
-					category, entry[1]));
-		}
-		if (isCategory) {
-			context.write(new Text(category), new AttributeWritable(id,
-					category, category));
-		}
-	}
-
-	@Override
-	protected void cleanup(Context context) throws IOException,
-			InterruptedException {
-		super.cleanup(context);
-	}
-}
-
-class ComputeGiniReducer extends Reducer<Text, AttributeWritable, Text, AttributeGiniWritable> {
-
-	@Override
-	protected void setup(Context context) throws IOException,
-			InterruptedException {
-		super.setup(context);
-	}
-
-	@Override
-	protected void reduce(Text key, Iterable<AttributeWritable> values,
-			Context context) throws IOException, InterruptedException {
-		String attributeName = key.toString();
-		double totalNum = 0.0;
-		Map<String, Map<String, Integer>> attrValueSplits = new HashMap<String, Map<String, Integer>>();
-		Set<String> splitPoints = new HashSet<String>();
-		Iterator<AttributeWritable> iterator = values.iterator();
-		boolean isCategory = false;
-		while (iterator.hasNext()) {
-			AttributeWritable attribute = iterator.next();
-			String attributeValue = attribute.getAttributeValue();
-			if (attributeName.equals(attributeValue)) {
-				isCategory = true;
-				break;
-			}
-			splitPoints.add(attributeValue);
-			Map<String, Integer> attrValueSplit = attrValueSplits
-					.get(attributeValue);
-			if (null == attrValueSplit) {
-				attrValueSplit = new HashMap<String, Integer>();
-				attrValueSplits.put(attributeValue, attrValueSplit);
-			}
-			String category = attribute.getCategory();
-			Integer categoryNum = attrValueSplit.get(category);
-			attrValueSplit.put(category, null == categoryNum ? 1
-					: categoryNum + 1);
-			totalNum++;
-		}
-		if (isCategory) {
-			System.out.println("is Category");
-			double initValue = 1.0;
-			iterator = values.iterator();
-			while (iterator.hasNext()) {
-				iterator.next();
-				initValue = initValue / 2;
-			}
-			System.out.println("initValue: " + initValue);
-			context.write(key, new AttributeGiniWritable(attributeName,
-					initValue, true, null));
-		} else {
-			String minSplitPoint = null;
-			double minSplitPointGini = 1.0;
-			for (String splitPoint : splitPoints) {
-				double splitPointGini = 0.0;
-				double splitAboveNum = 0.0;
-				double splitBelowNum = 0.0;
-				Map<String, Integer> attrBelowSplit = new HashMap<String, Integer>();
-				for (Map.Entry<String, Map<String, Integer>> entry : attrValueSplits
-						.entrySet()) {
-					String attrValue = entry.getKey();
-					Map<String, Integer> attrValueSplit = entry.getValue();
-					if (splitPoint.equals(attrValue)) {
-						for (Integer v : attrValueSplit.values()) {
-							splitAboveNum += v;
-						}
-						double aboveGini = 1.0;
-						for (Integer v : attrValueSplit.values()) {
-							aboveGini -= Math.pow((v / splitAboveNum), 2);
-						}
-						splitPointGini += (splitAboveNum / totalNum)
-								* aboveGini;
-					} else {
-						for (Map.Entry<String, Integer> e : attrValueSplit
-								.entrySet()) {
-							String k = e.getKey();
-							Integer v = e.getValue();
-							Integer count = attrBelowSplit.get(k);
-							attrBelowSplit
-									.put(k, null == count ? v : v + count);
-							splitBelowNum += e.getValue();
-						}
-					}
-				}
-				double belowGini = 1.0;
-				for (Integer v : attrBelowSplit.values()) {
-					belowGini -= Math.pow((v / splitBelowNum), 2);
-				}
-				splitPointGini += (splitBelowNum / totalNum) * belowGini;
-				if (minSplitPointGini > splitPointGini) {
-					minSplitPointGini = splitPointGini;
-					minSplitPoint = splitPoint;
-				}
-			}
-			context.write(key, new AttributeGiniWritable(key.toString(),
-					minSplitPointGini, false, minSplitPoint));
-		}
-	}
-
-	@Override
-	protected void cleanup(Context context) throws IOException,
-			InterruptedException {
-		super.cleanup(context);
-	}
-
-}

@@ -49,7 +49,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		DataHandler.writeData(path, trainData);
 		System.out.println(path);
 		String name = path.substring(path.lastIndexOf(File.separator) + 1);
-		String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+		String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
 		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 		attrName2Values = new HashMap<String, Set<String>>();
 		for (Instance instance : trainData.getInstances()) {
@@ -121,7 +121,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		HDFSUtils.delete(conf, new Path(output));
 		System.out.println("delete output path : " + output);
 		String[] args = new String[]{input, output};
-		DecisionTreeSprintMR.main(args);
+		CalculateSprintGiniMR.main(args);
 		
 		AttributeGiniWritable bestAttr = chooseBestAttribute(output);
 		String attribute = bestAttr.getAttribute();
@@ -147,7 +147,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		for (DataSplitItem item : dataSplit.getItems()) {
 			String path = item.getPath();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+			String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
 					new Data(attributes, item.getInstances())));

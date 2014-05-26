@@ -213,6 +213,26 @@ public class DataHandler {
 	}
 	
 	/** 特征属性值统计*/
+	public static Map<String, Set<String>> attributeValueStatistics(
+			List<Instance> instances) {
+		Map<String, Set<String>> attributeValueStatistics = 
+				new HashMap<String, Set<String>>();
+		for (Instance instance : instances) {
+			Map<String, Object> children = instance.getAttributes();
+			for (Map.Entry<String, Object> entry : children.entrySet()) {
+				String key = entry.getKey();
+				Set<String> values = attributeValueStatistics.get(key);
+				if (null == values) {
+					values = new HashSet<String>();
+					attributeValueStatistics.put(key, values);
+				}
+				values.add(String.valueOf(entry.getValue()));
+			}
+		}
+		return attributeValueStatistics;
+	}
+	
+	/** 特征属性值统计*/
 	public static Map<String, Map<Object, Integer>> attributeValueStatistics(
 			List<Instance> instances, String[] attributes) {
 		Map<String, Map<Object, Integer>> attributeValueStatistics = 

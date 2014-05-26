@@ -22,6 +22,8 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
@@ -316,9 +318,41 @@ public class DataTest {
 	}
 	
 	@Test
-	public void extractTrainSet() {
+	public void readTrainSet() {
 		String input = "d:\\trainset.txt";
-		String output = "d:\\trainset_linenum_10.txt";
+		BufferedReader reader = null;
+		InputStream in = null;
+		Map<Integer, List<String>> datas = 
+				new HashMap<Integer, List<String>>();
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = reader.readLine();
+			int index = 0;
+			while (!("").equals(line) && null != line) {
+				int key = (index++) % 10;
+				List<String> lines = datas.get(key);
+				if (null == lines) {
+					lines = new ArrayList<String>();
+					datas.put(key, lines);
+				}
+				lines.add(line);
+				line = reader.readLine();
+			}
+			System.out.println(index);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+		}
+		System.out.println(datas.size());
+	}
+	
+	@Test
+	public void extractTrainSet() {
+		String input = "d:\\trainset_l.txt";
+		String output = "d:\\trainset_l_10.txt";
 		int linenum = 10;
 		BufferedReader reader = null;
 		InputStream in = null;
@@ -392,7 +426,7 @@ public class DataTest {
 		Configuration conf = new Configuration();
 		conf.addResource(new Path(
 				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
-		String input = "hdfs://centos.host1:9000/user/hadoop/data/temp/a.txt";
+		String input = "hdfs://centos.host1:9000//user/hadoop/data/dt/012/output/part-r-00000";
 		InputStream in = null;
 		BufferedReader reader = null;
 		try {
@@ -411,6 +445,35 @@ public class DataTest {
 		} finally {
 			IOUtils.closeQuietly(in);
 			IOUtils.closeQuietly(reader);
+		}
+	}
+	
+	@Test
+	public void read1() throws Exception {
+		Configuration conf = new Configuration();
+		conf.addResource(new Path(
+				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
+		String input = "hdfs://centos.host1:9000//user/hadoop/data/dt/012/output/part-r-00000";
+		try {
+			Path inputPath = new Path(input);
+			FileSystem fs = inputPath.getFileSystem(conf);
+			FileStatus fileStatus = fs.getFileStatus(inputPath);
+			System.out.println(fileStatus);
+			System.out.println(fileStatus.getBlockSize());
+			System.out.println(fileStatus.getPath());
+			BlockLocation[] blockLocations = fs.getFileBlockLocations(
+					fileStatus, 0, fileStatus.getLen());
+			System.out.println(blockLocations.length);
+			for (BlockLocation blockLocation : blockLocations) {
+				System.out.println(blockLocation.getOffset());
+				ShowUtils.print(blockLocation.getNames());
+				ShowUtils.print(blockLocation.getHosts());
+				ShowUtils.print(blockLocation.getTopologyPaths());
+				System.out.println(blockLocation.getLength());
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
 		}
 	}
 	
@@ -457,4 +520,5 @@ public class DataTest {
 		IOUtils.closeQuietly(out);
 		IOUtils.closeQuietly(writer);
 	}
+	
 }

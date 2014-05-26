@@ -42,7 +42,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		DataHandler.writeData(path, trainData);
 		System.out.println(path);
 		String name = path.substring(path.lastIndexOf(File.separator) + 1);
-		String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+		String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
 		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 		return hdfsPath;
 	}
@@ -97,7 +97,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		HDFSUtils.delete(conf, new Path(output));
 		System.out.println("delete output path : " + output);
 		String[] paths = new String[]{input, output};
-		DecisionTreeC45MR.main(paths);
+		CalculateC45GainRatioMR.main(paths);
 		
 		AttributeGainWritable bestAttr = chooseBestAttribute(output);
 		String attribute = bestAttr.getAttribute();
@@ -117,7 +117,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		for (DataSplitItem item : dataSplit.getItems()) {
 			String path = item.getPath();
 			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			String hdfsPath = HDFSUtils.HDFS_TEMP_DATA_URL + name;
+			String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
 			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
 			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
 					new Data(attributes, item.getInstances())));
