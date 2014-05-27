@@ -1,18 +1,25 @@
 package org.project.modules.classifier.decisiontree;
 
+import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
@@ -33,6 +40,7 @@ import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGainWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeKVWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
@@ -272,6 +280,36 @@ public class DecisionTreeMRTest {
 			IOUtils.closeQuietly(writer);
 		}
 	}
+	
+	@Test
+	public void readFile() {
+//		String url = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/input/23ab9cf400b1488c81b08266c99bf291/part-r-00000";
+		String url = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/input/23ab9cf400b1488c81b08266c99bf291/";
+		List<String> inputs = new ArrayList<String>();
+		Path outputPath = new Path(url);
+		try {
+			FileSystem fs = outputPath.getFileSystem(conf);
+			Path[] paths = HDFSUtils.getPathFiles(fs, outputPath);
+			ShowUtils.print(paths);
+			for(Path path : paths) {
+				System.out.println("split input path: " + path);
+//				FileSystem pfs = path.getFileSystem(conf);
+				FSDataInputStream in = fs.open(path);
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+				String line = reader.readLine();
+				while (null != line && !"".equals(line)) {
+					System.out.println(line);
+					inputs.add(line);
+					line = reader.readLine();
+				}
+				IOUtils.closeQuietly(in);
+				IOUtils.closeQuietly(reader);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("inputs size: " + inputs.size());
+	}
 
 	@Test
 	public void readSequenceFile() {
@@ -311,6 +349,42 @@ public class DecisionTreeMRTest {
 				System.out.println(value.getGainRatio());
 				value = new AttributeGainWritable();
 			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
+	}
+	
+	@Test
+	public void readAttributeStatisticsFile() {
+		SequenceFile.Reader reader = null;
+		try {
+			Set<String> attributes = new HashSet<String>();
+			Map<String, Map<Object, Integer>> attributeValueStatistics
+				= new HashMap<String, Map<Object, Integer>>();
+			FileSystem fs = FileSystem.get(conf);
+			Path path = new Path(DFS_URL + "013/output/part-r-00000");
+			reader = new SequenceFile.Reader(fs, path, conf);
+			AttributeKVWritable key = (AttributeKVWritable) 
+					ReflectionUtils.newInstance(reader.getKeyClass(), conf);
+			IntWritable value = new IntWritable();
+			while (reader.next(key, value)) {
+				String attributeName = key.getAttributeName();
+				attributes.add(attributeName);
+				Map<Object, Integer> valueStatistics = 
+						attributeValueStatistics.get(attributeName);
+				if (null == valueStatistics) {
+					valueStatistics = new HashMap<Object, Integer>();
+					attributeValueStatistics.put(attributeName, valueStatistics);
+				}
+				valueStatistics.put(key.getAttributeValue(), value.get());
+//				System.out.print(attributeName + " : ");
+//				System.out.println(key.getAttributeValue());
+				value = new IntWritable();
+			}
+			System.out.println(attributes.size());
+			System.out.println(attributeValueStatistics.size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {

@@ -47,7 +47,6 @@ public class DataLoader {
 			while (!("").equals(line) && null != line) {
 				instance = containId ? DataHandler.extractWithId(line, attributes)
 						: DataHandler.extract(line, attributes);
-				System.out.println(instance.getId());
 				instances.add(instance);
 				line = reader.readLine();
 			}

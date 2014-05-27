@@ -167,7 +167,7 @@ public class DataTest {
 		System.out.println(calculateAttribute(input).size());
 		input = "D:\\trainset_extract_10_l.txt";
 		System.out.println(calculateAttribute(input).size());
-		input = "D:\\trainset_extract_100_l.txt";
+		input = "D:\\trainset_5000_l.txt";
 		System.out.println(calculateAttribute(input).size());
 	}
 	

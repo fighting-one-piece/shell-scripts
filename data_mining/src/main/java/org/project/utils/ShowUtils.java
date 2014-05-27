@@ -28,6 +28,7 @@ public class ShowUtils {
 	}
 	
 	public static <T> void print(Collection<T> collection) {
+		System.out.print("[");
 		for (T t : collection) {
 			if (t instanceof Object[]) {
 				print((Object[]) t);
@@ -35,12 +36,15 @@ public class ShowUtils {
 				System.out.println(t);
 			}
 		}
+		System.out.println("]");
 	}
 	
 	public static <K, V> void print(Map<K, V> map) {
+		System.out.print("[");
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			System.out.println(entry.getKey() + "------>" + entry.getValue());
 		}
+		System.out.println("]");
 	}
 	
 	public static String format(double value) {

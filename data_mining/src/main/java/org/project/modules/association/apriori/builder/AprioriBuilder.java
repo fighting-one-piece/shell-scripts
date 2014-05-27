@@ -166,7 +166,6 @@ public class AprioriBuilder {
 		}
 	}
 
-	@SuppressWarnings("unused")
 	private int calculateSupport(String... items) {
 		int support = 0;
 		for (Instance instance : data.getInstances()) {
@@ -208,14 +207,15 @@ public class AprioriBuilder {
 		return candidateItemSet;
 	}
 	
-	public static void print(List<List<ItemSet>> itemSetss) {
+	public static void print(List<List<ItemSet>> itemSetss, boolean isCandidate) {
+		System.out.println((isCandidate ?  "Candidate" : "Frequency") + " Item Set");
 		System.out.println(itemSetss.size());
 		for (List<ItemSet> itemSets : itemSetss) {
-			System.out.println("------");
+			System.out.println("----------");
 			for (ItemSet itemSet : itemSets) {
 				System.out.println(itemSet.getItem());
 			}
-			System.out.println("------");
+			System.out.println("----------");
 		}
 	}
 	
@@ -234,13 +234,13 @@ public class AprioriBuilder {
 //			System.out.println("------");
 //		}
 		ab.frequency_1_itemset();
-		print(ab.getCandidateItemSet());
-		print(ab.getFrequencyItemSet());
+		print(ab.getCandidateItemSet(), true);
+		print(ab.getFrequencyItemSet(), false);
 		ab.frequency_k_itemset(2);
-		print(ab.getCandidateItemSet());
-		print(ab.getFrequencyItemSet());
+		print(ab.getCandidateItemSet(), true);
+		print(ab.getFrequencyItemSet(), false);
 		ab.frequency_k_itemset(3);
-		print(ab.getCandidateItemSet());
-		print(ab.getFrequencyItemSet());
+		print(ab.getCandidateItemSet(), true);
+		print(ab.getFrequencyItemSet(), false);
 	}
 }

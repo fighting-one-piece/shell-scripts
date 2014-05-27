@@ -1,13 +1,18 @@
 package org.project.modules.classifier.decisiontree.mr.dt;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -16,8 +21,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.mapreduce.lib.jobcontrol.ControlledJob;
+import org.apache.hadoop.mapreduce.lib.jobcontrol.JobControl;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.classifier.decisiontree.data.Data;
@@ -29,150 +42,319 @@ import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.mr.AbstractJob;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGiniWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeKVWritable;
+import org.project.modules.classifier.decisiontree.mr.writable.AttributeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
+import org.project.utils.IdentityUtils;
 import org.project.utils.ShowUtils;
 
 public class DecisionTreeSprintBJob extends AbstractJob {
 	
-	private Map<String, Set<String>> attrName2Values = null;
+	private Map<String, Map<Object, Integer>> attributeValueStatistics = null;
 	
-	/**
-	 * 对数据集做预处理
-	 * @param trainData
-	 * @return
-	 */
-	public String prepare(Data trainData) {
-		String path = FileUtils.obtainRandomTxtPath();
-		DataHandler.writeData(path, trainData);
-		System.out.println(path);
-		String name = path.substring(path.lastIndexOf(File.separator) + 1);
-		String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
-		HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-		attrName2Values = new HashMap<String, Set<String>>();
-		for (Instance instance : trainData.getInstances()) {
-			for (Map.Entry<String, Object> entry : 
-				instance.getAttributes().entrySet()) {
-				String attrName = entry.getKey();
-				Set<String> values = attrName2Values.get(attrName);
-				if (null == values) {
-					values = new HashSet<String>();
-					attrName2Values.put(attrName, values);
-				}
-				values.add(String.valueOf(entry.getValue()));
-			}
-		}
-		return hdfsPath;
-	}
+	private Map<String, Set<String>> attributeNameToValues = null;
 	
-	/**
-	 * 选择最佳属性
-	 * @param output
-	 * @return
-	 */
-	public AttributeGiniWritable chooseBestAttribute(String output) {
-		AttributeGiniWritable minSplitAttribute = null;
-		Path path = new Path(output);
+	private Set<String> allAttributes = null;
+	
+	/** 数据拆分*/
+	private List<String> split(String input, String splitNum) {
+		String output = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
+		String[] args = new String[]{input, output, splitNum};
+		DataFileSplitMR.main(args);
+		List<String> inputs = new ArrayList<String>();
+		Path outputPath = new Path(output);
 		try {
-			FileSystem fs = path.getFileSystem(conf);
-			Path[] paths = HDFSUtils.getPathFiles(fs, path);
-			ShowUtils.print(paths);
-			double minSplitPointGini = 1.0;
-			SequenceFile.Reader reader = null;
-			for (Path p : paths) {
-				reader = new SequenceFile.Reader(fs, p, conf);
-				Text key = (Text) ReflectionUtils.newInstance(
-						reader.getKeyClass(), conf);
-				AttributeGiniWritable value = new AttributeGiniWritable();
-				while (reader.next(key, value)) {
-					double gini = value.getGini();
-					if (value.isCategory()) {
-						System.out.println("attr: " + value.getAttribute());
-						System.out.println("gini: " + gini);
-					}
-					if (gini <= minSplitPointGini) {
-						minSplitPointGini = gini;
-						minSplitAttribute = value;
-					}
-					value = new AttributeGiniWritable();
+			FileSystem fs = outputPath.getFileSystem(conf);
+			Path[] paths = HDFSUtils.getPathFiles(fs, outputPath);
+			for(Path path : paths) {
+				System.out.println("split input path: " + path);
+				InputStream in = fs.open(path);
+				BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+				String line = reader.readLine();
+				while (null != line && !"".equals(line)) {
+					inputs.add(line);
+					line = reader.readLine();
 				}
+				IOUtils.closeQuietly(in);
 				IOUtils.closeQuietly(reader);
 			}
-			System.out.println("output: " + path.toString());
-			HDFSUtils.delete(conf, path);
-			System.out.println("hdfs delete file : " + path.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		System.out.println("inputs size: " + inputs.size());
+		return inputs;
+	}
+	
+	private void initialize(String input) {
+		System.out.println("initialize start.");
+		allAttributes = new HashSet<String>();
+		attributeNameToValues = new HashMap<String, Set<String>>();
+		attributeValueStatistics = new HashMap<String, Map<Object, Integer>>();
+		String output = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
+		String[] args = new String[]{input, output};
+		AttributeStatisticsMR.main(args);
+		Path outputPath = new Path(output);
+		SequenceFile.Reader reader = null;
+		try {
+			FileSystem fs = outputPath.getFileSystem(conf);
+			Path[] paths = HDFSUtils.getPathFiles(fs, outputPath);
+			for(Path path : paths) {
+				reader = new SequenceFile.Reader(fs, path, conf);
+				AttributeKVWritable key = (AttributeKVWritable) 
+						ReflectionUtils.newInstance(reader.getKeyClass(), conf);
+				IntWritable value = new IntWritable();
+				while (reader.next(key, value)) {
+					String attributeName = key.getAttributeName();
+					allAttributes.add(attributeName);
+					Set<String> values = attributeNameToValues.get(attributeName);
+					if (null == values) {
+						values = new HashSet<String>();
+						attributeNameToValues.put(attributeName, values);
+					}
+					String attributeValue = key.getAttributeValue();
+					values.add(attributeValue);
+					Map<Object, Integer> valueStatistics = 
+							attributeValueStatistics.get(attributeName);
+					if (null == valueStatistics) {
+						valueStatistics = new HashMap<Object, Integer>();
+						attributeValueStatistics.put(attributeName, valueStatistics);
+					}
+					valueStatistics.put(attributeValue, value.get());
+					value = new IntWritable();
+				}
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
+		System.out.println("initialize end.");
+	}
+	
+	private List<String> preHandle(List<String> inputs) throws IOException {
+		List<String> fillInputs = new ArrayList<String>();
+		for (String input : inputs) {
+			Data data =null;
+			try {
+				Path inputPath = new Path(input);
+				FileSystem fs = inputPath.getFileSystem(conf);
+				FSDataInputStream fsInputStream = fs.open(inputPath);
+				data = DataLoader.load(fsInputStream, true);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			DataHandler.computeFill(data.getInstances(), 
+					allAttributes.toArray(new String[0]), 
+					attributeValueStatistics, 1.0);
+			OutputStream out = null;
+			BufferedWriter writer = null;
+			String outputDir = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
+			fillInputs.add(outputDir);
+			String output = outputDir + File.separator + IdentityUtils.generateUUID();
+			try {
+				Path outputPath = new Path(output);
+				FileSystem fs = outputPath.getFileSystem(conf);
+				out = fs.create(outputPath);
+				writer = new BufferedWriter(new OutputStreamWriter(out));
+				StringBuilder sb = null;
+				for (Instance instance : data.getInstances()) {
+					sb = new StringBuilder();
+					sb.append(instance.getId()).append("\t");
+					sb.append(instance.getCategory()).append("\t");
+					Map<String, Object> attrs = instance.getAttributes();
+					for (Map.Entry<String, Object> entry : attrs.entrySet()) {
+						sb.append(entry.getKey()).append(":");
+						sb.append(entry.getValue()).append("\t");
+					}
+					writer.write(sb.toString());
+					writer.newLine();
+				}
+				writer.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				IOUtils.closeQuietly(out);
+				IOUtils.closeQuietly(writer);
+			}
+		}
+		return fillInputs;
+	}
+	
+	private Job createJob(String jobName, String input, String output) {
+		Configuration conf = new Configuration();
+		conf.set("mapred.job.queue.name", "q_hudong");
+		Job job = null;
+		try {
+			job = new Job(conf, jobName);
+			
+			FileInputFormat.addInputPath(job, new Path(input));
+			FileOutputFormat.setOutputPath(job, new Path(output));
+			
+			job.setJarByClass(DecisionTreeSprintBJob.class);
+			
+			job.setMapperClass(CalculateGiniMapper.class);
+			job.setMapOutputKeyClass(Text.class);
+			job.setMapOutputValueClass(AttributeWritable.class);
+			
+			job.setReducerClass(CalculateGiniReducer.class);
+			job.setOutputKeyClass(Text.class);
+			job.setOutputValueClass(AttributeGiniWritable.class);
+			
+			job.setInputFormatClass(TextInputFormat.class);
+			job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return job;
+	}
+	
+	private AttributeGiniWritable chooseBestAttribute(String... outputs) {
+		AttributeGiniWritable minSplitAttribute = null;
+		double minSplitPointGini = 1.0;
+		try {
+			for (String output : outputs) {
+				System.out.println("choose output: " + output);
+				Path outputPath = new Path(output);
+				FileSystem fs = outputPath.getFileSystem(conf);
+				Path[] paths = HDFSUtils.getPathFiles(fs, outputPath);
+				ShowUtils.print(paths);
+				SequenceFile.Reader reader = null;
+				for (Path path : paths) {
+					reader = new SequenceFile.Reader(fs, path, conf);
+					Text key = (Text) ReflectionUtils.newInstance(
+							reader.getKeyClass(), conf);
+					AttributeGiniWritable value = new AttributeGiniWritable();
+					while (reader.next(key, value)) {
+						double gini = value.getGini();
+						System.out.println(value.getAttribute() + " : " + gini);
+						if (gini <= minSplitPointGini) {
+							minSplitPointGini = gini;
+							minSplitAttribute = value;
+						}
+						value = new AttributeGiniWritable();
+					}
+					IOUtils.closeQuietly(reader);
+				}
+				System.out.println("delete hdfs file start: " + outputPath.toString());
+				HDFSUtils.delete(conf, outputPath);
+				System.out.println("delete hdfs file end: " + outputPath.toString());
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (null == minSplitAttribute) {
+			System.out.println("minSplitAttribute is null");
 		}
 		return minSplitAttribute;
 	}
 	
-	/**
-	 * 构造决策树
-	 * @param input
-	 * @return
-	 */
-	public Object build(String input, Data trainData) {
-		Object preHandleResult = preHandle(trainData);
-		if (null != preHandleResult) return preHandleResult;
-		String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL;
-		HDFSUtils.delete(conf, new Path(output));
-		System.out.println("delete output path : " + output);
-		String[] args = new String[]{input, output};
-		CalculateSprintGiniMR.main(args);
-		
-		AttributeGiniWritable bestAttr = chooseBestAttribute(output);
-		String attribute = bestAttr.getAttribute();
-		System.out.println("best attribute: " + attribute);
-		System.out.println("isCategory: " + bestAttr.isCategory());
-		if (bestAttr.isCategory()) {
-			return attribute;
+	private Data obtainData(String input) {
+		Data data = null;
+		Path inputPath = new Path(input);
+		try {
+			FileSystem fs = inputPath.getFileSystem(conf);
+			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, inputPath);
+			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
+			data = DataLoader.load(fsInputStream, true);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		TreeNode treeNode = new TreeNode(attribute);
-		String splitPoint = bestAttr.getSplitPoint();
-		String[] attributes = trainData.getAttributesExcept(attribute);
-		Set<String> attributeValues = attrName2Values.get(attribute);
-		attributeValues.remove(splitPoint);
-		StringBuilder sb = new StringBuilder();
-		for (String attributeValue : attributeValues) {
-			sb.append(attributeValue).append(",");
-		}
-		if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
-		String[] names = new String[]{splitPoint, sb.toString()};
-		
-		DataSplit dataSplit = DataHandler.split(new Data(
-				trainData.getInstances(), attribute, names));
-		for (DataSplitItem item : dataSplit.getItems()) {
-			String path = item.getPath();
-			String name = path.substring(path.lastIndexOf(File.separator) + 1);
-			String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
-			HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
-			treeNode.setChild(item.getSplitPoint(), build(hdfsPath, 
-					new Data(attributes, item.getInstances())));
-		}
-		return treeNode;
+		return data;
 	}
 	
-	private void classify(TreeNode treeNode, String trainSet, String testSet, String output) {
+	private Object build(List<String> inputs) throws IOException {
+		List<String> outputs = new ArrayList<String>();
+		JobControl jobControl = new JobControl("CalculateGini");
+		for (String input : inputs) {
+			System.out.println("split path: " + input);
+			String output = HDFSUtils.HDFS_TEMP_OUTPUT_URL + IdentityUtils.generateUUID();
+			outputs.add(output);
+			Configuration conf = new Configuration();
+			ControlledJob controlledJob = new ControlledJob(conf);
+			controlledJob.setJob(createJob(input, input, output));
+			jobControl.addJob(controlledJob);
+		}
+		Thread jcThread = new Thread(jobControl);  
+        jcThread.start();  
+        while(true){  
+            if(jobControl.allFinished()){  
+//                System.out.println(jobControl.getSuccessfulJobList());  
+                jobControl.stop();  
+                AttributeGiniWritable bestAttr = chooseBestAttribute(
+                		outputs.toArray(new String[0]));
+                String attribute = bestAttr.getAttribute();
+        		System.out.println("best attribute: " + attribute);
+        		System.out.println("isCategory: " + bestAttr.isCategory());
+        		if (bestAttr.isCategory()) {
+        			return attribute;
+        		}
+        		TreeNode treeNode = new TreeNode(attribute);
+        		Map<String, List<String>> splitToInputs = 
+        				new HashMap<String, List<String>>();
+        		for (String input : inputs) {
+        			Data data = obtainData(input);
+        			String splitPoint = bestAttr.getSplitPoint();
+//        			Map<String, Set<String>> attrName2Values = 
+//        					DataHandler.attributeValueStatistics(data.getInstances());
+        			Set<String> attributeValues = attributeNameToValues.get(attribute);
+        			System.out.println("attributeValues:");
+        			ShowUtils.print(attributeValues);
+        			if (attributeNameToValues.size() == 0 || null == attributeValues) {
+        				continue;
+        			}
+        			attributeValues.remove(splitPoint);
+        			StringBuilder sb = new StringBuilder();
+        			for (String attributeValue : attributeValues) {
+        				sb.append(attributeValue).append(",");
+        			}
+        			if (sb.length() > 0) sb.deleteCharAt(sb.length() - 1);
+        			String[] names = new String[]{splitPoint, sb.toString()};
+        			DataSplit dataSplit = DataHandler.split(new Data(
+        					data.getInstances(), attribute, names));
+        			for (DataSplitItem item : dataSplit.getItems()) {
+        				if (item.getInstances().size() == 0) continue;
+        				String path = item.getPath();
+        				String name = path.substring(path.lastIndexOf(File.separator) + 1);
+        				String hdfsPath = HDFSUtils.HDFS_TEMP_INPUT_URL + name;
+        				HDFSUtils.copyFromLocalFile(conf, path, hdfsPath);
+        				String split = item.getSplitPoint();
+        				List<String> nextInputs = splitToInputs.get(split);
+        				if (null == nextInputs) {
+        					nextInputs = new ArrayList<String>();
+        					splitToInputs.put(split, nextInputs);
+        				}
+        				nextInputs.add(hdfsPath);
+        			}
+        		}
+        		for (Map.Entry<String, List<String>> entry : 
+        			splitToInputs.entrySet()) {
+        			treeNode.setChild(entry.getKey(), build(entry.getValue()));
+        		}
+        		return treeNode;
+            }  
+            if(jobControl.getFailedJobList().size() > 0){  
+//                System.out.println(jobControl.getFailedJobList());  
+                jobControl.stop();  
+            }  
+        }  
+	}
+	
+	private void classify(TreeNode treeNode, String testSet, String output) {
 		OutputStream out = null;
 		BufferedWriter writer = null;
 		try {
-			Path trainSetPath = new Path(trainSet);
-			FileSystem trainFS = trainSetPath.getFileSystem(conf);
-			Path[] trainHdfsPaths = HDFSUtils.getPathFiles(trainFS, trainSetPath);
-			FSDataInputStream trainFSInputStream = trainFS.open(trainHdfsPaths[0]);
-			Data trainData = DataLoader.load(trainFSInputStream, true);
-			
 			Path testSetPath = new Path(testSet);
 			FileSystem testFS = testSetPath.getFileSystem(conf);
 			Path[] testHdfsPaths = HDFSUtils.getPathFiles(testFS, testSetPath);
 			FSDataInputStream fsInputStream = testFS.open(testHdfsPaths[0]);
 			Data testData = DataLoader.load(fsInputStream, true);
 			
-//			DataHandler.fill(testData.getInstances(), data.getAttributes(), 1.0);
-			DataHandler.computeFill(testData, trainData, 1.0);
+			DataHandler.computeFill(testData.getInstances(), 
+					allAttributes.toArray(new String[0]), 
+					attributeValueStatistics, 1.0);
 			Object[] results = (Object[]) treeNode.classifySprint(testData);
 			ShowUtils.print(results);
 			DataError dataError = new DataError(testData.getCategories(), results);
@@ -209,23 +391,20 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 			if (null == conf) conf = new Configuration();
 			String[] inputArgs = new GenericOptionsParser(
 					conf, args).getRemainingArgs();
-			if (inputArgs.length != 3) {
+			if (inputArgs.length != 4) {
 				System.out.println("error, please input three path.");
 				System.out.println("1. trainset path.");
 				System.out.println("2. testset path.");
 				System.out.println("3. result output path.");
+				System.out.println("4. data split number.");
 				System.exit(2);
 			}
-			Path input = new Path(inputArgs[0]);
-			FileSystem fs = input.getFileSystem(conf);
-			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
-			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
-			Data trainData = DataLoader.load(fsInputStream, true);
-			DataHandler.computeFill(trainData, 1.0);
-			String hdfsInput = prepare(trainData);
-			TreeNode treeNode = (TreeNode) build(hdfsInput, trainData);
+			List<String> splitInputs = split(inputArgs[0], inputArgs[3]);
+			initialize(inputArgs[0]);
+			List<String> inputs = preHandle(splitInputs);
+			TreeNode treeNode = (TreeNode) build(inputs);
 			TreeNodeHelper.print(treeNode, 0, null);
-			classify(treeNode, inputArgs[0], inputArgs[1], inputArgs[2]);
+			classify(treeNode, inputArgs[1], inputArgs[2]);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

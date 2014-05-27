@@ -146,7 +146,6 @@ class CalculateGiniReducer extends Reducer<Text, AttributeWritable, Text, Attrib
 				iterator.next();
 				initValue = initValue / 2;
 			}
-			System.out.println("initValue: " + initValue);
 			context.write(key, new AttributeGiniWritable(attributeName,
 					initValue, true, null));
 		} else {
@@ -177,8 +176,7 @@ class CalculateGiniReducer extends Reducer<Text, AttributeWritable, Text, Attrib
 							String k = e.getKey();
 							Integer v = e.getValue();
 							Integer count = attrBelowSplit.get(k);
-							attrBelowSplit
-									.put(k, null == count ? v : v + count);
+							attrBelowSplit.put(k, null == count ? v : v + count);
 							splitBelowNum += e.getValue();
 						}
 					}

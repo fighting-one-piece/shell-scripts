@@ -141,7 +141,6 @@ class CalculateSprintGiniReducer extends Reducer<Text, AttributeWritable, Text, 
 				iterator.next();
 				initValue = initValue / 2;
 			}
-			System.out.println("initValue: " + initValue);
 			context.write(key, new AttributeGiniWritable(attributeName,
 					initValue, true, null));
 		} else {
