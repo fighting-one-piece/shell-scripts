@@ -17,8 +17,10 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 	
 	@Override
 	public Object build(Data data) {
+		//对数据集预先判断，特征属性为空时候选取最多数量的类型,数据集全部为统一类型时候直接返回类型
 		Object preHandleResult = preHandle(data);
 		if (null != preHandleResult) return preHandleResult;
+		//创建属性表
 		Map<String, List<Attribute>> attributeTableMap = 
 				new HashMap<String, List<Attribute>>();
 		for (Instance instance : data.getInstances()) {
@@ -35,12 +37,12 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 						attrName, String.valueOf(entry.getValue()), category));
 			}
 		}
+		//计算属性表的基尼指数
 		Set<String> attributes = data.getAttributeSet();
 		String splitAttribute = null;
 		String minSplitPoint = null;
 		double minSplitPointGini = 1.0;
-		for (Map.Entry<String, List<Attribute>> entry : 
-			attributeTableMap.entrySet()) {
+		for (Map.Entry<String, List<Attribute>> entry : attributeTableMap.entrySet()) {
 			String attribute = entry.getKey();
 			if (!attributes.contains(attribute)) {
 				continue;
@@ -57,6 +59,7 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 		System.out.println("splitAttribute: " + splitAttribute);
 		TreeNode treeNode = new TreeNode(splitAttribute);
 		
+		//根据分割属性和分割点分割数据集
 		attributes.remove(splitAttribute);
 		Set<String> attributeValues = new HashSet<String>();
 		List<List<Instance>> splitInstancess = new ArrayList<List<Instance>>();
@@ -90,6 +93,7 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 		return treeNode;
 	}
 
+	/** 计算基尼指数*/
 	public Object[] calculateMinGini(List<Attribute> attributeTable) {
 		double totalNum = 0.0;
 		Map<String, Map<String, Integer>> attrValueSplits = 

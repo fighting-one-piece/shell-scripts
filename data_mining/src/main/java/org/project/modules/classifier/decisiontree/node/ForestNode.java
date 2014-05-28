@@ -38,6 +38,7 @@ public class ForestNode extends Node {
 				results.add((Object[]) treeNode.classify(instances));
 			}
 		}
+		//投票选择
 		return DataHandler.vote(results);
 	}
 	

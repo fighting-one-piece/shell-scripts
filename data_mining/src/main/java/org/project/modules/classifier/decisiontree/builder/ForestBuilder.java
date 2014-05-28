@@ -14,10 +14,11 @@ import org.project.modules.classifier.decisiontree.node.TreeNode;
 
 public class ForestBuilder extends BuilderAbstractImpl {
 	
+	/** 决策树数量*/
 	private int treeNum = 0;
-	
+	/** 随机属性数量*/
 	private int attributeNum = 0;
-	
+	/** 构建决策树Builder*/
 	private Builder builder = null;
 	
 	public ForestBuilder(int treeNum, Builder builder, int attributeNum) {
@@ -32,10 +33,12 @@ public class ForestBuilder extends BuilderAbstractImpl {
 				Runtime.getRuntime().availableProcessors());
 		List<Future<TreeNode>> futures = new ArrayList<Future<TreeNode>>();
 		for (int i = 0; i < treeNum; i++) {
+			//线程里面去构建决策树
 			DecisionCallable callable = new DecisionCallable(data, builder, attributeNum);
 			futures.add(pools.submit(callable));
 		}
 		System.out.println("futures size: " + futures.size());
+		//等待线程创建完决策树
 		List<TreeNode> results = new ArrayList<TreeNode>();
 		handleFuture(futures, results);
 		int futureLen = futures.size();

@@ -59,7 +59,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 	
 	private Set<String> allAttributes = null;
 	
-	/** 数据拆分*/
+	/** 数据拆分,大数据文件拆分为小数据文件，便于分配到各个节点开启Job*/
 	private List<String> split(String input, String splitNum) {
 		String output = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
 		String[] args = new String[]{input, output, splitNum};
@@ -88,6 +88,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		return inputs;
 	}
 	
+	/** 初始化工作，主要是获取特征属性集以及属性值的统计，主要是为了填充默认值*/
 	private void initialize(String input) {
 		System.out.println("initialize start.");
 		allAttributes = new HashSet<String>();
@@ -134,6 +135,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		System.out.println("initialize end.");
 	}
 	
+	/** 预处理,主要是将分割后的小文件填充好默认值后在上传到HDFS上面*/
 	private List<String> preHandle(List<String> inputs) throws IOException {
 		List<String> fillInputs = new ArrayList<String>();
 		for (String input : inputs) {
@@ -183,6 +185,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		return fillInputs;
 	}
 	
+	/** 创建JOB*/
 	private Job createJob(String jobName, String input, String output) {
 		Configuration conf = new Configuration();
 		conf.set("mapred.job.queue.name", "q_hudong");
@@ -211,6 +214,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		return job;
 	}
 	
+	/** 根据HDFS上的输出路径选择最佳属性*/
 	private AttributeGiniWritable chooseBestAttribute(String... outputs) {
 		AttributeGiniWritable minSplitAttribute = null;
 		double minSplitPointGini = 1.0;
@@ -265,6 +269,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
 		return data;
 	}
 	
+	/** 构建决策树*/
 	private Object build(List<String> inputs) throws IOException {
 		List<String> outputs = new ArrayList<String>();
 		JobControl jobControl = new JobControl("CalculateGini");
@@ -342,6 +347,7 @@ public class DecisionTreeSprintBJob extends AbstractJob {
         }  
 	}
 	
+	/** 分类样本集*/
 	private void classify(TreeNode treeNode, String testSet, String output) {
 		OutputStream out = null;
 		BufferedWriter writer = null;

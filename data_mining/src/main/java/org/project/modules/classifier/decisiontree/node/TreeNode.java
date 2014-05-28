@@ -19,11 +19,11 @@ import org.project.modules.classifier.decisiontree.data.Instance;
 public class TreeNode extends Node implements Writable, Serializable {
 	
 	private static final long serialVersionUID = 1L;
-	
+	/** 节点名称*/
 	private String name = null;
 	
 	private int record = 0;
-	
+	/** 树分支*/
 	private Map<Object, Object> children = null;
 
 	public TreeNode() {

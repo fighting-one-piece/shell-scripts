@@ -32,11 +32,7 @@ import org.project.utils.ShowUtils;
 
 public class DecisionTreeC45Job extends AbstractJob {
 	
-	/**
-	 * 对数据集做预处理
-	 * @param input
-	 * @return
-	 */
+	/** 对数据集做准备工作，主要就是将填充好默认值的数据集再次传到HDFS上*/
 	public String prepare(Data trainData) {
 		String path = FileUtils.obtainRandomTxtPath();
 		DataHandler.writeData(path, trainData);
@@ -47,11 +43,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		return hdfsPath;
 	}
 	
-	/**
-	 * 选择最佳属性
-	 * @param output
-	 * @return
-	 */
+	/** 选择最佳属性，读取MapReduce计算后产生的文件，取增益率最大*/
 	public AttributeGainWritable chooseBestAttribute(String output) {
 		AttributeGainWritable maxAttribute = null;
 		Path path = new Path(output);
@@ -85,11 +77,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		return maxAttribute;
 	}
 	
-	/**
-	 * 构造决策树
-	 * @param input
-	 * @return
-	 */
+	/** 构造决策树 */
 	public Object build(String input, Data data) {
 		Object preHandleResult = preHandle(data);
 		if (null != preHandleResult) return preHandleResult;
@@ -97,6 +85,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		HDFSUtils.delete(conf, new Path(output));
 		System.out.println("delete output path : " + output);
 		String[] paths = new String[]{input, output};
+		//通过MapReduce计算增益率
 		CalculateC45GainRatioMR.main(paths);
 		
 		AttributeGainWritable bestAttr = chooseBestAttribute(output);
@@ -112,6 +101,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		TreeNode treeNode = new TreeNode(attribute);
 		String[] attributes = data.getAttributesExcept(attribute);
 		
+		//分割数据集，并将分割后的数据集传到HDFS上
 		DataSplit dataSplit = DataHandler.split(new Data(
 				data.getInstances(), attribute, splitPoints));
 		for (DataSplitItem item : dataSplit.getItems()) {
@@ -125,6 +115,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 		return treeNode;
 	}
 	
+	/** 分类，根据决策树节点判断测试样本集的类型，并将结果上传到HDFS上*/
 	private void classify(TreeNode treeNode, String trainSet, String testSet, String output) {
 		OutputStream out = null;
 		BufferedWriter writer = null;
@@ -190,6 +181,7 @@ public class DecisionTreeC45Job extends AbstractJob {
 			Path[] hdfsPaths = HDFSUtils.getPathFiles(fs, input);
 			FSDataInputStream fsInputStream = fs.open(hdfsPaths[0]);
 			Data trainData = DataLoader.load(fsInputStream, true);
+			/** 填充缺失属性的默认值*/
 			DataHandler.fill(trainData, 0);
 			String hdfsInput = prepare(trainData);
 			TreeNode treeNode = (TreeNode) build(hdfsInput, trainData);

@@ -13,25 +13,26 @@ public abstract class DecisionTreeAbstractBuilder extends BuilderAbstractImpl {
 
 	@Override
 	public Object build(Data data) {
+		//获取数据集的分类分割集合
 		Map<Object, List<Instance>> splits = data.getSplits();
 		//如果只有一个样本，将该样本所属分类作为新样本的分类
 		if (splits.size() == 1) {
 			return splits.keySet().iterator().next();
 		}
 		String[] attributes = data.getAttributes();
-		// 如果没有供决策的属性，则将样本集中具有最多样本的分类作为新样本的分类，即投票选举出分类
+		// 如果没有供决策的属性，则将样本集中具有最多样本的分类作为新样本的分类，即投票选举出最多个数分类
 		if (attributes.length == 0) {
 			return obtainMaxCategory(splits);
 		}
-		// 选取最优属性信息
+		// 选取最优最佳属性信息,交由子类去实现各个算法
 		BestAttribute bestAttribute = chooseBestAttribute(data);
-		// 决策树根结点，分支属性为选取的测试属性
+		// 决策树根结点，分支属性为选取的分割属性
 		int bestAttrIndex = bestAttribute.getIndex();
 		if (bestAttrIndex == -1) {
 			return obtainMaxCategory(splits);
 		}
 		TreeNode treeNode = new TreeNode(attributes[bestAttrIndex]);
-		// 已用过的测试属性不应再次被选为测试属性
+		// 已用过的测试属性不应再次被选为分割属性
 		String[] subAttributes = new String[attributes.length - 1];
 		for (int i = 0, j = 0; i < attributes.length; i++) {
 			if (i != bestAttrIndex) {

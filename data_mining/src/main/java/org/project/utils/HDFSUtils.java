@@ -26,8 +26,13 @@ public class HDFSUtils {
 	public static final String HDFS_TEMP_OUTPUT_URL = HDFS_URL + "dt/temp/output/";
 	
 	/** 获取HDFS上某路径下所有文件*/
-	public static Path[] getPathFiles(FileSystem fs, Path path)
-			throws IOException {
+	public static Path[] getPathFiles(Configuration conf, Path path) throws IOException {
+		FileSystem fs = path.getFileSystem(conf);
+		return getPathFiles(fs, path);
+	}
+	
+	/** 获取HDFS上某路径下所有文件*/
+	public static Path[] getPathFiles(FileSystem fs, Path path) throws IOException {
 		if (!fs.exists(path)) {
 			throw new IOException("path not exists : " + path);
 		}
