@@ -2,7 +2,7 @@ package org.project.modules.association.apriori.builder;
 
 import org.project.modules.association.apriori.data.Data;
 
-public class CandidateBuilder implements Builder {
+public class FPGrowthBuilder implements Builder {
 
 	@Override
 	public Object build(Object object) {

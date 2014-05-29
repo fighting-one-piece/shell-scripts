@@ -6,6 +6,13 @@ import java.util.List;
 public class Data {
 
 	private List<Instance> instances = null;
+	
+	public Data() {
+	}
+	
+	public Data(List<Instance> instances) {
+		this.instances = instances;
+	}
 
 	public List<Instance> getInstances() {
 		if (null == instances) {

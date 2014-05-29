@@ -5,36 +5,40 @@ import java.util.TreeSet;
 
 public class ItemSet {
 
-	private TreeSet<String> item = null;
+	private TreeSet<String> items = null;
 	
 	private int support = 0;
 	
 	public ItemSet() {
 	}
 	
-	public ItemSet(TreeSet<String> item) {
-		this.item = item;
+	public ItemSet(TreeSet<String> items) {
+		this.items = items;
 	}
 	
 	public ItemSet(String item, int support) {
-		getItem().add(item);
+		getItems().add(item);
 		this.support = support;
 	}
 	
 	public ItemSet(TreeSet<String> item, int support) {
-		this.item = item;
+		this.items = item;
 		this.support = support;
 	}
 
-	public TreeSet<String> getItem() {
-		if (null == item) {
-			item = new TreeSet<String>();
+	public TreeSet<String> getItems() {
+		if (null == items) {
+			items = new TreeSet<String>();
 		}
-		return item;
+		return items;
+	}
+	
+	public String[] getItemsArray() {
+		return items.toArray(new String[0]);
 	}
 
-	public void setItem(TreeSet<String> item) {
-		this.item = item;
+	public void setItems(TreeSet<String> item) {
+		this.items = item;
 	}
 
 	public int getSupport() {
@@ -46,23 +50,26 @@ public class ItemSet {
 	}
 	
 	public boolean isMerge(ItemSet other) {
-		if (null == other || other.getItem().size() != getItem().size()) {
+		if (null == other || other.getItems().size() != getItems().size()) {
 			return false;
 		}
-		Iterator<String> iIter = getItem().iterator();
-		Iterator<String> oIter = other.getItem().iterator();
-		int size = getItem().size();
+		Iterator<String> iIter = getItems().iterator();
+		Iterator<String> oIter = other.getItems().iterator();
+		int size = getItems().size();
 		while (iIter.hasNext() && oIter.hasNext() && --size > 0) {
 			if (!iIter.next().equals(oIter.next())) {
 				return false;
 			}
 		}
-		return !(getItem().last().equals(other.getItem().last()));
+		return !(getItems().last().equals(other.getItems().last()));
 	}
 	
-	public void merge(String value) {
-		getItem().add(value);
+	public void add(String value) {
+		getItems().add(value);
 	}
 	
+	public void addAll(TreeSet<String> values) {
+		getItems().addAll(values);
+	}
 	
 }
