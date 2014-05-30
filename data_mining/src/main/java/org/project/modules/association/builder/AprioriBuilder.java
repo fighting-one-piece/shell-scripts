@@ -1,4 +1,4 @@
-package org.project.modules.association.apriori.builder;
+package org.project.modules.association.builder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,12 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.project.modules.association.apriori.data.Data;
-import org.project.modules.association.apriori.data.DataLoader;
-import org.project.modules.association.apriori.data.Instance;
-import org.project.modules.association.apriori.data.ItemSet;
-import org.project.modules.association.apriori.node.AssociationRule;
-import org.project.modules.association.apriori.node.AssociationRuleHelper;
+import org.project.modules.association.data.Data;
+import org.project.modules.association.data.DataLoader;
+import org.project.modules.association.data.Instance;
+import org.project.modules.association.data.ItemSet;
+import org.project.modules.association.node.AssociationRule;
+import org.project.modules.association.node.AssociationRuleHelper;
 import org.project.utils.ShowUtils;
 
 public class AprioriBuilder {
@@ -44,11 +44,9 @@ public class AprioriBuilder {
 		List<ItemSet> candidate = new ArrayList<ItemSet>();
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		for (Instance instance : data.getInstances()) {
-			Set<String> valueSet = new TreeSet<String>();
 			for (String value : instance.getValues()) {
 				Integer mValue = map.get(value);
 				map.put(value, null == mValue ? 1 : mValue + 1);
-				valueSet.add(value);
 			}
 		}
 		ShowUtils.print(map);

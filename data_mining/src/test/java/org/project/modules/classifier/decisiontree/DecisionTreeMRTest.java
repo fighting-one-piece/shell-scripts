@@ -44,6 +44,7 @@ import org.project.modules.classifier.decisiontree.mr.writable.AttributeKVWritab
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
+import org.project.modules.hadoop.mr.a.writable.DateTableWritable;
 import org.project.utils.HDFSUtils;
 import org.project.utils.JSONUtils;
 import org.project.utils.ShowUtils;
@@ -316,16 +317,16 @@ public class DecisionTreeMRTest {
 		SequenceFile.Reader reader = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "005/output/part-m-00000");
+			Path path = new Path(DFS_URL + "015/output/part-r-00000");
 			reader = new SequenceFile.Reader(fs, path, conf);
-			LongWritable key = (LongWritable) ReflectionUtils.newInstance(
+			DateTableWritable key = (DateTableWritable) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);
-			TreeNodeWritable value = new TreeNodeWritable();
+			IntWritable value = new IntWritable();
 			while (reader.next(key, value)) {
-				TreeNode treeNode = value.getTreeNode();
-				if (null  == treeNode) continue;
-				System.out.println(treeNode.getName());
-				value = new TreeNodeWritable();
+				System.out.print(key.getDate() + "_" + key.getTable());
+				System.out.println(value.get());
+				key = new DateTableWritable();
+				value = new IntWritable();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

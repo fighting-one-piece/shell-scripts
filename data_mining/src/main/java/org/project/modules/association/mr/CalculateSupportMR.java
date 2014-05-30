@@ -1,4 +1,4 @@
-package org.project.modules.association.apriori.mr;
+package org.project.modules.association.mr;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -17,16 +17,16 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class Frequency1ItemSetMR {
+public class CalculateSupportMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(Frequency1ItemSetMR.class);
+		job.setJarByClass(CalculateSupportMR.class);
 		
-		job.setMapperClass(Frequency1ItemSetMapper.class);
+		job.setMapperClass(CalculateSupportMapper.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(IntWritable.class);
 
-		job.setReducerClass(Frequency1ItemSetReducer.class);
+		job.setReducerClass(CalculateSupportReducer.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 		
@@ -63,7 +63,7 @@ public class Frequency1ItemSetMR {
 	}
 }
 
-class Frequency1ItemSetMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+class CalculateSupportMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	
 	private IntWritable one = new IntWritable(1);
 	
@@ -93,7 +93,7 @@ class Frequency1ItemSetMapper extends Mapper<LongWritable, Text, Text, IntWritab
 	}
 }
 
-class Frequency1ItemSetReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+class CalculateSupportReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	
 	private int minSupport = 0;
 	

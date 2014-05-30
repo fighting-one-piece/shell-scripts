@@ -1,8 +1,8 @@
-package org.project.modules.association.apriori.node;
+package org.project.modules.association.node;
 
 import java.util.Set;
 
-import org.project.modules.association.apriori.data.ItemSet;
+import org.project.modules.association.data.ItemSet;
 
 public class AssociationRuleHelper {
 	

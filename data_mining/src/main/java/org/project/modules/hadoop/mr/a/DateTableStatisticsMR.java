@@ -1,35 +1,37 @@
-package org.project.modules.hadoop.mr;
+package org.project.modules.hadoop.mr.a;
 
 import java.io.IOException;
+import java.util.StringTokenizer;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.BytesWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
-import org.project.modules.hadoop.format.input.CombineSmallFileInputFormat;
+import org.project.modules.hadoop.mr.a.writable.DateTableWritable;
 
-public class CombineSmallFileMR {
+public class DateTableStatisticsMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(CombineSmallFileMR.class);
+		job.setJarByClass(DateTableStatisticsMR.class);
 		
-		job.setMapperClass(CombineSmallFileMapper.class);
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(BytesWritable.class);
+		job.setMapperClass(DateTableStatisticsMapper.class);
+		job.setMapOutputKeyClass(DateTableWritable.class);
+		job.setMapOutputValueClass(IntWritable.class);
 
-		job.setReducerClass(CombineSmallFileReducer.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(BytesWritable.class);
+		job.setReducerClass(DateTableStatisticsReducer.class);
+		job.setOutputKeyClass(DateTableWritable.class);
+		job.setOutputValueClass(IntWritable.class);
 		
-		job.setInputFormatClass(CombineSmallFileInputFormat.class);
+		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 	}
 
@@ -57,23 +59,29 @@ public class CombineSmallFileMR {
 	}
 }
 
-class CombineSmallFileMapper extends Mapper<NullWritable, BytesWritable, Text, BytesWritable> {
+class DateTableStatisticsMapper extends Mapper<LongWritable, Text, DateTableWritable, IntWritable> {
+	
+	private IntWritable one = new IntWritable(1);
 	
 	@Override
-	protected void map(NullWritable key, BytesWritable value, Context context)
+	protected void map(LongWritable key, Text value, Context context)
 			throws IOException, InterruptedException {
-		String name = context.getConfiguration().get("map.input.file.name");
-		context.write(new Text(name), value);
+		StringTokenizer token = new StringTokenizer(value.toString());
+		String date = token.nextToken();
+		String table = token.nextToken();
+		context.write(new DateTableWritable(new Text(date), new Text(table)), one);
 	}
 }
 
-class CombineSmallFileReducer extends Reducer<Text, BytesWritable, Text, BytesWritable> {
+class DateTableStatisticsReducer extends Reducer<DateTableWritable, IntWritable, DateTableWritable, IntWritable> {
 	
 	@Override
-	protected void reduce(Text key, Iterable<BytesWritable> values, Context context)
+	protected void reduce(DateTableWritable key, Iterable<IntWritable> values, Context context)
 			throws IOException, InterruptedException {
-		for (BytesWritable value : values) {
-			context.write(key, value);
+		int sum = 0;
+		for (IntWritable value : values) {
+			sum += value.get();
 		}
+		context.write(key, new IntWritable(sum));
 	}
 }

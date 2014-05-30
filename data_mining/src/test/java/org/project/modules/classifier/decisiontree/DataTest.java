@@ -15,6 +15,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -33,6 +34,7 @@ import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.DataSplit;
 import org.project.modules.classifier.decisiontree.data.DataSplitItem;
 import org.project.modules.classifier.decisiontree.data.Instance;
+import org.project.utils.DateUtils;
 import org.project.utils.FileUtils;
 import org.project.utils.HDFSUtils;
 import org.project.utils.JSONUtils;
@@ -426,7 +428,7 @@ public class DataTest {
 		Configuration conf = new Configuration();
 		conf.addResource(new Path(
 				"D:\\develop\\data\\hadoop\\hadoop-1.0.4\\conf\\core-site.xml"));
-		String input = "hdfs://centos.host1:9000//user/hadoop/data/dt/012/output/part-r-00000";
+		String input = "hdfs://centos.host1:9000//user/hadoop/data/dt/015/output/part-r-00000";
 		InputStream in = null;
 		BufferedReader reader = null;
 		try {
@@ -519,6 +521,65 @@ public class DataTest {
 		IOUtils.closeQuietly(reader);
 		IOUtils.closeQuietly(out);
 		IOUtils.closeQuietly(writer);
+	}
+	
+	@Test
+	public void writeTempLog() {
+		String output = "d:\\log.txt";
+		BufferedWriter writer = null;
+		OutputStream out = null;
+		try {
+			out = new FileOutputStream(new File(output));
+			writer = new BufferedWriter(new OutputStreamWriter(out));
+			StringBuilder sb = null;
+			String[] tables = new String[]{"user", "role", "group", "perm", "ur", "gr", "rp"};
+			String[] users = new String[]{"zs", "ls", "ww", "ml", "wq", "qy", "zk", "qw", "oi", "as"};
+			Random random = new Random();
+			for (int i = 0; i < 10000; i++) {
+				sb = new StringBuilder();
+				sb.append(DateUtils.date2String(DateUtils.obtainRandomHourDate(), "yyyyMMddhh")).append("\t");
+				sb.append(tables[random.nextInt(7)]).append("\t");
+				sb.append(users[random.nextInt(10)]).append("\t");
+				sb.append(random.nextInt(100));
+				writer.write(sb.toString());
+				writer.newLine();
+			}
+			writer.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(out);
+			IOUtils.closeQuietly(writer);
+		}
+	}
+	
+	@Test
+	public void readTempLog() {
+		String input = "d:\\log.txt";
+		BufferedReader reader = null;
+		InputStream in = null;
+		try {
+			in = new FileInputStream(new File(input));
+			reader = new BufferedReader(new InputStreamReader(in));
+			Map<String, Integer> map = new HashMap<String, Integer>();
+			String line = reader.readLine();
+			while (!("").equals(line) && null != line) {
+				StringTokenizer tokenizer = new StringTokenizer(line);
+				String date = tokenizer.nextToken();
+				String table = tokenizer.nextToken();
+				String key = date + "_" + table;
+				Integer value = map.get(key);
+				value = null == value ? 1 : value + 1;
+				map.put(key, value);
+				line = reader.readLine();
+			}
+			ShowUtils.print(map);
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+		}
 	}
 	
 }

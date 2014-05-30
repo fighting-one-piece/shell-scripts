@@ -1,4 +1,4 @@
-package org.project.modules.association.apriori.data;
+package org.project.modules.association.data;
 
 import java.util.ArrayList;
 import java.util.List;
