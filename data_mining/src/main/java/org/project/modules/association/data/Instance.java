@@ -1,6 +1,7 @@
 package org.project.modules.association.data;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,14 @@ public class Instance {
 
 	public String[] getValues() {
 		return values;
+	}
+	
+	public LinkedList<String> getValuesList() {
+		LinkedList<String> list = new LinkedList<String>();
+		for (String value : values) {
+			list.add(value);
+		}
+		return list;
 	}
 
 	public void setValues(String[] values) {

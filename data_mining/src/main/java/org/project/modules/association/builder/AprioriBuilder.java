@@ -91,6 +91,7 @@ public class AprioriBuilder {
 		for (ItemSet itemSet : candidate) {
 			int support = calculateSupport(itemSet.getItemsArray());
 			if (support >= minSupport) {
+				itemSet.setSupport(support);
 				frequency.add(itemSet);
 			}
 		}
@@ -216,6 +217,7 @@ public class AprioriBuilder {
 	public void print(List<ItemSet> itemSets) {
 		System.out.println("----------");
 		for (ItemSet itemSet : itemSets) {
+			System.out.print(itemSet.getSupport() + "\t");
 			System.out.println(itemSet.getItems());
 		}
 		System.out.println("----------");

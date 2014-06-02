@@ -4,12 +4,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import org.project.modules.association.data.Data;
 import org.project.modules.association.data.DataLoader;
 import org.project.modules.association.data.Instance;
+import org.project.modules.association.data.ItemSet;
 import org.project.modules.association.node.FPTreeNode;
 import org.project.modules.association.node.FPTreeNodeHelper;
 import org.project.utils.ShowUtils;
@@ -18,20 +20,12 @@ public class FPGrowthBuilder {
 
 	/** 最小支持度 */
 	private int minSupport = 2;
-	/** 数据集 */
-	private Data data = null;
-	/** 有序频繁一项集*/
-	private List<Map.Entry<String, Integer>> entries = null;
-	/** 头表*/
-	private List<FPTreeNode> headTables = null;
-
-	public void initialize() {
-		data = DataLoader.load("d:\\apriori.txt");
-		entries = new ArrayList<Map.Entry<String, Integer>>(); 
-		headTables = new ArrayList<FPTreeNode>();
-	}
-
-	public void adjust() {
+	/** 频繁集集合*/
+	private List<List<ItemSet>> frequencies = new ArrayList<List<ItemSet>>();
+	
+	//创建头表
+	public List<FPTreeNode> buildHeadTables(Data data) {
+		//统计各项出现频次
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		for (Instance instance : data.getInstances()) {
 			for (String value : instance.getValues()) {
@@ -39,62 +33,139 @@ public class FPGrowthBuilder {
 				map.put(value, null == mValue ? 1 : mValue + 1);
 			}
 		}
-		ShowUtils.print(map);
+		//过滤掉未满足最小支持度的项
+		List<Map.Entry<String, Integer>> entries = 
+				new ArrayList<Map.Entry<String, Integer>>(); 
 		for (Map.Entry<String, Integer> entry : map.entrySet()) {
 			if (entry.getValue() >= minSupport) {
 				entries.add(entry);
 			}
 		}
+		//根据出现频次排序项
 		Collections.sort(entries, new Comparator<Map.Entry<String, Integer>>() {
 			public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
 				return ((Integer) o2.getValue()).compareTo((Integer) o1.getValue());
 			}
 		});
-		System.out.println(entries);
+		//数据集的过滤重排
 		for (Instance instance : data.getInstances()) {
-//			ShowUtils.print(instance.getValues());
 			instance.replaceValues(entries);
 			ShowUtils.print(instance.getValues());
 		}
+		//建立头表
+		List<FPTreeNode> headerTables = new ArrayList<FPTreeNode>();
+		for (Map.Entry<String, Integer> entry : entries) {
+			headerTables.add(new FPTreeNode(entry.getKey(), entry.getValue()));
+		}
+		return headerTables;
 	}
 	
-	public void buildTree(FPTreeNode treeNode) {
+	//创建FPGrowthTree
+	public FPTreeNode buildFPGrowthTree(Data data, List<FPTreeNode> headerTables) {
+		FPTreeNode rootNode = new FPTreeNode();
 		for (Instance instance : data.getInstances()) {
-			for (String value : instance.getValues()) {
-				if (value.equals(treeNode.getName())) {
-					treeNode.setCount(treeNode.getCount() + 1);
-				} else {
-					boolean isExist = false;
-					for (FPTreeNode child : treeNode.getChildren()) {
-						if (value.equals(child.getName())) {
-							treeNode.setCount(treeNode.getCount() + 1);
-							isExist = true;
-						}
+			LinkedList<String> items = instance.getValuesList();
+			FPTreeNode tempNode = rootNode;
+			//如果节点已经存在则加1
+			FPTreeNode childNode = tempNode.findChild(items.peek());
+			while (!items.isEmpty() && null != childNode) {
+				childNode.incrementCount();
+				tempNode = childNode;
+				items.poll();
+				childNode = tempNode.findChild(items.peek());
+			}
+			//如果节点不存在则新增
+			addNewTreeNode(tempNode, items, headerTables);
+		}
+		return rootNode;
+	}
+	
+	//新增树节点
+	private void addNewTreeNode(FPTreeNode parent, LinkedList<String> items, 
+			List<FPTreeNode> headerTables) {
+		while (items.size() > 0) {
+			String item = items.poll();
+			FPTreeNode child = new FPTreeNode(item, 1);
+			child.setParent(parent);
+			parent.addChild(child);
+			//建立节点之间的关联关系
+			for (FPTreeNode headerTable : headerTables) {
+				if (item.equals(headerTable.getName())) {
+					while (null != headerTable.getNext()) {
+						headerTable = headerTable.getNext();
 					}
-					if (!isExist) {
-						FPTreeNode child = new FPTreeNode(value, 1);
-						treeNode.getChildren().add(child);
-						treeNode = child;
-					}
+					headerTable.setNext(child);
+					break;
 				}
+			}
+			addNewTreeNode(child, items, headerTables);
+		}
+	}
+	
+	//构建频繁项集
+	public void build(Data data, List<String> postfixs) {
+		List<FPTreeNode> headerTables = buildHeadTables(data);
+		FPTreeNode treeNode = buildFPGrowthTree(data, headerTables);
+		FPTreeNodeHelper.print(treeNode, 0);
+		if (treeNode.getChildren().size() == 0) {
+			return;
+		}
+		//收集频繁项集
+		List<ItemSet> frequency = new ArrayList<ItemSet>();
+		frequencies.add(frequency);
+		for (FPTreeNode header : headerTables) {
+			ItemSet itemSet = new ItemSet(header.getName(), header.getCount());
+			if(null != postfixs){
+				for (String postfix : postfixs) {
+					itemSet.add(postfix);
+				}
+			}
+			frequency.add(itemSet);
+		}
+		//进入下一步迭代
+		for (FPTreeNode headerTable : headerTables) {
+			List<String> newPostfix = new LinkedList<String>();
+			newPostfix.add(headerTable.getName());
+			if (null != postfixs) {
+				newPostfix.addAll(postfixs);
+			}
+			Data newData = new Data();
+			FPTreeNode startNode = headerTable.getNext();
+			while (null != startNode) {
+				List<String> prefixNodes = new ArrayList<String>();
+				FPTreeNode parent = startNode;
+				while (null != (parent = parent.getParent()).getName()) {
+					prefixNodes.add(parent.getName());
+				}
+				int count = startNode.getCount();
+				while (count-- > 0 && prefixNodes.size() > 0) {
+					Instance instance = new Instance();
+					instance.setValues(prefixNodes.toArray(new String[0]));
+					newData.getInstances().add(instance);
+				}
+				startNode = startNode.getNext();
+			}
+			build(newData, newPostfix);
+		}
+	}
+	
+	public void print(List<List<ItemSet>> itemSetss) {
+		System.out.println("Frequency Item Set");
+		System.out.println(itemSetss.size());
+		for (List<ItemSet> itemSets : itemSetss) {
+			for (ItemSet itemSet : itemSets) {
+				System.out.print(itemSet.getSupport() + "\t");
+				System.out.println(itemSet.getItems());
 			}
 		}
 	}
 	
-	public void buildHeadTables() {
-		for (Map.Entry<String, Integer> entry : entries) {
-			headTables.add(new FPTreeNode(entry.getKey(), entry.getValue()));
-		}
+	public void build() {
+		Data data = DataLoader.load("d:\\apriori.txt");
+		build(data, null);
+		print(frequencies);
 	}
 	
-	public void build() {
-		initialize();
-		adjust();
-		FPTreeNode treeNode = new FPTreeNode();
-		buildTree(treeNode);
-		FPTreeNodeHelper.print(treeNode, 0);
-	}
-
 	public static void main(String[] args) {
 		FPGrowthBuilder fpg = new FPGrowthBuilder();
 		fpg.build();

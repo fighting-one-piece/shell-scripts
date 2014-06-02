@@ -41,6 +41,10 @@ public class FPTreeNode {
 		this.count = count;
 	}
 	
+	public void incrementCount() {
+		this.count += 1;
+	}
+	
 	public FPTreeNode getNext() {
 		return next;
 	}
@@ -70,6 +74,15 @@ public class FPTreeNode {
 	
 	public void addChild(FPTreeNode child) {
 		getChildren().add(child);
+	}
+	
+	public FPTreeNode findChild(String name) {
+		for (FPTreeNode child : getChildren()) {
+			if (name.equals(child.getName())) {
+				return child;
+			}
+		}
+		return null;
 	}
 	
 }
