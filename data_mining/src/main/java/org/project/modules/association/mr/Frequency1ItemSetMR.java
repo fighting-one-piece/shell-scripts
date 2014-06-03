@@ -48,7 +48,7 @@ public class Frequency1ItemSetMR {
 				System.exit(2);
 			}
 			configuration.set("mapred.job.queue.name", "q_hudong");
-			configuration.set("mapred.job.minSupport", inputArgs[2]);
+			configuration.set("minSupport", inputArgs[2]);
 			Job job = new Job(configuration, "Frequency 1 ItemSet Statistics");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
@@ -101,7 +101,7 @@ class Frequency1ItemSetReducer extends Reducer<Text, IntWritable, Text, IntWrita
 	protected void setup(Context context) throws IOException, InterruptedException {
 		super.setup(context);
 		Configuration conf = context.getConfiguration();
-		minSupport = Integer.parseInt(conf.get("mapred.job.minSupport", "0"));
+		minSupport = Integer.parseInt(conf.get("minSupport", "0"));
 	}
 	
 	@Override
