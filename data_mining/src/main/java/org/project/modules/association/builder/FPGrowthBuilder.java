@@ -16,12 +16,16 @@ import org.project.modules.association.node.FPTreeNode;
 import org.project.modules.association.node.FPTreeNodeHelper;
 import org.project.utils.ShowUtils;
 
-public class FPGrowthBuilder {
+public class FPGrowthBuilder extends AbstractBuilder {
 
-	/** 最小支持度 */
-	private int minSupport = 2;
-	/** 频繁集集合*/
-	private List<List<ItemSet>> frequencies = new ArrayList<List<ItemSet>>();
+	public FPGrowthBuilder() {
+		super();
+	}
+	
+	@Override
+	public Data loadData() {
+		return DataLoader.load("d:\\apriori.txt");
+	}
 	
 	//创建头表
 	public List<FPTreeNode> buildHeadTables(Data data) {
@@ -160,15 +164,29 @@ public class FPGrowthBuilder {
 		}
 	}
 	
-	public void build() {
-		Data data = DataLoader.load("d:\\apriori.txt");
+	@Override
+	protected List<ItemSet> getLastFrequency() {
+		List<ItemSet> frequency = new ArrayList<ItemSet>();
+		for (List<ItemSet> fre : frequencies) {
+			for (ItemSet item : fre) {
+				if (item.getItems().size() == 3) {
+					frequency.add(item);
+				}
+			}
+		}
+		return frequency;
+	}
+	
+	@Override
+	public void buildFrequencyItemSet() {
 		build(data, null);
 		print(frequencies);
 	}
 	
 	public static void main(String[] args) {
 		FPGrowthBuilder fpg = new FPGrowthBuilder();
-		fpg.build();
+		fpg.buildFrequencyItemSet();
+		fpg.buildAssociationRules();
 	}
 
 }
