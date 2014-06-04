@@ -24,7 +24,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.project.modules.association.data.Data;
@@ -46,7 +46,7 @@ public class FPGrowthMR {
 		job.setOutputValueClass(IntWritable.class);
 		
 		job.setInputFormatClass(TextInputFormat.class);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
 	}
 
 	public static void main(String[] args) {
@@ -62,7 +62,7 @@ public class FPGrowthMR {
 				System.out.println("3. sort input path.");
 				System.exit(2);
 			}
-			configuration.set("mapred.job.queue.name", "q_hudong");
+//			configuration.set("mapred.job.queue.name", "q_hudong");
 			configuration.set("sort.input.path", inputArgs[2]);
 			
 			Path sortPath = new Path(inputArgs[2]);
@@ -168,12 +168,32 @@ class FPGrowthReducer extends Reducer<Text, Text, Text, IntWritable> {
 		for (Text value : values) {
 			Instance instance = new Instance();
 			StringTokenizer tokenizer = new StringTokenizer(value.toString());
-			instance.setId(Long.parseLong(tokenizer.nextToken()));
 			String token = tokenizer.nextToken();
 			instance.setValues(token.split(","));
 			data.getInstances().add(instance);
 		}
-		FPTreeNode treeNode = buildFPGrowthTree(data);
+		List<FPTreeNode> leafs = new LinkedList<FPTreeNode>();
+		FPTreeNode treeNode = buildFPGrowthTree(data, leafs);
+		for (FPTreeNode leaf : leafs) {
+            FPTreeNode tmpNode = leaf;
+            List<String> associateRrule = new ArrayList<String>();
+            int support = 0;
+            while (tmpNode.getParent() != null) {
+                associateRrule.add(tmpNode.getName());
+                support = tmpNode.getCount();
+                tmpNode = tmpNode.getParent();
+            }
+            StringBuilder sb = new StringBuilder();
+            for (String ele : associateRrule) {
+                sb.append(ele + "|");
+            }
+            // 因为一句话可能包含重复的词，所以即使这些词都是从F1中取出来的，到最后其支持度也可能小于最小支持度
+            if (support >= 2) {
+                context.write(new Text(sb.substring(0, sb.length() - 1)
+                        .toString()), new IntWritable(support));
+            }
+        }
+
 		FPTreeNodeHelper.print(treeNode, 0);
 	}
 	
@@ -183,7 +203,7 @@ class FPGrowthReducer extends Reducer<Text, Text, Text, IntWritable> {
 	}
 	
 	//创建FPGrowthTree
-	private FPTreeNode buildFPGrowthTree(Data data) {
+	private FPTreeNode buildFPGrowthTree(Data data, List<FPTreeNode> leafs) {
 		FPTreeNode rootNode = new FPTreeNode();
 		for (Instance instance : data.getInstances()) {
 			LinkedList<String> items = instance.getValuesList();
@@ -197,19 +217,23 @@ class FPGrowthReducer extends Reducer<Text, Text, Text, IntWritable> {
 				childNode = tempNode.findChild(items.peek());
 			}
 			//如果节点不存在则新增
-			addNewTreeNode(tempNode, items);
+			addNewTreeNode(tempNode, items, leafs);
 		}
 		return rootNode;
 	}
 	
 	//新增树节点
-	private void addNewTreeNode(FPTreeNode parent, LinkedList<String> items) {
+	private void addNewTreeNode(FPTreeNode parent, LinkedList<String> items,
+			List<FPTreeNode> leafs) {
 		while (items.size() > 0) {
 			String item = items.poll();
 			FPTreeNode child = new FPTreeNode(item, 1);
 			child.setParent(parent);
 			parent.addChild(child);
-			addNewTreeNode(child, items);
+			if (items.size() == 0) {
+				leafs.add(child);
+			}
+			addNewTreeNode(child, items, leafs);
 		}
 	}
 	

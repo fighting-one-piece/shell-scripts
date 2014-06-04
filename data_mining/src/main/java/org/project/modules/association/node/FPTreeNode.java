@@ -78,7 +78,7 @@ public class FPTreeNode {
 	
 	public FPTreeNode findChild(String name) {
 		for (FPTreeNode child : getChildren()) {
-			if (name.equals(child.getName())) {
+			if (child.getName().equals(name)) {
 				return child;
 			}
 		}

@@ -36,9 +36,10 @@ public class FPGrowthJob {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		SequenceFile.Reader reader = null;
 		try {
-			Path path = new Path(input);
+			Path dirPath = new Path(input);
+			Path[] paths = HDFSUtils.getPathFiles(conf, dirPath);
 			FileSystem fs = FileSystem.get(conf);
-			reader = new SequenceFile.Reader(fs, path, conf);
+			reader = new SequenceFile.Reader(fs, paths[0], conf);
 			Text key = (Text) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);
 			IntWritable value = new IntWritable();
@@ -83,6 +84,8 @@ public class FPGrowthJob {
 	}
 	
 	public void frequency_itemset_gen(String input, String output, String sort_input) {
+		System.out.println("frequency_itemset_gen input: " + input);
+		System.out.println("frequency_itemset_gen sort input: " + sort_input);
 		String[] inputArgs = new String[]{input, output, sort_input};
 		FPGrowthMR.main(inputArgs);
 	}

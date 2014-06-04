@@ -47,7 +47,7 @@ public class Frequency1ItemSetMR {
 				System.out.println("3. min support.");
 				System.exit(2);
 			}
-			configuration.set("mapred.job.queue.name", "q_hudong");
+//			configuration.set("mapred.job.queue.name", "q_hudong");
 			configuration.set("minSupport", inputArgs[2]);
 			Job job = new Job(configuration, "Frequency 1 ItemSet Statistics");
 			
