@@ -111,7 +111,7 @@ class Frequency1ItemSetReducer extends Reducer<Text, IntWritable, Text, IntWrita
 		for (IntWritable value : values) {
 			sum += value.get();
 		}
-		if (sum > minSupport) {
+		if (sum >= minSupport) {
 			context.write(key, new IntWritable(sum));
 		}
 	}

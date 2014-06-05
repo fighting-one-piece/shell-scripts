@@ -25,6 +25,7 @@ public class FPGrowthJob {
 	
 	private Configuration conf = null;
 	
+	//频繁一项集生成
 	public String frequency_1_itemset_gen(String input, String minSupport) {
 		String output = HDFSUtils.HDFS_TEMP_INPUT_URL + IdentityUtils.generateUUID();
 		String[] inputArgs = new String[]{input, output, minSupport};
@@ -32,6 +33,7 @@ public class FPGrowthJob {
 		return output;
 	}
 	
+	//频繁一项集排序
 	public String frequency_1_itemset_sort(String input) {
 		Map<String, Integer> map = new HashMap<String, Integer>();
 		SequenceFile.Reader reader = null;
@@ -83,6 +85,7 @@ public class FPGrowthJob {
 		return output;
 	}
 	
+	//频繁项集生成
 	public void frequency_itemset_gen(String input, String output, String sort_input) {
 		System.out.println("frequency_itemset_gen input: " + input);
 		System.out.println("frequency_itemset_gen sort input: " + sort_input);

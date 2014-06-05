@@ -1,5 +1,9 @@
 package org.project.modules.association.builder;
 
+import java.util.List;
+
+import org.project.modules.association.data.ItemSet;
+
 public interface Builder {
 	
 	//构建频繁项集
@@ -7,4 +11,7 @@ public interface Builder {
 	
 	//构建关联规则
 	public void buildAssociationRules();
+	
+	//获取频繁项集
+	public List<List<ItemSet>> obtainFrequencyItemSet();
 }

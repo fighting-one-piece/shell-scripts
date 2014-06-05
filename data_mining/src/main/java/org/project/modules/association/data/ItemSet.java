@@ -64,6 +64,29 @@ public class ItemSet {
 		return !(getItems().last().equals(other.getItems().last()));
 	}
 	
+	public boolean isEqual(ItemSet other) {
+		if (null == other || other.getItems().size() != getItems().size()) {
+			return false;
+		}
+		Iterator<String> iIter = getItems().iterator();
+		Iterator<String> oIter = other.getItems().iterator();
+		int count = 0;
+		while (iIter.hasNext()) {
+			String iValue = iIter.next();
+			while (oIter.hasNext()) {
+				String oValue = oIter.next();
+				if (oValue.equals(iValue)) {
+					count++;
+				}
+			}
+			oIter = other.getItems().iterator();
+		}
+		if (count == other.getItems().size()) {
+			return true;
+		}
+		return false;
+	}
+	
 	public void add(String value) {
 		getItems().add(value);
 	}

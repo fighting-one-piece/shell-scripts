@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -27,10 +26,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
+import org.project.modules.association.builder.FPGrowthBuilder;
 import org.project.modules.association.data.Data;
 import org.project.modules.association.data.Instance;
-import org.project.modules.association.node.FPTreeNode;
-import org.project.modules.association.node.FPTreeNodeHelper;
+import org.project.modules.association.data.ItemSet;
 
 public class FPGrowthMR {
 	
@@ -158,83 +157,48 @@ class FPGrowthReducer extends Reducer<Text, Text, Text, IntWritable> {
 	@Override
 	protected void setup(Context context) throws IOException, InterruptedException {
 		super.setup(context);
-//		Configuration conf = context.getConfiguration();
 	}
 	
 	@Override
 	protected void reduce(Text key, Iterable<Text> values,
 			Context context) throws IOException, InterruptedException {
+		String keyItem = key.toString();
+		System.out.println("key: " + keyItem);
 		Data data = new Data();
 		for (Text value : values) {
 			Instance instance = new Instance();
 			StringTokenizer tokenizer = new StringTokenizer(value.toString());
 			String token = tokenizer.nextToken();
-			instance.setValues(token.split(","));
+			String[] items = token.split(",");
+			List<String> temp = new ArrayList<String>();
+			for (String item : items) {
+				if (keyItem.equals(item)) {
+					break;
+				}
+				temp.add(item);
+			}
+			instance.setValues(temp.toArray(new String[0]));
 			data.getInstances().add(instance);
 		}
-		List<FPTreeNode> leafs = new LinkedList<FPTreeNode>();
-		FPTreeNode treeNode = buildFPGrowthTree(data, leafs);
-		for (FPTreeNode leaf : leafs) {
-            FPTreeNode tmpNode = leaf;
-            List<String> associateRrule = new ArrayList<String>();
-            int support = 0;
-            while (tmpNode.getParent() != null) {
-                associateRrule.add(tmpNode.getName());
-                support = tmpNode.getCount();
-                tmpNode = tmpNode.getParent();
-            }
-            StringBuilder sb = new StringBuilder();
-            for (String ele : associateRrule) {
-                sb.append(ele + "|");
-            }
-            // 因为一句话可能包含重复的词，所以即使这些词都是从F1中取出来的，到最后其支持度也可能小于最小支持度
-            if (support >= 2) {
-                context.write(new Text(sb.substring(0, sb.length() - 1)
-                        .toString()), new IntWritable(support));
-            }
-        }
-
-		FPTreeNodeHelper.print(treeNode, 0);
+		context.write(new Text(keyItem), new IntWritable(data.getInstances().size()));
+		FPGrowthBuilder fpBuilder = new FPGrowthBuilder();
+		fpBuilder.build(data, null);
+		List<List<ItemSet>> frequencies = fpBuilder.obtainFrequencyItemSet();
+		for (List<ItemSet> frequency : frequencies) {
+			for (ItemSet itemSet : frequency) {
+				StringBuilder sb = new StringBuilder();
+				for (String i : itemSet.getItems()) {
+					sb.append(i).append(",");
+				}
+				sb.append(keyItem);
+				context.write(new Text(sb.toString()), new IntWritable(itemSet.getSupport()));
+			}
+		}
 	}
 	
 	@Override
 	protected void cleanup(Context context) throws IOException, InterruptedException {
 		super.cleanup(context);
-	}
-	
-	//创建FPGrowthTree
-	private FPTreeNode buildFPGrowthTree(Data data, List<FPTreeNode> leafs) {
-		FPTreeNode rootNode = new FPTreeNode();
-		for (Instance instance : data.getInstances()) {
-			LinkedList<String> items = instance.getValuesList();
-			FPTreeNode tempNode = rootNode;
-			//如果节点已经存在则加1
-			FPTreeNode childNode = tempNode.findChild(items.peek());
-			while (!items.isEmpty() && null != childNode) {
-				childNode.incrementCount();
-				tempNode = childNode;
-				items.poll();
-				childNode = tempNode.findChild(items.peek());
-			}
-			//如果节点不存在则新增
-			addNewTreeNode(tempNode, items, leafs);
-		}
-		return rootNode;
-	}
-	
-	//新增树节点
-	private void addNewTreeNode(FPTreeNode parent, LinkedList<String> items,
-			List<FPTreeNode> leafs) {
-		while (items.size() > 0) {
-			String item = items.poll();
-			FPTreeNode child = new FPTreeNode(item, 1);
-			child.setParent(parent);
-			parent.addChild(child);
-			if (items.size() == 0) {
-				leafs.add(child);
-			}
-			addNewTreeNode(child, items, leafs);
-		}
 	}
 	
 }

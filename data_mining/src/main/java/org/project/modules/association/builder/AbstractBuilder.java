@@ -48,6 +48,11 @@ public abstract class AbstractBuilder implements Builder {
 		}
 	}
 	
+	@Override
+	public List<List<ItemSet>> obtainFrequencyItemSet() {
+		return frequencies;
+	}
+	
 	/** 计算项集支持度*/
 	protected int calculateSupport(Data data, String... items) {
 		if (null == items || items.length == 0) return 0; 

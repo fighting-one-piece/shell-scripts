@@ -1,18 +1,16 @@
 package org.project.modules.association.builder;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.project.modules.association.data.Data;
 import org.project.modules.association.data.DataLoader;
 import org.project.modules.association.data.Instance;
 import org.project.modules.association.data.ItemSet;
 import org.project.modules.association.node.FPTreeNode;
-import org.project.modules.association.node.FPTreeNodeHelper;
-import org.project.utils.ShowUtils;
 
 public class FPTreeBuilder {
 
@@ -52,7 +50,7 @@ public class FPTreeBuilder {
 	}
 	
 	public static void main(String[] args) {
-		FPTreeBuilder builder = new FPTreeBuilder();
+//		FPTreeBuilder builder = new FPTreeBuilder();
 		Data all = DataLoader.load("d:\\apriori2.txt");
 		Map<String, Data> m = new HashMap<String, Data>();
 		for (Instance instance : all.getInstances()) {
@@ -70,19 +68,34 @@ public class FPTreeBuilder {
 		for (Map.Entry<String, Data> entry : m.entrySet()) {
 			System.out.println("item: " + entry.getKey());
 			Data data = entry.getValue();
-			List<FPTreeNode> leafs = new LinkedList<FPTreeNode>();
-			FPTreeNode treeNode = builder.buildFPGrowthTree(data, leafs);
-			FPTreeNodeHelper.print(treeNode, 0);
-			Map<String, Integer> map = new HashMap<String, Integer>();
+			FPGrowthBuilder fpBuilder = new FPGrowthBuilder();
+			fpBuilder.build(data, null);
+			List<List<ItemSet>> fs = fpBuilder.obtainFrequencyItemSet();
+			print(fs);
+//			List<FPTreeNode> leafs = new LinkedList<FPTreeNode>();
+//			FPTreeNode treeNode = builder.buildFPGrowthTree(data, leafs);
+//			FPTreeNodeHelper.print(treeNode, 0);
+//			Map<String, Integer> map = new HashMap<String, Integer>();
 //			b(treeNode, map);
-			for (FPTreeNode leaf : leafs) {
-				c(leaf, map);
-			}
-			ShowUtils.print(map);
+//			leafs = new LinkedList<FPTreeNode>();
+//			d(treeNode, leafs);
+//			for (FPTreeNode leaf : leafs) {
+//				c(leaf, map);
+//			}
+//			ShowUtils.print(map);
 		}
 	}
 	
-	public static List<List<ItemSet>> frequencies = new ArrayList<List<ItemSet>>();
+	public static void print(List<List<ItemSet>> itemSetss) {
+		System.out.println("Frequency Item Set");
+		System.out.println(itemSetss.size());
+		for (List<ItemSet> itemSets : itemSetss) {
+			for (ItemSet itemSet : itemSets) {
+				System.out.print(itemSet.getSupport() + "\t");
+				System.out.println(itemSet.getItems());
+			}
+		}
+	}
 	
 	public static void a(FPTreeNode node, Map<String, Integer> map, 
 			String prefix, int min) {
@@ -124,5 +137,16 @@ public class FPTreeBuilder {
 		parent = node.getParent();
 		if (null != parent && null != parent.getName())
 			c(parent, map);
+	}
+	
+	public static void d(FPTreeNode node, List<FPTreeNode> leafs) {
+		 Set<FPTreeNode> children = node.getChildren();
+		 if (children.size() == 0) {
+			 leafs.add(node);
+			 return;
+		 }
+		 for (FPTreeNode child : children) {
+			 d(child, leafs);
+		 }
 	}
 }
