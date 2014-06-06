@@ -1,7 +1,9 @@
 package org.project.modules.classifier.decisiontree.data;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /** 
  ** 样本实例，包含多个属性和一个指明样本所属分类的分类值 
@@ -14,6 +16,8 @@ public class Instance implements Cloneable {
 	private Object category = null;
 	/** 实例属性键值对*/
 	private Map<String, Object> attributes = null;
+	/** 实例属性集合*/
+	private Set<Attribute> attributeset = null;
 	/** 实例权重*/
 	private double weight = 0.0d;
 	
@@ -54,6 +58,17 @@ public class Instance implements Cloneable {
 
 	public void setAttributes(Map<String, Object> attributes) {
 		this.attributes = attributes;
+	}
+	
+	public Set<Attribute> getAttributeset() {
+		if (null == attributeset) {
+			attributeset = new HashSet<Attribute>();
+		}
+		return attributeset;
+	}
+
+	public void setAttributeset(Set<Attribute> attributeset) {
+		this.attributeset = attributeset;
 	}
 
 	public String toString() {

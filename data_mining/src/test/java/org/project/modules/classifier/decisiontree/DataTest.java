@@ -28,6 +28,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.junit.Test;
+import org.project.modules.classifier.decisiontree.data.Attribute;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
@@ -75,8 +76,45 @@ public class DataTest {
 	
 	@Test
 	public void load() {
-		String path = "d:\\trainset_linenum.txt";
-		Data data = DataLoader.loadWithId(path);
+		String path = "d:\\trainset_1000_l.txt";
+		Set<String> attributes = new HashSet<String>();
+		List<Instance> instances = new ArrayList<Instance>();
+		InputStream in = null;
+		BufferedReader reader = null;
+		long start = System.currentTimeMillis();
+		try {
+			in = new FileInputStream(new File(path));
+			reader = new BufferedReader(new InputStreamReader(in));
+			String line = reader.readLine();
+			Instance instance = null;
+			int index = 0;
+			while (!("").equals(line) && null != line) {
+				StringTokenizer tokenizer = new StringTokenizer(line);
+				instance = new Instance();
+				instance.setId(Long.parseLong(tokenizer.nextToken()));
+				instance.setCategory(tokenizer.nextToken());
+				while (tokenizer.hasMoreTokens()) {
+					String value = tokenizer.nextToken();
+					String[] entry = value.split(":");
+					instance.setAttribute(entry[0], entry[1]);
+//					instance.getAttributeset().add(new Attribute(entry[0], entry[1]));
+					if (!attributes.contains(entry[0])) {
+						attributes.add(entry[0]);
+					}
+				}
+				instances.add(instance);
+				line = reader.readLine();
+				System.out.println(index++);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(in);
+			IOUtils.closeQuietly(reader);
+		}
+		long end = System.currentTimeMillis();
+		System.out.println("spend time: " + (end - start));
+		Data data = new Data(attributes.toArray(new String[0]), instances);
 		System.out.println(data.getAttributes().length);
 		System.out.println(data.getInstances().size());
 	}
@@ -102,7 +140,7 @@ public class DataTest {
 	
 	@Test
 	public void addLineNum() throws Exception {
-		FileUtils.addLineNum("D:\\trainset.txt", "D:\\trainset_l.txt");
+		FileUtils.addLineNum("D:\\trainset_100.txt", "D:\\trainset_100_l.txt");
 	}
 	
 	private Set<String> calculateAttribute(String input) {

@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.project.modules.classifier.decisiontree.data.Attribute;
+import org.project.modules.classifier.decisiontree.data.AttributeDetail;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
@@ -21,19 +21,19 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 		Object preHandleResult = preHandle(data);
 		if (null != preHandleResult) return preHandleResult;
 		//创建属性表
-		Map<String, List<Attribute>> attributeTableMap = 
-				new HashMap<String, List<Attribute>>();
+		Map<String, List<AttributeDetail>> attributeTableMap = 
+				new HashMap<String, List<AttributeDetail>>();
 		for (Instance instance : data.getInstances()) {
 			String category = String.valueOf(instance.getCategory());
 			Map<String, Object> attrs = instance.getAttributes();
 			for (Map.Entry<String, Object> entry : attrs.entrySet()) {
 				String attrName = entry.getKey();
-				List<Attribute> attributeTable = attributeTableMap.get(attrName);
+				List<AttributeDetail> attributeTable = attributeTableMap.get(attrName);
 				if (null == attributeTable) {
-					attributeTable = new ArrayList<Attribute>();
+					attributeTable = new ArrayList<AttributeDetail>();
 					attributeTableMap.put(attrName, attributeTable);
 				}
-				attributeTable.add(new Attribute(instance.getId(), 
+				attributeTable.add(new AttributeDetail(instance.getId(), 
 						attrName, String.valueOf(entry.getValue()), category));
 			}
 		}
@@ -42,12 +42,12 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 		String splitAttribute = null;
 		String minSplitPoint = null;
 		double minSplitPointGini = 1.0;
-		for (Map.Entry<String, List<Attribute>> entry : attributeTableMap.entrySet()) {
+		for (Map.Entry<String, List<AttributeDetail>> entry : attributeTableMap.entrySet()) {
 			String attribute = entry.getKey();
 			if (!attributes.contains(attribute)) {
 				continue;
 			}
-			List<Attribute> attributeTable = entry.getValue();
+			List<AttributeDetail> attributeTable = entry.getValue();
 			Object[] result = calculateMinGini(attributeTable);
 			double splitPointGini = Double.parseDouble(String.valueOf(result[1]));
 			if (minSplitPointGini > splitPointGini) {
@@ -94,14 +94,14 @@ public class DecisionTreeSprintBuilder extends BuilderAbstractImpl {
 	}
 
 	/** 计算基尼指数*/
-	public Object[] calculateMinGini(List<Attribute> attributeTable) {
+	public Object[] calculateMinGini(List<AttributeDetail> attributeTable) {
 		double totalNum = 0.0;
 		Map<String, Map<String, Integer>> attrValueSplits = 
 				new HashMap<String, Map<String, Integer>>();
 		Set<String> splitPoints = new HashSet<String>();
-		Iterator<Attribute> iterator = attributeTable.iterator();
+		Iterator<AttributeDetail> iterator = attributeTable.iterator();
 		while (iterator.hasNext()) {
-			Attribute attribute = iterator.next();
+			AttributeDetail attribute = iterator.next();
 			String attributeValue = attribute.getValue();
 			splitPoints.add(attributeValue);
 			Map<String, Integer> attrValueSplit = attrValueSplits.get(attributeValue);
