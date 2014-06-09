@@ -10,6 +10,8 @@ import net.sf.json.JSONObject;
 import net.sf.json.JsonConfig;
 import net.sf.json.util.CycleDetectionStrategy;
 
+import org.project.modules.classifier.decisiontree.node.Node.Type;
+
 public class TreeNodeHelper {
 	
 	/** 读取*/
@@ -64,18 +66,40 @@ public class TreeNodeHelper {
 		if (from != null)
 			System.out.printf("(%s):", from);
 		if (obj instanceof TreeNode) {
-			TreeNode tree = (TreeNode) obj;
-			String attrName = tree.getName();
-			int record = tree.getRecord();
+			TreeNode treeNode = (TreeNode) obj;
+			String attrName = treeNode.getName();
+			int record = treeNode.getRecord();
 			String recordStr = "(" + record + ")";
 			System.out.printf("[%s = ?]\n", attrName + recordStr);
-			for (Object attrValue : tree.getChildren().keySet()) {
-				Object child = tree.getChild(attrValue);
+			for (Object attrValue : treeNode.getChildren().keySet()) {
+				Object child = treeNode.getChild(attrValue);
 				print(child, level + 1, attrName + " = "
 						+ attrValue);
 			}
 		} else {
 			System.out.printf("[CATEGORY = %s]\n", obj);
+		}
+	}
+	
+	public static void print(Node node, int level, Object from) {
+		for (int i = 0; i < level; i++)
+			System.out.print("|-----");
+		if (from != null)
+			System.out.printf("(%s):", from);
+		Type type = node.getType();
+		switch (type) {
+	    	case LEAF:
+	    		System.out.printf("[CATEGORY = %s]\n", ((LeafNode) node).getName());
+	    		break;
+	    	case BRANCH:
+	    		BranchNode treeNode = (BranchNode) node;
+	    		String attrName = treeNode.getName();
+	    		System.out.printf("[%s = ?]\n", attrName);
+	    		for (int i = 0, len = treeNode.getValues().length; i < len; i++) {
+	    			String value = treeNode.getValues()[i];
+	    			Node child = treeNode.getChildren()[i];
+	    			print(child, level + 1, attrName + " = " + value);
+	    		}
 		}
 	}
 	

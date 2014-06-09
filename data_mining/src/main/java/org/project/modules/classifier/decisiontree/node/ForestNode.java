@@ -1,5 +1,8 @@
 package org.project.modules.classifier.decisiontree.node;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,6 +18,11 @@ public class ForestNode extends Node {
 	
 	public ForestNode(List<TreeNode> treeNodes) {
 		this.treeNodes = treeNodes;
+	}
+	
+	@Override
+	public Type getType() {
+		return null;
 	}
 	
 	@Override
@@ -41,5 +49,16 @@ public class ForestNode extends Node {
 		//投票选择
 		return DataHandler.vote(results);
 	}
+
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		
+	}
+
+	@Override
+	protected void writeNode(DataOutput out) throws IOException {
+		
+	}
+	
 	
 }

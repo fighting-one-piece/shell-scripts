@@ -1,5 +1,8 @@
 package org.project.modules.classifier.decisiontree.node;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,6 +35,11 @@ public class DefaultTreeNode extends Node {
 	public void setChildren(Set<Node> children) {
 		this.children = children;
 	}
+	
+	@Override
+	public Type getType() {
+		return null;
+	}
 
 	@Override
 	public Object classify(Data data) {
@@ -41,6 +49,16 @@ public class DefaultTreeNode extends Node {
 	@Override
 	public Object classify(Instance... instances) {
 		return null;
+	}
+
+	@Override
+	public void readFields(DataInput arg0) throws IOException {
+		
+	}
+
+	@Override
+	protected void writeNode(DataOutput out) throws IOException {
+		
 	}
 
 }

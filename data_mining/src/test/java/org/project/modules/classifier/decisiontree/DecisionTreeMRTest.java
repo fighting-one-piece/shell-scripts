@@ -36,12 +36,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.builder.Builder;
 import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
+import org.project.modules.classifier.decisiontree.builder.TreeBuilder;
+import org.project.modules.classifier.decisiontree.builder.TreeC45Builder;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeGainWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.AttributeKVWritable;
 import org.project.modules.classifier.decisiontree.mr.writable.TreeNodeWritable;
+import org.project.modules.classifier.decisiontree.node.BranchNode;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.modules.hadoop.mr.a.writable.DateTableWritable;
@@ -283,6 +286,30 @@ public class DecisionTreeMRTest {
 	}
 	
 	@Test
+	public void writeSequenceFile1() {
+		SequenceFile.Writer writer = null;
+		try {
+			FileSystem fs = FileSystem.get(conf);
+			Path path = new Path(DFS_URL + "001/output/part");
+			writer = SequenceFile.createWriter(fs, conf, path,
+					LongWritable.class, BranchNode.class);
+			LongWritable key = new LongWritable(1);
+			String src = "d:\\trains14_id.txt";
+//			String src = "d:\\trainset_extract_10_l.txt";
+			Data data = DataLoader.loadWithId(src);
+			TreeBuilder builder = new TreeC45Builder();
+			BranchNode treeNode = (BranchNode) builder.build(data);
+			ShowUtils.print(treeNode.getValues());
+			TreeNodeHelper.print(treeNode, 0, null);
+			writer.append(key, treeNode);
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(writer);
+		}
+	}
+	
+	@Test
 	public void readFile() {
 //		String url = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/input/23ab9cf400b1488c81b08266c99bf291/part-r-00000";
 		String url = "hdfs://centos.host1:9000/user/hadoop/data/dt/temp/input/23ab9cf400b1488c81b08266c99bf291/";
@@ -327,6 +354,28 @@ public class DecisionTreeMRTest {
 				System.out.println(value.get());
 				key = new DateTableWritable();
 				value = new IntWritable();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			IOUtils.closeQuietly(reader);
+		}
+	}
+	
+	@Test
+	public void readSequenceFile1() {
+		SequenceFile.Reader reader = null;
+		try {
+			FileSystem fs = FileSystem.get(conf);
+			Path path = new Path(DFS_URL + "001/output/part");
+			reader = new SequenceFile.Reader(fs, path, conf);
+			LongWritable key = (LongWritable) ReflectionUtils.newInstance(
+					reader.getKeyClass(), conf);
+			BranchNode value = new BranchNode();
+			while (reader.next(key, value)) {
+				TreeNodeHelper.print(value, 0, null);
+				key = new LongWritable();
+				value = new BranchNode();
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

@@ -3,12 +3,10 @@ package org.project.modules.classifier.decisiontree.node;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.io.Writable;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.Instance;
 
@@ -16,7 +14,7 @@ import org.project.modules.classifier.decisiontree.data.Instance;
  ** 决策树（非叶结点），决策树中的每个非叶结点都引导了一棵决策树 
  *  每个非叶结点包含一个分支属性和多个分支，分支属性的每个值对应一个分支，该分支引导了一棵子决策树
  */
-public class TreeNode extends Node implements Writable, Serializable {
+public class TreeNode extends Node {
 	
 	private static final long serialVersionUID = 1L;
 	/** 节点名称*/
@@ -95,6 +93,11 @@ public class TreeNode extends Node implements Writable, Serializable {
 			}
 		}
 		return leafNum;
+	}
+	
+	@Override
+	public Type getType() {
+		return null;
 	}
 
 	@Override
@@ -182,6 +185,11 @@ public class TreeNode extends Node implements Writable, Serializable {
 		System.out.println(sb.toString());
 		dataOutput.writeInt(sb.length());
 		dataOutput.write(sb.toString().getBytes());
+	}
+	
+	@Override
+	protected void writeNode(DataOutput dataOutput) throws IOException {
+		
 	}
 	
 }

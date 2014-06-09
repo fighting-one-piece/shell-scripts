@@ -1,19 +1,30 @@
 package org.project.modules.classifier.decisiontree;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.project.modules.classifier.decisiontree.builder.Builder;
 import org.project.modules.classifier.decisiontree.builder.DecisionTreeC45Builder;
 import org.project.modules.classifier.decisiontree.builder.DecisionTreeSprintBuilder;
+import org.project.modules.classifier.decisiontree.builder.TreeBuilder;
+import org.project.modules.classifier.decisiontree.builder.TreeC45Builder;
 import org.project.modules.classifier.decisiontree.data.Data;
 import org.project.modules.classifier.decisiontree.data.DataError;
 import org.project.modules.classifier.decisiontree.data.DataHandler;
 import org.project.modules.classifier.decisiontree.data.DataLoader;
 import org.project.modules.classifier.decisiontree.data.DataSet;
+import org.project.modules.classifier.decisiontree.node.BranchNode;
 import org.project.modules.classifier.decisiontree.node.TreeNode;
 import org.project.modules.classifier.decisiontree.node.TreeNodeHelper;
 import org.project.utils.ShowUtils;
@@ -57,13 +68,49 @@ public class DecisionTreeTest {
 //		DataHandler.computeFill(data, 1.0);
 		Builder builder = new DecisionTreeC45Builder();
 		TreeNode treeNode = (TreeNode) builder.build(data);
-//		TreeNodeHelper.print(treeNode, 0, null);
+		TreeNodeHelper.print(treeNode, 0, null);
 //		String p = "d:\\trains14_id.txt";
 		String p = "d:\\trainset_extract_1_l.txt";
 		Data testData = DataLoader.loadWithId(p);
 		DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
 //		DataHandler.computeFill(testData, data, 1.0);
 		Object[] results = (Object[]) treeNode.classify(testData);
+		ShowUtils.print(results);
+	}
+	
+	@Test
+	public void buildWithC45Serial() throws Exception {
+		String path = "d:\\trains14_id.txt";
+		Data data = DataLoader.loadWithId(path);
+		TreeBuilder builder = new TreeC45Builder();
+		BranchNode treeNode = (BranchNode) builder.build(data);
+		ShowUtils.print(treeNode.getValues());
+		TreeNodeHelper.print(treeNode, 0, null);
+	}
+	
+	@Test
+	public void buildWithC45Serialize() throws Exception {
+		String path = "d:\\trains14_id.txt";
+		Data data = DataLoader.loadWithId(path);
+		DataHandler.fill(data, 0);
+		Builder builder = new DecisionTreeC45Builder();
+		TreeNode treeNode = (TreeNode) builder.build(data);
+		OutputStream out = new FileOutputStream(new File("d:\\z.txt"));
+		ObjectOutputStream oos = new ObjectOutputStream(out);
+		oos.writeObject(treeNode);
+		IOUtils.closeQuietly(oos);
+		IOUtils.closeQuietly(out);
+
+		InputStream in = new FileInputStream(new File("d:\\z.txt"));
+		ObjectInputStream ois = new ObjectInputStream(in);
+		TreeNode node = (TreeNode) ois.readObject();
+		IOUtils.closeQuietly(ois);
+		IOUtils.closeQuietly(in);
+		
+		String p = "d:\\trains14_id.txt";
+		Data testData = DataLoader.loadWithId(p);
+		DataHandler.fill(testData.getInstances(), data.getAttributes(), 0);
+		Object[] results = (Object[]) node.classify(testData);
 		ShowUtils.print(results);
 	}
 	
