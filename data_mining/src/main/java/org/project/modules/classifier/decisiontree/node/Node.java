@@ -23,8 +23,8 @@ public abstract class Node implements Writable, Serializable {
 
 	public abstract Object classify(Instance... instances);
 
-	public static Node read(DataInput in) throws IOException {
-		Type type = Type.values()[in.readInt()];
+	public static Node read(DataInput dataInput) throws IOException {
+		Type type = Type.values()[dataInput.readInt()];
 		Node node = null;
 		switch (type) {
 			case LEAF:
@@ -34,17 +34,24 @@ public abstract class Node implements Writable, Serializable {
 				node = new BranchNode();
 				break;
 			default:
-				throw new IllegalStateException(
-						"This implementation is not currently supported");
+				throw new RuntimeException("node is not supported");
 		}
-		node.readFields(in);
+		node.readNode(dataInput);
 		return node;
 	}
+	
+	@Override
+	public void readFields(DataInput dataInput) throws IOException {
+		Type type = Type.values()[dataInput.readInt()];
+		System.out.println("type: " + type);
+		readNode(dataInput);
+	}
+	
+	protected abstract void readNode(DataInput dataInput) throws IOException;
 
 	@Override
 	public void write(DataOutput dataOutput) throws IOException {
 		int ordinal = getType().ordinal();
-		System.out.println("write: " + ordinal);
 		dataOutput.writeInt(ordinal);
 		writeNode(dataOutput);
 	}

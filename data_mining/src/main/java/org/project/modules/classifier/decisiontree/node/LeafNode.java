@@ -45,10 +45,8 @@ public class LeafNode extends Node {
 	}
 	
 	@Override
-	public void readFields(DataInput dataInput) throws IOException {
-		System.out.println(dataInput.readInt());
+	protected void readNode(DataInput dataInput) throws IOException {
 		int length = dataInput.readInt();
-		System.out.println("leaf : " + length);
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
 		name = new String(buff);
@@ -59,7 +57,6 @@ public class LeafNode extends Node {
 		int length = name.length();
 		dataOutput.writeInt(length);
 		dataOutput.write(name.getBytes(), 0, length);
-		System.out.println("leaf: "+ name + "-" + length);
 	}
 
 }

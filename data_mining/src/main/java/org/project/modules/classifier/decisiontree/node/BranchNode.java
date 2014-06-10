@@ -72,7 +72,7 @@ public class BranchNode extends Node {
 	}
 
 	@Override
-	public void readFields(DataInput dataInput) throws IOException {
+	protected void readNode(DataInput dataInput) throws IOException {
 		int length = dataInput.readInt();
 		byte[] buff = new byte[length];
 		dataInput.readFully(buff, 0, length);
@@ -81,7 +81,6 @@ public class BranchNode extends Node {
 		String[] t_values = new String[length];
 		for (int i = 0; i < length; i++) {
 			int len = dataInput.readInt();
-			System.out.println(len);
 			buff = new byte[len];
 			dataInput.readFully(buff, 0, len);
 			t_values[i] = new String(buff);
@@ -103,7 +102,6 @@ public class BranchNode extends Node {
 		dataOutput.writeInt(values.length);
 	    for (String value : values) {
 	    	int len = value.length();
-	    	System.out.println("branch: "+ value + "-" + len);
 			dataOutput.writeInt(len);
 			dataOutput.write(value.getBytes(), 0, len);
 	    }

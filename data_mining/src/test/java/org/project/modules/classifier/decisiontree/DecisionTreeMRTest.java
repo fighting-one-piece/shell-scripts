@@ -290,17 +290,18 @@ public class DecisionTreeMRTest {
 		SequenceFile.Writer writer = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "001/output/part");
+			Path path = new Path(DFS_URL + "002/output/part");
 			writer = SequenceFile.createWriter(fs, conf, path,
 					LongWritable.class, BranchNode.class);
 			LongWritable key = new LongWritable(1);
-			String src = "d:\\trains14_id.txt";
-//			String src = "d:\\trainset_extract_10_l.txt";
+//			String src = "d:\\trains14_id.txt";
+			String src = "d:\\trainset_extract_1_l.txt";
 			Data data = DataLoader.loadWithId(src);
+			DataHandler.fill(data, 1.0);
 			TreeBuilder builder = new TreeC45Builder();
 			BranchNode treeNode = (BranchNode) builder.build(data);
 			ShowUtils.print(treeNode.getValues());
-			TreeNodeHelper.print(treeNode, 0, null);
+//			TreeNodeHelper.print(treeNode, 0, null);
 			writer.append(key, treeNode);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -367,7 +368,7 @@ public class DecisionTreeMRTest {
 		SequenceFile.Reader reader = null;
 		try {
 			FileSystem fs = FileSystem.get(conf);
-			Path path = new Path(DFS_URL + "001/output/part");
+			Path path = new Path(DFS_URL + "002/output/part");
 			reader = new SequenceFile.Reader(fs, path, conf);
 			LongWritable key = (LongWritable) ReflectionUtils.newInstance(
 					reader.getKeyClass(), conf);

@@ -179,6 +179,11 @@ public class TreeNode extends Node {
 	}
 	
 	@Override
+	protected void readNode(DataInput dataInput) throws IOException {
+		
+	}
+	
+	@Override
 	public void write(DataOutput dataOutput) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		TreeNodeHelper.treeNode2json(this, sb);

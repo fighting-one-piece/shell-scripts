@@ -52,12 +52,12 @@ public class DefaultTreeNode extends Node {
 	}
 
 	@Override
-	public void readFields(DataInput arg0) throws IOException {
+	public void readNode(DataInput dataInput) throws IOException {
 		
 	}
 
 	@Override
-	protected void writeNode(DataOutput out) throws IOException {
+	protected void writeNode(DataOutput dataOutput) throws IOException {
 		
 	}
 
