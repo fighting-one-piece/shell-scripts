@@ -28,5 +28,15 @@ public class Canopy {
 		this.points = points;
 	}
 	
+	public void computeCenter() {
+		double x = 0.0;
+		double y = 0.0;
+		for (Point point : getPoints()) {
+			x += point.getX();
+			y += point.getY();
+		}
+		double z = getPoints().size();
+		setCenter(new Point(x / z, y / z));
+	}
 	
 }

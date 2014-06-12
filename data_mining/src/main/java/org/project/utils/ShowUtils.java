@@ -28,7 +28,7 @@ public class ShowUtils {
 	}
 	
 	public static <T> void print(Collection<T> collection) {
-		System.out.print("[");
+		System.out.println("[");
 		for (T t : collection) {
 			if (t instanceof Object[]) {
 				print((Object[]) t);

@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.project.utils.ShowUtils;
+
 public class CanopyBuilder {
 
 	private double T1 = 8;
@@ -31,53 +33,70 @@ public class CanopyBuilder {
 		canopies = new ArrayList<Canopy>();
 	}
 	
-	public double distance(Point a, Point b) {
+	//计算两点之间的曼哈顿距离
+	public double manhattanDistance(Point a, Point b) {
 		return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
+	}
+	
+	//计算两点之间的欧氏距离
+	public double euclideanDistance(Point a, Point b) {
+		double sum =  Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2);
+		return Math.sqrt(sum);
 	}
 
 	public void run() {
 		while (points.size() > 0) {
 			Iterator<Point> iterator = points.iterator();
 			while (iterator.hasNext()) {
-				Point temp = iterator.next();
-				System.out.println(temp);
+				Point current = iterator.next();
+				System.out.println("current point: " + current);
+				//取一个点做为初始canopy
 				if (canopies.size() == 0) {
 					Canopy canopy = new Canopy();
-					canopy.setCenter(temp);
-					canopy.getPoints().add(temp);
+					canopy.setCenter(current);
+					canopy.getPoints().add(current);
 					canopies.add(canopy);
 					iterator.remove();
 					continue;
 				}
-				List<Canopy> newCanopies = new ArrayList<Canopy>();
+				boolean isRemove = false;
+				int index = 0;
 				for (Canopy canopy : canopies) {
 					Point center = canopy.getCenter();
 					System.out.println("center: " + center);
-					double d = distance(temp, center);
-					System.out.println("d: " + d);
-					if (d < T2) {
-						canopy.getPoints().add(temp);
-						iterator.remove();
-						break;
-					} else if (d < T1) {
-						canopy.getPoints().add(temp);
+					double d = manhattanDistance(current, center);
+					System.out.println("distance: " + d);
+					//距离小于T1加入canopy，打上弱标记
+					if (d < T1) {
+						current.setMark(Point.MARK_WEAK);
+						canopy.getPoints().add(current);
 					} else if (d > T1) {
-						Canopy newCanopy = new Canopy();
-						newCanopy.setCenter(temp);
-						newCanopy.getPoints().add(temp);
-						newCanopies.add(newCanopy);
-						iterator.remove();
-						break;
+						index++;
+					} 
+					//距离小于T2则从列表中移除，打上强标记
+					if (d <= T2) {
+						current.setMark(Point.MARK_STRONG);
+						isRemove = true;
 					}
 				}
-				if (newCanopies.size() > 0) {
-					canopies.addAll(newCanopies);
+				//如果到所有canopy的距离都大于T1,生成新的canopy
+				if (index == canopies.size()) {
+					Canopy newCanopy = new Canopy();
+					newCanopy.setCenter(current);
+					newCanopy.getPoints().add(current);
+					canopies.add(newCanopy);
+					isRemove = true;
+				}
+				if (isRemove) {
+					iterator.remove();
 				}
 			}
 		}
 		for (Canopy c : canopies) {
-			System.out.println(c.getCenter());
-			System.out.println(c.getPoints().size());
+			System.out.println("old center: " + c.getCenter());
+			c.computeCenter();
+			System.out.println("new center: " + c.getCenter());
+			ShowUtils.print(c.getPoints());
 		}
 	}
 
