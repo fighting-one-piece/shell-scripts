@@ -3,16 +3,17 @@ package org.project.modules.classifier.regression.builder;
 import org.project.modules.classifier.regression.data.DataSet;
 import org.project.modules.classifier.regression.data.DataSetHandler;
 
+//随机梯度上升算法
 public class RandomGradientAscentBuilder extends AbstractBuilder {
 	
-	private DataSet initialize() {
+	public DataSet initialize() {
 		return DataSetHandler.load("d:\\regression.txt");
 	}
 	
-	private void randomGradientAscent(DataSet dataSet) {
+	public double[] genWeights(DataSet dataSet) {
 		double[][] datas = dataSet.obtainDatas();
-		double[] weights = new double[]{1.0, 1.0};
 		double[] categories = dataSet.obtainCategories();
+		double[] weights = new double[]{1.0, 1.0};
 		double alpha = 0.01;
 		for (int i = 0, len = datas.length; i < len; i++) {
 			double h = sigmoid(datas[i], weights);
@@ -21,15 +22,8 @@ public class RandomGradientAscentBuilder extends AbstractBuilder {
 				weights[j] += alpha * error * datas[i][j]; 
 			}
 		}
-		for(double weight : weights) {
-			System.out.println("weight: " + weight);
-		}
-	}
-	
-	@Override
-	public void build() {
-		DataSet dataSet = initialize();
-		randomGradientAscent(dataSet);
+		show(weights);
+		return weights;
 	}
 	
 	public static void main(String[] args) {
