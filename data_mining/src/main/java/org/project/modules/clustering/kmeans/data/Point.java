@@ -28,5 +28,14 @@ public class Point {
 		this.y = y;
 	}
 	
+	public boolean equals(Point o) {
+		if (x == o.getX() && y == o.getY()) 
+			return true;
+		return false;
+	}
 	
+	@Override
+	public String toString() {
+		return "[" + x + " : " + y + "]";
+	}
 }

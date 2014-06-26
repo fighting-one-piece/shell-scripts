@@ -29,13 +29,14 @@ public class KMeansCluster {
 	}
 	
 	public Point computeCenter() {
+		int len = getPoints().size();
 		double a = 0.0, b = 0.0;
 		for (Point point : getPoints()) {
 			a += point.getX();
 			b += point.getY();
 		}
-		int len = getPoints().size();
 		Point p = new Point(a / len, b / len);
+		System.out.println("compute point: " + p);
 		setCenter(p);
 		return p;
 	}

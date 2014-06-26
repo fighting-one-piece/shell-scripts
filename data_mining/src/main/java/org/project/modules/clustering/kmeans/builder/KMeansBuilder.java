@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import java.util.StringTokenizer;
 
@@ -71,6 +69,9 @@ public class KMeansBuilder extends AbstractBuilder {
 			double minDistance = Integer.MAX_VALUE;
 			for (KMeansCluster cluster : clusters) {
 				Point center = cluster.getCenter();
+				if (null == center) {
+					continue;
+				}
 				System.out.println("p: " + point + " c:" + center);
 				double distance = euclideanDistance(point, center);
 				System.out.println(distance);
@@ -79,16 +80,20 @@ public class KMeansBuilder extends AbstractBuilder {
 					minCluster = cluster;
 				}
 			}
-			System.out.println(minCluster);
-			minCluster.getPoints().add(point);
+			if (null != minCluster)
+				minCluster.getPoints().add(point);
 		}
 		boolean flag = true;
 		for (KMeansCluster cluster : clusters) {
 			Point center = cluster.getCenter();
-			System.out.println("center: " + center.getX() + ":" + center.getY());
+			if (null == center) {
+				continue;
+			}
+			System.out.println("center: " + center);
 			Point newCenter = cluster.computeCenter();
-			System.out.println("new center: " + center.getX() + ":" + center.getY());
+			System.out.println("new center: " + newCenter);
 			if (!center.equals(newCenter)) {
+//			if (euclideanDistance(center, newCenter) < 2.0) {
 				flag = false;
 			}
 		}
