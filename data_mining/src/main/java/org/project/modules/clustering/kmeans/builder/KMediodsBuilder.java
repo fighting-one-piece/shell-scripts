@@ -12,16 +12,16 @@ import org.apache.commons.io.IOUtils;
 import org.project.modules.clustering.kmeans.data.KMeansCluster;
 import org.project.modules.clustering.kmeans.data.Point;
 
-public class KMeansBuilder extends AbstractBuilder {
+public class KMediodsBuilder extends AbstractBuilder {
 	
-	public static final double THRESHOLD = 1.0;
+	public static final double THRESHOLD = 2.0;
 	
 	public List<Point> initData() {
 		List<Point> points = new ArrayList<Point>();
 		InputStream in = null;
 		BufferedReader br = null;
 		try {
-			in = KMeansBuilder.class.getClassLoader().getResourceAsStream("kmeans1.txt");
+			in = KMediodsBuilder.class.getClassLoader().getResourceAsStream("kmeans1.txt");
 			br = new BufferedReader(new InputStreamReader(in));
 			String line = br.readLine();
 			while (null != line && !"".equals(line)) {
@@ -78,7 +78,7 @@ public class KMeansBuilder extends AbstractBuilder {
 		for (KMeansCluster cluster : clusters) {
 			Point center = cluster.getCenter();
 			System.out.println("center: " + center);
-			Point newCenter = cluster.computeMeansCenter();
+			Point newCenter = cluster.computeMediodsCenter();
 			System.out.println("new center: " + newCenter);
 //			if (!center.equals(newCenter)) {
 			double distance = euclideanDistance(center, newCenter);
@@ -104,7 +104,7 @@ public class KMeansBuilder extends AbstractBuilder {
 	}
 
 	public static void main(String[] args) {
-		KMeansBuilder builder = new KMeansBuilder();
+		KMediodsBuilder builder = new KMediodsBuilder();
 		builder.build();
 	}
 	
