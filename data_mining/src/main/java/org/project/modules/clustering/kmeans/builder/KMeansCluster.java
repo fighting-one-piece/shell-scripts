@@ -9,10 +9,10 @@ import java.util.Random;
 import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
-import org.project.modules.clustering.kmeans.data.KMeansCluster;
+import org.project.modules.clustering.kmeans.data.PointCluster;
 import org.project.modules.clustering.kmeans.data.Point;
 
-public class KMeansBuilder extends AbstractBuilder {
+public class KMeansCluster extends AbstractCluster {
 	
 	public static final double THRESHOLD = 1.0;
 	
@@ -21,7 +21,7 @@ public class KMeansBuilder extends AbstractBuilder {
 		InputStream in = null;
 		BufferedReader br = null;
 		try {
-			in = KMeansBuilder.class.getClassLoader().getResourceAsStream("kmeans1.txt");
+			in = KMeansCluster.class.getClassLoader().getResourceAsStream("kmeans1.txt");
 			br = new BufferedReader(new InputStreamReader(in));
 			String line = br.readLine();
 			while (null != line && !"".equals(line)) {
@@ -41,11 +41,11 @@ public class KMeansBuilder extends AbstractBuilder {
 	}
 	
 	//随机生成中心点，并生成初始的K个聚类
-	public List<KMeansCluster> genInitCluster(List<Point> points, int k) {
-		List<KMeansCluster> clusters = new ArrayList<KMeansCluster>();
+	public List<PointCluster> genInitCluster(List<Point> points, int k) {
+		List<PointCluster> clusters = new ArrayList<PointCluster>();
 		Random random = new Random();
 		for (int i = 0, len = points.size(); i < k; i++) {
-			KMeansCluster cluster = new KMeansCluster();
+			PointCluster cluster = new PointCluster();
 			Point center = points.get(random.nextInt(len));
 			cluster.setCenter(center);
 			cluster.getPoints().add(center);
@@ -55,11 +55,11 @@ public class KMeansBuilder extends AbstractBuilder {
 	}
 	
 	//将点归入到聚类中
-	public void genCluster(List<Point> points, List<KMeansCluster> clusters) {
+	public void handleCluster(List<Point> points, List<PointCluster> clusters) {
 		for (Point point : points) {
-			KMeansCluster minCluster = null;
+			PointCluster minCluster = null;
 			double minDistance = Integer.MAX_VALUE;
-			for (KMeansCluster cluster : clusters) {
+			for (PointCluster cluster : clusters) {
 				Point center = cluster.getCenter();
 				double distance = euclideanDistance(point, center);
 //				double distance = manhattanDistance(point, center);
@@ -75,7 +75,7 @@ public class KMeansBuilder extends AbstractBuilder {
 		//终止条件定义为原中心点与新中心点距离小于一定阀值
 		//当然也可以定义为原中心点等于新中心点
 		boolean flag = true;
-		for (KMeansCluster cluster : clusters) {
+		for (PointCluster cluster : clusters) {
 			Point center = cluster.getCenter();
 			System.out.println("center: " + center);
 			Point newCenter = cluster.computeMeansCenter();
@@ -88,23 +88,28 @@ public class KMeansBuilder extends AbstractBuilder {
 				cluster.setCenter(newCenter);
 			}
 		}
-		printClusters(clusters);
 		if (!flag) {
-			for (KMeansCluster cluster : clusters) {
+			for (PointCluster cluster : clusters) {
 				cluster.getPoints().clear();
 			}
-			genCluster(points, clusters);
+			handleCluster(points, clusters);
 		}
+	}
+	
+	public List<PointCluster> cluster(List<Point> points, int k) {
+		List<PointCluster> clusters = genInitCluster(points, k);
+		handleCluster(points, clusters);
+		return clusters;
 	}
 	
 	public void build() {
 		List<Point> points = initData();
-		List<KMeansCluster> clusters = genInitCluster(points, 4);
-		genCluster(points, clusters);
+		List<PointCluster> clusters = cluster(points, 4);
+		printClusters(clusters);
 	}
 
 	public static void main(String[] args) {
-		KMeansBuilder builder = new KMeansBuilder();
+		KMeansCluster builder = new KMeansCluster();
 		builder.build();
 	}
 	

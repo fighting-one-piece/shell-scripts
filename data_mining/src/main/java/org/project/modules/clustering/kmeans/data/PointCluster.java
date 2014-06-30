@@ -3,7 +3,7 @@ package org.project.modules.clustering.kmeans.data;
 import java.util.ArrayList;
 import java.util.List;
 
-public class KMeansCluster {
+public class PointCluster {
 
 	private Point center = null;
 	
@@ -44,7 +44,7 @@ public class KMeansCluster {
 		for (Point point : getPoints()) {
 			double d = 0.0;
 			for (Point temp : getPoints()) {
-				d += distance(point, temp);
+				d += manhattanDistance(point, temp);
 			}
 			if (d < distance) {
 				distance = d;
@@ -54,8 +54,23 @@ public class KMeansCluster {
 		return targetPoint;
 	}
 	
-	public double distance(Point a, Point b) {
+	public double computeSSE() {
+		double result = 0.0;
+		for (Point point : getPoints()) {
+			result += euclideanDistance(point, center);
+		}
+		return result;
+	}
+	
+	//计算两点之间的曼哈顿距离
+	protected double manhattanDistance(Point a, Point b) {
 		return Math.abs(a.getX() - b.getX()) + Math.abs(a.getY() - b.getY());
+	}
+	
+	//计算两点之间的欧氏距离
+	protected double euclideanDistance(Point a, Point b) {
+		double sum =  Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2);
+		return Math.sqrt(sum);
 	}
 	
 }

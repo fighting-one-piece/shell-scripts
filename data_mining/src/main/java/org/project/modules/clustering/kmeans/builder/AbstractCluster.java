@@ -2,10 +2,10 @@ package org.project.modules.clustering.kmeans.builder;
 
 import java.util.List;
 
-import org.project.modules.clustering.kmeans.data.KMeansCluster;
+import org.project.modules.clustering.kmeans.data.PointCluster;
 import org.project.modules.clustering.kmeans.data.Point;
 
-public abstract class AbstractBuilder {
+public abstract class AbstractCluster {
 	
 	//计算两点之间的曼哈顿距离
 	protected double manhattanDistance(Point a, Point b) {
@@ -18,8 +18,8 @@ public abstract class AbstractBuilder {
 		return Math.sqrt(sum);
 	}
 	
-	protected void printClusters(List<KMeansCluster> clusters) {
-		for (KMeansCluster cluster : clusters) {
+	protected void printClusters(List<PointCluster> clusters) {
+		for (PointCluster cluster : clusters) {
 			System.out.println("center: " + cluster.getCenter());
 			System.out.println("cluster size: " + cluster.getPoints().size());
 			for (Point point : cluster.getPoints()) {
