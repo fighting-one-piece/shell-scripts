@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
@@ -13,9 +15,9 @@ import org.project.modules.clustering.dbscan.data.Point;
 public class DBScanBuilder {
 	
 	//半径
-	public static double Epislon = 20;
-	//密度
-	public static int MinPts = 20;
+	public static double Epislon = 2;
+	//密度、最小点个数
+	public static int MinPts = 5;
 	
 	public List<Point> initData() {
 		List<Point> points = new ArrayList<Point>();
@@ -47,6 +49,7 @@ public class DBScanBuilder {
 		return Math.sqrt(sum);
 	}
 	
+	//获取当前点的邻居
 	public List<Point> obtainNeighbors(Point current, List<Point> points) {
 		List<Point> neighbors = new ArrayList<Point>();
 		for (Point point : points) {
@@ -62,6 +65,8 @@ public class DBScanBuilder {
 			int clusterId, List<Point> points) {
 		point.setClusterId(clusterId);
 		for (Point neighbor : neighbors) {
+			//邻域点中未被访问的点先观察是否是核心对象
+			//如果是核心对象，则其邻域范围内未被聚类的点归入当前聚类中
 			if (!neighbor.isAccessed()) {
 				neighbor.setAccessed(true);
 				List<Point> nneighbors = obtainNeighbors(neighbor, points);
@@ -73,6 +78,7 @@ public class DBScanBuilder {
 					}
 				}
 			}
+			//未被聚类的点归入当前聚类中
 			if (neighbor.getClusterId() <= 0) {
 				neighbor.setClusterId(clusterId);
 			}
@@ -80,33 +86,41 @@ public class DBScanBuilder {
 	}
 	
 	public void cluster(List<Point> points) {
+		//clusterId初始为0表示未分类,分类后设置为一个正数,如果设置为-1表示噪声 
 		int clusterId = 0;
 		boolean flag = true;
+		//所有点都被访问完成即停止遍历
 		while (flag) {
 			for (Point point : points) {
 				if (point.isAccessed()) {
 					continue;
 				}
 				point.setAccessed(true);
+				flag = true;
 				List<Point> neighbors = obtainNeighbors(point, points);
-				if (neighbors.size() < MinPts) {
-					//clusterId初始为0,表示未分类；分类后设置为一个正数；设置为-1表示噪声 
+				if (neighbors.size() >= MinPts) {
+					//满足核心对象条件的点创建一个新簇
+					clusterId = point.getClusterId() <= 0 ? (clusterId++) : point.getClusterId();
+					mergeCluster(point, neighbors, clusterId, points);
+				} else {
+					//未满足核心对象条件的点暂时当作噪声处理
 					if(point.getClusterId() <= 0) {
 						 point.setClusterId(-1);
 					}
-				} else {
-					if(point.getClusterId() <= 0) {
-						clusterId++;
-					} else {
-						clusterId = point.getClusterId();
-					}
-					mergeCluster(point, neighbors, clusterId, points);
 				}
+				flag = false;
 			}
 		}
 	}
 	
+	//打印结果
 	public void print(List<Point> points) {
+		Collections.sort(points, new Comparator<Point>() {
+			@Override
+			public int compare(Point o1, Point o2) {
+				return Integer.valueOf(o1.getClusterId()).compareTo(o2.getClusterId());
+			}
+		});
 		for (Point point : points) {
 			System.out.println(point.getClusterId() + " - " + point);
 		}

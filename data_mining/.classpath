@@ -9,5 +9,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/json-lib"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/fast-json"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spark-1.0.0-hadoop1"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mmseg4j"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
