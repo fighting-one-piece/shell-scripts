@@ -1,4 +1,4 @@
-package org.project.modules.association.mr;
+package org.project.modules.association.apriori.mr;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.GenericOptionsParser;

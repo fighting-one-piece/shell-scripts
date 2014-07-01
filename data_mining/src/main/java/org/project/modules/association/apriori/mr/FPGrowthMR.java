@@ -1,4 +1,4 @@
-package org.project.modules.association.mr;
+package org.project.modules.association.apriori.mr;
 
 import java.io.IOException;
 import java.net.URI;
@@ -26,10 +26,10 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.project.modules.association.builder.FPGrowthBuilder;
-import org.project.modules.association.data.Data;
-import org.project.modules.association.data.Instance;
-import org.project.modules.association.data.ItemSet;
+import org.project.modules.association.apriori.builder.FPGrowthBuilder;
+import org.project.modules.association.apriori.data.Data;
+import org.project.modules.association.apriori.data.Instance;
+import org.project.modules.association.apriori.data.ItemSet;
 
 public class FPGrowthMR {
 	

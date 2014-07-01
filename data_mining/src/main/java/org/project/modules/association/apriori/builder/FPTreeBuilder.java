@@ -1,4 +1,4 @@
-package org.project.modules.association.builder;
+package org.project.modules.association.apriori.builder;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.project.modules.association.data.Data;
-import org.project.modules.association.data.DataLoader;
-import org.project.modules.association.data.Instance;
-import org.project.modules.association.data.ItemSet;
-import org.project.modules.association.node.FPTreeNode;
+import org.project.modules.association.apriori.data.Data;
+import org.project.modules.association.apriori.data.DataLoader;
+import org.project.modules.association.apriori.data.Instance;
+import org.project.modules.association.apriori.data.ItemSet;
+import org.project.modules.association.apriori.node.FPTreeNode;
 
 public class FPTreeBuilder {
 

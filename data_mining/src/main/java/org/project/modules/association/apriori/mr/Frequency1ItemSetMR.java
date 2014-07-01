@@ -1,4 +1,4 @@
-package org.project.modules.association.mr;
+package org.project.modules.association.apriori.mr;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
@@ -17,16 +17,16 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
-public class CalculateSupportMR {
+public class Frequency1ItemSetMR {
 	
 	private static void configureJob(Job job) {
-		job.setJarByClass(CalculateSupportMR.class);
+		job.setJarByClass(Frequency1ItemSetMR.class);
 		
-		job.setMapperClass(CalculateSupportMapper.class);
+		job.setMapperClass(Frequency1ItemSetMapper.class);
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(IntWritable.class);
 
-		job.setReducerClass(CalculateSupportReducer.class);
+		job.setReducerClass(Frequency1ItemSetReducer.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(IntWritable.class);
 		
@@ -47,8 +47,8 @@ public class CalculateSupportMR {
 				System.out.println("3. min support.");
 				System.exit(2);
 			}
-			configuration.set("mapred.job.queue.name", "q_hudong");
-			configuration.set("mapred.job.minSupport", inputArgs[2]);
+//			configuration.set("mapred.job.queue.name", "q_hudong");
+			configuration.set("minSupport", inputArgs[2]);
 			Job job = new Job(configuration, "Frequency 1 ItemSet Statistics");
 			
 			FileInputFormat.setInputPaths(job, new Path(inputArgs[0]));
@@ -63,7 +63,7 @@ public class CalculateSupportMR {
 	}
 }
 
-class CalculateSupportMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+class Frequency1ItemSetMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
 	
 	private IntWritable one = new IntWritable(1);
 	
@@ -93,7 +93,7 @@ class CalculateSupportMapper extends Mapper<LongWritable, Text, Text, IntWritabl
 	}
 }
 
-class CalculateSupportReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+class Frequency1ItemSetReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 	
 	private int minSupport = 0;
 	
@@ -101,7 +101,7 @@ class CalculateSupportReducer extends Reducer<Text, IntWritable, Text, IntWritab
 	protected void setup(Context context) throws IOException, InterruptedException {
 		super.setup(context);
 		Configuration conf = context.getConfiguration();
-		minSupport = Integer.parseInt(conf.get("mapred.job.minSupport", "0"));
+		minSupport = Integer.parseInt(conf.get("minSupport", "0"));
 	}
 	
 	@Override
@@ -111,7 +111,7 @@ class CalculateSupportReducer extends Reducer<Text, IntWritable, Text, IntWritab
 		for (IntWritable value : values) {
 			sum += value.get();
 		}
-		if (sum > minSupport) {
+		if (sum >= minSupport) {
 			context.write(key, new IntWritable(sum));
 		}
 	}

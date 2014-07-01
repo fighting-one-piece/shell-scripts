@@ -1,4 +1,4 @@
-package org.project.modules.association.node;
+package org.project.modules.association.apriori.node;
 
 public class FPTreeNodeHelper {
 	

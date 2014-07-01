@@ -1,4 +1,4 @@
-package org.project.modules.association;
+package org.project.modules.association.apriori;
 
 public class Association {
 

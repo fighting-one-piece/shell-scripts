@@ -1,4 +1,4 @@
-package org.project.modules.association.data;
+package org.project.modules.association.apriori.data;
 
 import java.util.Iterator;
 import java.util.TreeSet;

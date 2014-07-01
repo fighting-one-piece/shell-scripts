@@ -1,4 +1,4 @@
-package org.project.modules.association.mr;
+package org.project.modules.association.apriori.mr;
 
 import java.io.File;
 import java.io.IOException;

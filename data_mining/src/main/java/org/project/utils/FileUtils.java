@@ -9,6 +9,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
@@ -25,6 +27,36 @@ public class FileUtils {
 			parent.mkdir();
 		}
 		return file;
+	}
+	
+	public static File[] obtainFiles(String path) {
+		List<File> files = new ArrayList<File>();
+		List<File> dirs = new ArrayList<File>();
+		File file = new File(path);
+		if (file.isDirectory()) {
+			dirs.add(file);
+		}
+		while (dirs.size() > 0) {
+			for (File temp : dirs.remove(0).listFiles()) {
+				if (temp.isDirectory()) {
+					dirs.add(temp);
+				} else {
+					files.add(temp);
+				}
+			}
+		}
+		return files.toArray(new File[0]);
+	}
+	
+	public static void obtainFiles(String path, List<File> files) {
+		File file = new File(path);
+		if (file.isDirectory()) {
+			for (File f : file.listFiles()) {
+				obtainFiles(f.getPath(), files);
+			}
+		} else {
+			files.add(file);
+		}
 	}
 
 	public static String obtainOSTmpPath() {

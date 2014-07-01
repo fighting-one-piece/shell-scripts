@@ -1,4 +1,4 @@
-package org.project.modules.association.builder;
+package org.project.modules.association.apriori.builder;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.project.modules.association.data.Data;
-import org.project.modules.association.data.Instance;
-import org.project.modules.association.data.ItemSet;
-import org.project.modules.association.node.AssociationRule;
-import org.project.modules.association.node.AssociationRuleHelper;
+import org.project.modules.association.apriori.data.Data;
+import org.project.modules.association.apriori.data.Instance;
+import org.project.modules.association.apriori.data.ItemSet;
+import org.project.modules.association.apriori.node.AssociationRule;
+import org.project.modules.association.apriori.node.AssociationRuleHelper;
 
 public abstract class AbstractBuilder implements Builder {
 	

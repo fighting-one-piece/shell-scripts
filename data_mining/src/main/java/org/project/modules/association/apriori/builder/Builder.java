@@ -1,8 +1,8 @@
-package org.project.modules.association.builder;
+package org.project.modules.association.apriori.builder;
 
 import java.util.List;
 
-import org.project.modules.association.data.ItemSet;
+import org.project.modules.association.apriori.data.ItemSet;
 
 public interface Builder {
 	

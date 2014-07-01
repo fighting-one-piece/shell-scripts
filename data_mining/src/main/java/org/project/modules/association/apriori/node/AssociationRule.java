@@ -1,10 +1,10 @@
-package org.project.modules.association.node;
+package org.project.modules.association.apriori.node;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.project.modules.association.data.ItemSet;
+import org.project.modules.association.apriori.data.ItemSet;
 
 public class AssociationRule {
 
