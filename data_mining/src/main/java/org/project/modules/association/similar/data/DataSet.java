@@ -1,9 +1,9 @@
-package org.project.modules.association.tfidf.data;
+package org.project.modules.association.similar.data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Data {
+public class DataSet {
 
 	private List<Document> documents = null;
 	
@@ -31,14 +31,4 @@ public class Data {
 		this.similarities = similarities;
 	}
 
-	public int wordDocStatistics(String word) {
-		int sum = 0;
-		for (Document document : getDocuments()) {
-			if (document.containWord(word)) {
-				sum += 1;
-			}
-		}
-		return sum;
-	}
-	
 }

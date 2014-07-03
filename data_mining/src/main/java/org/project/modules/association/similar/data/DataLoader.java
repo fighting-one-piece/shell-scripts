@@ -1,4 +1,4 @@
-package org.project.modules.association.tfidf.data;
+package org.project.modules.association.similar.data;
 
 import java.io.File;
 
@@ -18,8 +18,8 @@ public class DataLoader {
 		load("D:\\resources\\20-news-18828");
 	}
 	
-	public static Data load(String path) {
-		Data data = new Data();
+	public static DataSet load(String path) {
+		DataSet data = new DataSet();
 		File[] files = FileUtils.obtainFiles(path);
 		Seg seg = new ComplexSeg(Dictionary.getInstance());
 		for (File file : files) {

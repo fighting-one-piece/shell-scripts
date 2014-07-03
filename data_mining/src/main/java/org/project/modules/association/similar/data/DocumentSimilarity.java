@@ -1,4 +1,4 @@
-package org.project.modules.association.tfidf.data;
+package org.project.modules.association.similar.data;
 
 public class DocumentSimilarity {
 
