@@ -60,7 +60,6 @@ public class DocumentHelper {
 					Entry<String, Double> o2) {
 				return -o1.getValue().compareTo(o2.getValue());
 			}
-		
 		});
 		int index = 0;
 		for (Map.Entry<String, Double> entry : list) {
@@ -71,6 +70,27 @@ public class DocumentHelper {
 			System.out.print(document.getName() + " : " + entry.getKey() + " : ");
 			DecimalFormat df4  = new DecimalFormat("##.0000");
 			System.out.println(df4.format(entry.getValue()));
+		}
+		return topWords;
+	}
+	
+	public static String[] mapTopN(Map<String, Double> map, int n) {
+		String[] topWords = new String[n];
+		List<Map.Entry<String, Double>> list = 
+				new ArrayList<Map.Entry<String, Double>>(map.entrySet());
+		Collections.sort(list, new Comparator<Map.Entry<String, Double>>() {
+			@Override
+			public int compare(Entry<String, Double> o1,
+					Entry<String, Double> o2) {
+				return -o1.getValue().compareTo(o2.getValue());
+			}
+		});
+		int index = 0;
+		for (Map.Entry<String, Double> entry : list) {
+			if (index == n) {
+				break;
+			}
+			topWords[index++] = entry.getKey();
 		}
 		return topWords;
 	}
