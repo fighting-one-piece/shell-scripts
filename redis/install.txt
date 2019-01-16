@@ -1,0 +1,21 @@
+apt-get install ruby1.9.1
+$gem install redis
+
+$gem install redis -v 3.3.3
+$gem install -l ./redis-3.3.3.gem
+sudo chmod -R 777 /usr/local/lib/ruby/gems/2.1.0
+
+/usr/local目录下面
+wget http://download.redis.io/releases/redis-3.2.3.tar.gz
+$tar -zxvf redis-3.2.3.tar.gz
+$make && make install
+
+jemalloc/jemalloc.h: No such file or directory
+make MALLOC=libc
+
+cannot load such file -- zlib
+进入ruby源码文件夹 安装ruby自身提供的zlib包
+$cd ext/zlib
+$ruby ./extconf.rb
+$make
+$make install

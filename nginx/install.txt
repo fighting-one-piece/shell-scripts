@@ -1,0 +1,22 @@
+sudo apt-get install  gcc；
+sudo apt-get install  g++；
+or
+yum -y install gcc
+yum -y install gcc-c++
+
+tar -xzvf pcre-8.41.tar.gz
+./configure
+make
+make install
+
+tar -xzvf zlib-1.2.8.tar.gz
+./configure
+make
+make install
+
+tar -xzvf openssl-1.0.1g.tar.gz
+
+tar -xzvf nginx-1.13.1.tar.gz
+./configure --with-pcre=/usr/local/pcre-8.41 --with-zlib=/usr/local/zlib-1.2.8
+make
+make install
