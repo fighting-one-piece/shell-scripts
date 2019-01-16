@@ -18,4 +18,4 @@ redis-server /home/wulin/Software/redis-3.2.3/cluster/6376/redis.conf
 redis-server /home/wulin/Software/redis-3.2.3/cluster/6377/redis.conf
 redis-server /home/wulin/Software/redis-3.2.3/cluster/6378/redis.conf
 
-/home/wulin/Software/redis-3.2.3/src/redis-trib.rb create --replicas 1 192.168.0.1:6373 192.168.0.1:6374 192.168.0.1:6375 192.168.0.1:6376 192.168.0.1:6377 192.168.0.1:6378
+echo yes | /home/wulin/Software/redis-3.2.3/src/redis-trib.rb create --replicas 1 192.168.0.1:6373 192.168.0.1:6374 192.168.0.1:6375 192.168.0.1:6376 192.168.0.1:6377 192.168.0.1:6378
